@@ -1175,7 +1175,7 @@
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 746067ae-1212-4b48-9f0c-049bd61b25b4)
   )
-  (text "Motors" (at 185.42 19.05 0)
+  (text "Motors" (at 185.42 20.32 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 9f4b477e-5b14-421f-b8ca-db800db469a2)
   )
