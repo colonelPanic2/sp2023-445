@@ -1,6 +1,6 @@
 from tkinter import *
 import RPi.GPIO as gpio
-gpio.setmode(gpio.BOARD)
+gpio.setmode(gpio.BCM)
 gpio.setwarnings(False)
 
 # Pin mapping:
@@ -13,7 +13,7 @@ gpio.setwarnings(False)
 class GPIO:
     # Initialize the object with a set of GPIO pin #s for the Pi
     # - 1 byte of information between the Pi and microcontroller should be more than enough
-    def __init__(self,pins=[26,27,28,29,31,33,35,37]):
+    def __init__(self,pins=[7,0,1,5,6,12,13,19]):
         self.pins=pins # the default pins are all GPIO pins
         self.pressed={'w':0,'a':0,'s':0,'d':0}
         for pin in self.pins:
@@ -36,19 +36,20 @@ class GPIO:
         self.root.bind('<KeyRelease-s>',self.back_)
         self.root.bind('d',self.right)
         self.root.bind('<KeyRelease-d>',self.right_)
+        self.root.bind('<Control-c>',exit)
         self.root.mainloop()
         return
     
     ### USER MOTOR CONTROLS: use functions from MOTOR CONTROLS
     # Make the car move forward
-    def forward(self):
+    def forward(self,event):
         self.pressed['w'] = 1
         self.left_move()
         self.right_move()
         print(self.readall())
         return
     # Stop if the car isn't moving left OR right
-    def forward_(self):
+    def forward_(self,event):
         self.pressed['w'] = 0
         if not self.pressed['d']:
             self.left_stop()
@@ -56,36 +57,38 @@ class GPIO:
             self.right_stop()
         print(self.readall())
     # Make the car turn right
-    def right(self):
+    def right(self,event):
         self.pressed['d'] = 1
         if self.pressed['s'] and not self.pressed['a']:
-            self.left_move(1)
+            self.right_stop()
+            self.left_move(1) # only move the left motors backward
         else:
             self.left_move()
         print(self.readall())
     # Stop moving the left motors if the car isn't moving forward OR backward
-    def right_(self):
+    def right_(self,event):
         self.pressed['d'] = 0
         if not self.pressed['w'] and not self.pressed['s']:
             self.left_stop()
         print(self.readall())
         return
     # Make the car turn left
-    def left(self):
+    def left(self,event):
         self.pressed['a'] = 1
         if self.pressed['s'] and not self.pressed['d']:
-            self.right_move(1)
+            self.left_stop()
+            self.right_move(1) # only move the right motors backward
         else: 
-            self.right_move(1)
+            self.right_move()
         print(self.readall())
     # Stop moving the right motors if the car isn't moving forward OR backward
-    def left_(self):
+    def left_(self,event):
         self.pressed['a'] = 0
         if not self.pressed['w'] and not self.pressed['s']:
             self.right_stop()
         print(self.readall())
     # Make the car move backwards
-    def back(self):
+    def back(self,event):
         self.pressed['s'] = 1
         if self.pressed['a'] and not self.pressed['d']:
             self.right_move(1) # reverse only the right motors
@@ -96,7 +99,7 @@ class GPIO:
             self.left_move(1)
         print(self.readall())
     # Stop if the car isn't moving left OR right
-    def back_(self):
+    def back_(self,event):
         self.pressed['s'] = 0
         if not self.pressed['a']:
             self.right_stop()
@@ -138,8 +141,8 @@ class GPIO:
     # Read the values of all of the output pins
     def readall(self):
         outputs=''
-        for pin in self.pins:
-            outputs+=self.read(pin)
+        for pin_idx in range(len(self.pins)):
+            outputs+=self.read(pin_idx)
         return outputs
 
     
