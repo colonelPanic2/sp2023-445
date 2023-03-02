@@ -1,7 +1,8 @@
-from motors import GPIO
+import gpio
+import state_machine
 
 def main():
-    controls = GPIO() 
+    car_control = gpio.motors() 
 
     return 0
 
