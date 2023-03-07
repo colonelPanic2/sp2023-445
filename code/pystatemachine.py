@@ -121,6 +121,7 @@ def event(from_states=None, to_state=None):
         @functools.wraps(wrapped)
         def transition(instance, *a, **kw):
             if instance.current_state not in from_states_tuple:
+                print(instance.current_state,from_states_tuple)
                 raise InvalidStateTransition()
             try:
                 result = wrapped(instance, *a, **kw)

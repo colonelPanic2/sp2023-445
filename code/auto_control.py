@@ -1,4 +1,4 @@
-from gpio import motors
+import gpio
 
 class StateFunctions:
     def __init__(self,cur_state_function=None):
@@ -21,15 +21,20 @@ class StateFunctions:
         # 3. Otherwise, determine which regions on the screen are occupied by the ball
         # 4. If the ball is in the lower region for more than 5 seconds, trigger a state change in 
         #    the FSM. 
+        gpio.wait()
         return
     def chase(self):
+        gpio.chase_ball()
         return
     
     def acquire(self):
+        gpio.acquire_ball()
         return
     
     def fetch(self):
+        gpio.fetch_ball()
         return
     
     def ret(self):
+        gpio.Return_to_wait()
         return
