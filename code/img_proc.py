@@ -20,7 +20,7 @@ class images:
             GOAL_COLOR = 127
         elif goal=='user':
             # NOTE: Replace with the correct criteria for identifying the user
-            GOAL_COLOR = 191 # Replace with the corre
+            GOAL_COLOR = 191
         elif goal=='waitpoint':
             # NOTE: Replace with the correct criteria for identifying the waiting point
             GOAL_COLOR = 255
@@ -29,17 +29,17 @@ class images:
         new_image = torch.where(GOAL_COLOR-margin<=new_image,GOAL_COLOR,0) # Apply the lower bound to the color
         # print(new_image.nonzero().flatten())
         # ball_position>5 is the case in which the ball isn't on the screen   
-        ball_positions = random.choices(list(range(7)),k=2) 
+        goal_positions = random.choices(list(range(7)),k=2) 
         # NOTE: REPLACE ALL CODE ABOVE FOR IMAGE PROCESSING 
 
-        # Only change the last location of the ball if the ball 
+        # Only change the last location of the goal if the goal 
         # is currently in the camera view
         region_vals = list(self.regions.values())
-        if not (all(pos>5 for pos in ball_positions) or all(pos==0 for pos in region_vals)):
+        if not (all(pos>5 for pos in goal_positions) or all(pos==0 for pos in region_vals)):
             self.last_regions = region_vals
-        # Change the current ball position
+        # Change the current goal position
         for i in range(6):
-            if i not in ball_positions:
+            if i not in goal_positions:
                 self.regions[i]=0
             else:
                 self.regions[i]+=1
@@ -62,9 +62,9 @@ def iproc_main():
     time.sleep(0.25) # Added for testing worst-case scenarios with the camera. Waits for 0.25s
     # This should be the master function that handles image data
     # and condenses it into an output.
-    iproc.update_ball_position()
+    iproc.update_goal_position('ball')
     # NOTE: REPLACE CODE ABOVE FOR IMAGE PROCESSING
-    iproc.get_ball_regions()
+    iproc.get_goal_regions()
     t1 = time.perf_counter()
     dt = round(1000*(t1-t0),2) # total runtime in milliseconds
     if dt>=300:
