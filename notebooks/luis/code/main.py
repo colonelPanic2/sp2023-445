@@ -11,7 +11,7 @@ def main():
     fsm = FSM(controls)
     transitions = [fsm.transition_wait, fsm.transition_chase, fsm.transition_acquire,\
                  fsm.transition_fetch,fsm.transition_return]
-    functions = [fsm.wait,fsm.chase,fsm.acquire,fsm.fetch] # fsm.ret
+    functions = [fsm.wait,fsm.chase,fsm.acquire,fsm.fetch,fsm.ret]
     fsm.transition_wait()
     print(fsm.get_state(),end=' ')
     next_function_index = fsm.wait()
