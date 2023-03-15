@@ -51,11 +51,9 @@ void setup() {
   pinmode(ECHO0,INPUT);
   pinmode(TRIG1,OUTPUT);
   pinmode(ECHO1,INPUT);
-  /*
-  pinmode(MOSI,);
+  /*pinmode(MOSI,);
   pinmode(MISO,);
-  pinmode(SCK,);
-  */
+  pinmode(SCK,);*/
   pinmode(LMOTORS_IN0,INPUT);
   pinmode(LMOTORS_IN1,INPUT);
   pinmode(LMOTORS_OUT0,OUTPUT);
@@ -67,12 +65,10 @@ void setup() {
   //pinmode(RST,);        
   pinmode(RMOTORS_IN0,INPUT); 
   pinmode(RMOTORS_IN1,INPUT); 
-  
   pinmode(PI_INT,INPUT);
   attachInterrupt(digitalPinToInterrupt(PI_INT),read_pi,CHANGE);
   pinmode(SENSOR_INT,INPUT);
   attachInterrupt(digitalPinToInterrupt(SENSOR_INT),read_sensors,RISING);
-
   pinmode(CTRL,INPUT);   
   pinmode(PINCER_ON,INPUT);  
   pinmode(PINCER_DIR,INPUT); 

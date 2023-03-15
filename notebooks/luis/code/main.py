@@ -3,7 +3,6 @@ import state_machine
 from state_machine import *
 from sys import platform
 import sys,getopt,subprocess
-from pprint import pprint 
 
 def main(args=None):
     gettimes,noprint=args
