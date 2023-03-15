@@ -4,21 +4,73 @@ from sys import platform
 from img_proc import images
 import random # Temporary means of testing state transitions
 import time
+import numpy as np
+
+
+
+def global_signal_handler(signum,frame):
+    raise KeyboardInterrupt
+def time_data(args,state,step):
+    global T0_SET
+    global T0
+    global T1
+    global time_data_dict
+    if args=='time':
+        if step==0:
+            T0_SET = 0
+            T0 = 0
+            T1 = 0
+            time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
+            signal.signal(signal.SIGINT, global_signal_handler)
+            # signal.alarm(runtime) # trigger an alarm at 'runtime' seconds
+        elif step==1:
+            T0_SET = 0
+        elif step==2:
+            T1 = time.perf_counter()
+            if T0_SET==1:
+                time_data_dict[state].append(round(1000*(T1-T0),2))
+            T0=time.perf_counter()
+            T0_SET = 1
+        elif step==3:
+            for state,runtimes in list(time_data_dict.items()):
+                time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state]))
+            return time_data_dict
+    return 0
+def plot_time_data(args):
+    if args=='time':
+        import matplotlib.pyplot as plt
+        import numpy as np
+        results = []
+        for state,runtimes in time_data_dict.items():
+            results.append[np.mean(np.array(runtimes))]
+        plt.hist(results,list(time_data_dict.keys()))
+        plt.show()
+    return 0
+
 class StateLogic(object):
-    def __init__(self,control=None):
+    def __init__(self,control=None,noprint=1):
         self.control = control
         self.img = images()
+        self.noprint = noprint
+        T0 = 0
+        T0_SET=0
+        T1 = 0
+        time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
         super().__init__()
         return
     def function_call(self,function,args=None):
         try:
             return function(args)
         except TimeoutError:
-            print("{} timed out. Return to waiting point".format(self.get_state()))
+            if not self.noprint: 
+                print("{} timed out. Return to waiting point".format(self.get_state()))
             return -1
+
     # WAIT logic #
     def wait(self,args=None):
+        time_data(args,'WAIT',1)
         while self.get_state()=='WAIT': 
+            time_data(args,'WAIT',2)
             # If the ball has been in the same region(s) of the camera view
             # for some amount of time, then transition to the CHASE state and
             # tell the main loop to execute the "chase()" function.
@@ -28,14 +80,17 @@ class StateLogic(object):
             # '2', like the randomized algorithm that generates it, it a placeholder
             # to be replaced when the image processing has been implemented
             if 2 in self.img.regions.values():
-                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                if not self.noprint: 
+                    print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
                 self.transition_chase()
                 return 2
         return -2
     
     # CHASE logic #
     def chase(self,args=None):
+        time_data(args,'CHASE',1)
         while self.get_state()=='CHASE':
+            time_data(args,'CHASE',2)
             self.img.update_goal_position('ball')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the ball
@@ -48,7 +103,9 @@ class StateLogic(object):
     
     # ACQUIRE logic #
     def acquire(self,args=None):
+        time_data(args,'ACQUIRE',1)
         while self.get_state()=='ACQUIRE':
+            time_data(args,'ACQUIRE',2)
             self.img.update_goal_position('ball')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller when the ball is inside of 
@@ -62,7 +119,9 @@ class StateLogic(object):
         return -2
     # FETCH logic #
     def fetch(self,args=None):
+        time_data(args,'FETCH',1)
         while self.get_state()=='FETCH':
+            time_data(args,'FETCH',2)
             # NOTE: These 2 functions still need to be 
             # defined/implemented in 'img_proc.py'
             self.img.update_goal_position('user')
@@ -80,7 +139,9 @@ class StateLogic(object):
         return -2
     # RETURN logic #
     def ret(self,args=None):
+        time_data(args,'RETURN',1)
         while self.get_state()=="RETURN":
+            time_data(args,'RETURN',2)
             # NOTE: These 2 functions still need to be
             # defined/implemented in 'img_proc.py'
             self.img.update_goal_position('waitpoint')
@@ -129,7 +190,8 @@ class StateLogic(object):
         elif 4 in positions:
             self.control.right_stop()
             self.control.left_stop()
-            print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+            if not self.noprint: 
+                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
             self.transition_acquire()
             return 3
         # bottom-right
@@ -147,7 +209,8 @@ class StateLogic(object):
             # and then simply assume that it worked and move on. THIS WILL NEED
             # TO BE ADDRESSED LATER.
             time.sleep(2) 
-            print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+            if not self.noprint:
+                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
             self.transition_fetch()
             return 4
         elif 3 in positions:
@@ -161,7 +224,8 @@ class StateLogic(object):
             # of the camera view, then return to chasing. 
             self.control.right_stop()
             self.control.left_stop()
-            print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+            if not self.noprint: 
+                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
             self.transition_chase()
             return 2
         return 0
@@ -205,7 +269,8 @@ class StateLogic(object):
         elif 4 in positions:
             self.control.right_stop()
             self.control.left_stop()
-            print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+            if not self.noprint: 
+                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
             self.transition_return()
             return 5
         # bottom-right
@@ -253,7 +318,8 @@ class StateLogic(object):
         elif 4 in positions:
             self.control.right_stop()
             self.control.left_stop()
-            print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+            if not self.noprint: 
+                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
             self.transition_wait()
             return 1
         # bottom-right
@@ -275,7 +341,7 @@ class FSM(StateLogic):
     ACQUIRE = State('ACQUIRE')
     FETCH = State('FETCH')
     RETURN = State('RETURN')
-    def __init__(self,controls):
+    def __init__(self,controls,noprint):
         try:
             # NEEDS TESTING ON Pi
             self.ALRM = signal.SIGALRM
@@ -283,7 +349,7 @@ class FSM(StateLogic):
             # This doesn't actually work. Windows doesn't support SIGALRM
             # without WSL, so this is just to avoid errors. 
             self.ALRM = signal.SIGABRT 
-        super().__init__(controls)
+        super().__init__(controls,noprint)
     # Define a signal handler for when the CHASE or ACQUIRE states time out
     def signal_handler(self,signum,frame):
         raise TimeoutError
