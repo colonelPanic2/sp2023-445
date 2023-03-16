@@ -31,14 +31,14 @@ class remote_gpio:
         return self.pinout[pin]
 
 # If the test is being done on the Pi, the library for the
-# GPIO pins will be imported. Otherwise, we can still 
-# test for the expected values of the pins  
-from sys import platform
+# GPIO pins (RPi.GPIO) will be imported. Otherwise, we can 
+# still test for the expected values of the pins  
 try: 
     import RPi.GPIO as io
 except:
     io = remote_gpio()
 from tkinter import *
+import time
 
 class motors:
     # Initialize the object with a set of GPIO pin #s for the Pi
@@ -83,23 +83,35 @@ class motors:
         self.root.bind('<Control-c>',self.exit_)
         self.root.mainloop()
         return
+        
     # Make the car move forward
     def forward(self,event=None):
         self.left_move()
         self.right_move()
+        self.setpin(7,1)
         if self.manual_mode!=0 and self.instruction['FORWARD']==0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0 and self.instruction['FORWARD']==0:
+            print(self.read(7))
         self.instruction['FORWARD'] = 1
         return
     # Stop if the car isn't moving left OR right
     def forward_(self,event=None):
+        self.setpin(7,0)
         self.instruction['FORWARD'] = 0
         if not self.instruction['RIGHT']:
             self.left_stop()
         if not self.instruction['LEFT']:
             self.right_stop()
+        self.setpin(7,1)
         if self.manual_mode!=0 and self.instruction['FORWARD']==0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0 and self.instruction['FORWARD']==0:
+            print(self.read(7))
     # Make the car turn right
     def right(self,event=None):
         if self.instruction['BACK'] and not self.instruction['LEFT']:
@@ -107,16 +119,26 @@ class motors:
             self.left_move(1) # only move the left motors backward
         else:
             self.left_move()
+        self.setpin(7,1)
         if self.manual_mode!=0 and self.instruction['RIGHT']==0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0 and self.instruction['RIGHT']==0:
+            print(self.read(7))
         self.instruction['RIGHT'] = 1
     # Stop moving the left motors if the car isn't moving forward OR backward
     def right_(self,event=None):
         self.instruction['RIGHT'] = 0
         if not self.instruction['FORWARD'] and not self.instruction['BACK']:
             self.left_stop()
-        if self.manual_mode!=0 and self.instruction['RIGHT']==0:
-            print(self.readall())
+            self.setpin(7,1)
+            if self.manual_mode!=0 and self.instruction['RIGHT']==0:
+                print(self.readall()[:-1]+" "+self.read(7),end=' ')
+            time.sleep(0.005)
+            self.setpin(7,0)
+            if self.manual_mode!=0 and self.instruction['RIGHT']==0:
+                print(self.read(7))
         return
     # Make the car turn left
     def left(self,event=None):
@@ -125,16 +147,26 @@ class motors:
             self.right_move(1) # only move the right motors backward
         else: 
             self.right_move()
+        self.setpin(7,1)
         if self.manual_mode!=0 and self.instruction['LEFT']==0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0 and self.instruction['LEFT']==0:
+            print(self.read(7))
         self.instruction['LEFT'] = 1
     # Stop moving the right motors if the car isn't moving forward OR backward
     def left_(self,event=None):
         self.instruction['LEFT'] = 0
         if not self.instruction['FORWARD'] and not self.instruction['BACK']:
             self.right_stop()
-        if self.manual_mode!=0 and self.instruction['LEFT']==0:
-            print(self.readall())
+            self.setpin(7,1)
+            if self.manual_mode!=0 and self.instruction['LEFT']==0:
+                print(self.readall()[:-1] + " " + self.read(7),end=' ')
+            time.sleep(0.005)
+            self.setpin(7,0)
+            if self.manual_mode!=0 and self.instruction['LEFT']==0:
+                print(self.read(7))
     # Make the car move backwards
     def back(self,event=None):
         if self.instruction['LEFT'] and not self.instruction['RIGHT']:
@@ -144,34 +176,55 @@ class motors:
         else:
             self.right_move(1)
             self.left_move(1)
+        self.setpin(7,1)
         if self.manual_mode!=0 and self.instruction['BACK']==0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0 and self.instruction['BACK']==0:
+            print(self.read(7))
         self.instruction['BACK'] = 1
 
     # Stop if the car isn't moving left OR right
     def back_(self,event=None):
+        self.setpin(7,0)
         self.instruction['BACK'] = 0
         if not self.instruction['LEFT']:
             self.right_stop()
         if not self.instruction['RIGHT']:
             self.left_stop()
+        self.setpin(7,1)
         if self.manual_mode!=0 and self.instruction['BACK']==0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0 and self.instruction['BACK']==0:
+            print(self.read(7))
         return
     # Open the pincers
     def pincers_open(self,event=None):
         if self.instruction['CLOSE']==0:
             self.pincers_move(0)
+            self.setpin(7,1)
             if self.manual_mode!=0 and self.instruction['OPEN']==0:
-                print(self.readall())
+                print(self.readall()[:-1]+" "+self.read(7),end=' ')
+            time.sleep(0.005)
+            self.setpin(7,0)
+            if self.manual_mode!=0 and self.instruction['OPEN']==0:
+                print(self.read(7))
             self.instruction['OPEN'] = 1
         return
     # Close the pincers
     def pincers_close(self,event=None):
         if self.instruction['OPEN']==0:
             self.pincers_move(1)
+            self.setpin(7,1)
             if self.manual_mode!=0 and self.instruction['CLOSE']==0:
-                print(self.readall())
+                print(self.readall()[:-1]+" "+self.read(7),end=' ')
+            time.sleep(0.005)
+            self.setpin(7,0)
+            if self.manual_mode!=0 and self.instruction['CLOSE']==0:
+                print(self.read(7))
             self.instruction['CLOSE'] = 1  
         return
     # If the pincers are not being used, then set the control outputs to 0
@@ -180,16 +233,26 @@ class motors:
         if self.instruction['CLOSE']==0:
             self.setpin(4,0)
             self.setpin(5,0)
+        self.setpin(7,1)
         if self.manual_mode!=0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0:
+            print(self.read(7))
         return
     def pincers_off_close(self,event=None):
         self.instruction['CLOSE'] = 0
         if self.instruction['OPEN']==0:
             self.setpin(4,0)
             self.setpin(5,0)
+        self.setpin(7,1)
         if self.manual_mode!=0:
-            print(self.readall())
+            print(self.readall()[:-1]+" "+self.read(7),end=' ')
+        time.sleep(0.005)
+        self.setpin(7,0)
+        if self.manual_mode!=0:
+            print(self.read(7))
         return
     # If the user terminates manual control mode, return to auto control mode
     def exit_(self,event=None):
@@ -202,6 +265,12 @@ class motors:
         
     ### MOTOR CONTROLS: use functions from the GENERAL FUNCTIONS to set output signals
     # Make the left motors move forward (reverse=0) or backward (reverse=1).
+    def pi_int(self):
+        self.setpin(7,1)
+        # NOTE: Wait 5 ms for the microcontroller to handle the interrupt.
+        # This value may need to be adjusted later.
+        time.sleep(0.005) 
+        self.setpin(7,0)
     def left_move(self,reverse=0):
         self.setpin(0,reverse)
         self.setpin(1,1)
@@ -219,7 +288,7 @@ class motors:
         self.setpin(3,0)
     # Make the pincers close or open (for pin 5: direction=1: close pincers; direction=0: open pincers
     # pin 4 will always be 1 when the motors are in use, and 0 otherwise)
-    def pincers_move(self,direction):
+    def pincers_move(self,direction=0):
         self.setpin(4,1)
         self.setpin(5,direction) 
     # Turn off the pincer motors

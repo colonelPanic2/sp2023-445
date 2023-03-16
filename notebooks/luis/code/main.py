@@ -61,7 +61,11 @@ def main_():
                 for state,runtime_loopnum in list(time_data_dict.items()):
                     print("{}:  Averaged {} ms over {} loops".format(state,str(runtime_loopnum[0]),str(runtime_loopnum[1])))
     else:
-        main(args)
+        try:
+            main([None,args[1]])
+        except KeyboardInterrupt:
+            print("\n\n------ DESIGN SIMULATION TERMINATED ------\n")
+    return 0
 
 if __name__ == '__main__':
     main_()

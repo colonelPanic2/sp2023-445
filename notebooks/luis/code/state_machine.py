@@ -82,6 +82,7 @@ class StateLogic(object):
             if 2 in self.img.regions.values():
                 if not self.noprint: 
                     print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                    #print("Final pinout data: {}\n".format(self.control.readall()))              
                 self.transition_chase()
                 return 2
         return -2
@@ -154,17 +155,21 @@ class StateLogic(object):
                 return 1
         return -2
     
+    # NOTE: REFORMATTED THIS FUNCTION. FINISH THESE FUNCTIONS WHEN YOU GET
+    # BACK FROM GETTING YOUR HAIRCUT
+    # NOTE: STILL NEED TO ADD PI_INT INTERRUPT TO THE END OF EACH CALL FOR EVERY
+    # '*_commands' FUNCTION
     def chase_commands(self,positions):
         # No ball was detected in the camera view
         if positions==[]: 
             # The ball may have gone off the left side of the camera view
             if not all(region==0 for region in self.img.last_regions[::3]):
-                self.control.right_stop()
-                self.control.left_move()
+                self.control.right_move()
+                self.control.left_stop() 
             # The ball may have gone off the right side of the camera view
             elif not all(region==0 for region in self.img.last_regions[2::3]):
-                self.control.right_move()
-                self.control.left_stop()
+                self.control.right_stop()
+                self.control.left_move()
             # The ball may have gone behind the camera view, or it might be
             # too far to be detected (this may need extra logic later).
             else:
@@ -172,15 +177,15 @@ class StateLogic(object):
                 self.control.left_move()
         # top-left
         elif 0 in positions:
-            self.control.right_stop()
-            self.control.left_move()
+            self.control.right_move()
+            self.control.left_stop()
         # top-middle
         elif 1 in positions:
             self.control.right_move()
             self.control.left_move()
         # top-right
         elif 2 in positions:
-            self.control.right_move()
+            self.control.right_stop()
             self.control.left_move()
         # bottom-left
         elif 3 in positions:
@@ -190,32 +195,42 @@ class StateLogic(object):
         elif 4 in positions:
             self.control.right_stop()
             self.control.left_stop()
+            self.control.pi_int()
             if not self.noprint: 
                 print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_acquire()
             return 3
         # bottom-right
         elif 5 in positions:
             self.control.right_move(1)
             self.control.left_stop()
+        self.control.pi_int()
         return 0
     def acquire_commands(self,positions):
         if 4 in positions:
             self.control.right_stop()
             self.control.left_stop()
+            self.control.pincers_move(1)
+            self.control.pi_int()
             # NOTE: I don't know how we're going to confirm that the ball has
             # been acquired successfully, so my temporary solution is to wait 
             # for 2 seconds after telling the microcontroller to close the pincers,
             # and then simply assume that it worked and move on. THIS WILL NEED
             # TO BE ADDRESSED LATER.
             time.sleep(2) 
+            self.control.pincers_stop()
+            self.control.pi_int()
             if not self.noprint:
                 print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_fetch()
             return 4
+        # bottom-left
         elif 3 in positions:
             self.control.right_stop()
             self.control.left_move(1)
+        # bottom-right
         elif 5 in positions:
             self.control.right_move(1)
             self.control.left_stop()
@@ -224,10 +239,13 @@ class StateLogic(object):
             # of the camera view, then return to chasing. 
             self.control.right_stop()
             self.control.left_stop()
+            self.control.pi_int()
             if not self.noprint: 
                 print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_chase()
             return 2
+        self.control.pi_int()
         return 0
     def fetch_commands(self,positions):
         # NOTE: I don't know how we're planning on setting up the tag for the user,
@@ -238,12 +256,12 @@ class StateLogic(object):
         if positions==[]: 
             # The user may be off the left side of the camera view
             if not all(region==0 for region in self.img.last_regions[::3]):
-                self.control.right_stop()
-                self.control.left_move()
-            # The user may be off the right side of the camera view
-            elif not all(region==0 for region in self.img.last_regions[2::3]):
                 self.control.right_move()
                 self.control.left_stop()
+            # The user may be off the right side of the camera view
+            elif not all(region==0 for region in self.img.last_regions[2::3]):
+                self.control.right_step()
+                self.control.left_move()
             # The user may be behind the camera view, or they might be
             # too far to be detected (NOTE: this may need extra logic later).
             else:
@@ -251,15 +269,15 @@ class StateLogic(object):
                 self.control.left_move()
         # top-left
         elif 0 in positions:
-            self.control.right_stop()
-            self.control.left_move()
+            self.control.right_move()
+            self.control.left_stop()
         # top-middle
         elif 1 in positions:
             self.control.right_move()
             self.control.left_move()
         # top-right
         elif 2 in positions:
-            self.control.right_move()
+            self.control.right_stop()
             self.control.left_move()
         # bottom-left
         elif 3 in positions:
@@ -269,14 +287,21 @@ class StateLogic(object):
         elif 4 in positions:
             self.control.right_stop()
             self.control.left_stop()
+            self.control.pincers_move()
+            self.control.pi_int()
+            time.sleep(2)
+            self.control.pincers_stop()
+            self.control.pi_int()
             if not self.noprint: 
                 print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_return()
             return 5
         # bottom-right
         elif 5 in positions:
             self.control.right_move(1)
-            self.control.left_stop()                
+            self.control.left_stop()   
+        self.control.pi_int()             
         return 0
     def return_commands(self,positions):
         # NOTE: Since the waiting point flag will be at about the same height as the 
@@ -287,12 +312,12 @@ class StateLogic(object):
         if positions==[]: 
             # The waiting point may be off the left side of the camera view
             if not all(region==0 for region in self.img.last_regions[::3]):
-                self.control.right_stop()
-                self.control.left_move()
-            # The waiting point may be off the right side of the camera view
-            elif not all(region==0 for region in self.img.last_regions[2::3]):
                 self.control.right_move()
                 self.control.left_stop()
+            # The waiting point may be off the right side of the camera view
+            elif not all(region==0 for region in self.img.last_regions[2::3]):
+                self.control.right_stop()
+                self.control.left_move()
             # The waiting point may be behind the camera view, or it may be
             # too far to be detected (NOTE: this may need extra logic later).
             else:
@@ -300,15 +325,15 @@ class StateLogic(object):
                 self.control.left_move()
         # top-left
         elif 0 in positions:
-            self.control.right_stop()
-            self.control.left_move()
+            self.control.right_move()
+            self.control.left_stop()
         # top-middle
         elif 1 in positions:
             self.control.right_move()
             self.control.left_move()
         # top-right
         elif 2 in positions:
-            self.control.right_move()
+            self.control.right_stop()
             self.control.left_move()
         # bottom-left
         elif 3 in positions:
@@ -318,14 +343,17 @@ class StateLogic(object):
         elif 4 in positions:
             self.control.right_stop()
             self.control.left_stop()
+            self.control.pi_int()
             if not self.noprint: 
                 print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_wait()
             return 1
         # bottom-right
         elif 5 in positions:
             self.control.right_move(1)
             self.control.left_stop()  
+        self.control.pi_int()
         return 0
 
 # RETURN to WAIT:
