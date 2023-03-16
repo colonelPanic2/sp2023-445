@@ -12,7 +12,7 @@
 #define RMOTORS_OUT1 26 // PC3
 #define PINCER_OUT0  27 // PC4
 #define PINCER_OUT1  28 // PC5
-//#define RST 1 // !RESET/PC6
+#define RST 1 // !RESET/PC6
 #define RMOTORS_IN0   2 // PD0
 #define RMOTORS_IN1   3 // PD1
 #define PI_INT        4 // PD2
@@ -40,7 +40,7 @@
 uint8_t pi_input[7] = {0,0,0,0,0,0,0};
 // The actual processed sensor inputs should always be >=0, so they will only be 
 // negative when an input hasn't been read from the sensors. The distances are in cm.
-unsigned int sensor_distances[2] = {-1,-1}; 
+unsigned int sensor_distances[2] = {65535,65535}; 
 void sensor_data() {
   digitalWrite(TRIG0,0);
   digitalWrite(TRIG1,0);
@@ -65,39 +65,37 @@ void read_pi() {
   sensor_data();
 }
 // NOTE: we may not need the sensor interrupt
-void read_sensors() {
+void read_sensors();
   // if (digitalRead(ECHO0)==1) sensor_distances[0] = sonar_0.ping_cm();
   // if (digitalRead(ECHO1)==1) sensor_distances[1] = sonar_1.ping_cm();
-  return;
-}
 void setup() {
   // put your setup code here, to run once:
-  pinmode(ECHO0,INPUT);
-  pinmode(TRIG1,OUTPUT);
-  pinmode(ECHO1,INPUT);
-  /*pinmode(MOSI,);
-  pinmode(MISO,);
-  pinmode(SCK,);*/
-  pinmode(LMOTORS_IN0,INPUT);
-  pinmode(LMOTORS_IN1,INPUT);
-  pinmode(LMOTORS_OUT0,OUTPUT);
-  pinmode(LMOTORS_OUT1,OUTPUT);
-  pinmode(RMOTORS_OUT0,OUTPUT);
-  pinmode(RMOTORS_OUT1,OUTPUT);
-  pinmode(PINCER_OUT0,OUTPUT);
-  pinmode(PINCER_OUT1,OUTPUT);
-  //pinmode(RST,);        
-  pinmode(RMOTORS_IN0,INPUT); 
-  pinmode(RMOTORS_IN1,INPUT); 
-  pinmode(PI_INT,INPUT);
-  attachInterrupt(digitalPinToInterrupt(PI_INT),read_pi,RISING);
-  pinmode(SENSOR_INT,INPUT);
+  pinMode(ECHO0,INPUT);
+  pinMode(TRIG1,OUTPUT);
+  pinMode(ECHO1,INPUT);
+  /*pinMode(MOSI,);
+  pinMode(MISO,);
+  pinMode(SCK,);*/
+  pinMode(LMOTORS_IN0,INPUT);
+  pinMode(LMOTORS_IN1,INPUT);
+  pinMode(LMOTORS_OUT0,OUTPUT);
+  pinMode(LMOTORS_OUT1,OUTPUT);
+  pinMode(RMOTORS_OUT0,OUTPUT);
+  pinMode(RMOTORS_OUT1,OUTPUT);
+  pinMode(PINCER_OUT0,OUTPUT);
+  pinMode(PINCER_OUT1,OUTPUT);
+  //pinMode(RST,);        
+  pinMode(RMOTORS_IN0,INPUT); 
+  pinMode(RMOTORS_IN1,INPUT); 
+  pinMode(PI_INT,INPUT); // INPUT_PULLUP?
+  attachInterrupt(0,read_pi,RISING);
+  pinMode(SENSOR_INT,INPUT);
   // attachInterrupt(digitalPinToInterrupt(SENSOR_INT),read_sensors,CHANGE);
-  pinmode(CTRL,INPUT);   
-  pinmode(PINCER_ON,INPUT);  
-  pinmode(PINCER_DIR,INPUT); 
-  pinmode(TRIG0,OUTPUT);
-  Serial.begin(9600) // 9600 bits/second (NOTE: I don't know why, but we need this for the sensors according to one website)
+  pinMode(CTRL,INPUT);   
+  pinMode(PINCER_ON,INPUT);  
+  pinMode(PINCER_DIR,INPUT); 
+  pinMode(TRIG0,OUTPUT);
+  Serial.begin(9600); // 9600 bits/second (NOTE: I don't know why, but we need this for the sensors according to one website)
 }
 
 /* NOTE: Interrupt logic may interfere with the microcontroller's decision
