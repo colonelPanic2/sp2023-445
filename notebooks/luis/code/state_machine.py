@@ -41,8 +41,8 @@ def plot_time_data(args):
         import matplotlib.pyplot as plt
         import numpy as np
         results = []
-        for state,runtimes in time_data_dict.items():
-            results.append[np.mean(np.array(runtimes))]
+        for state,runtime in time_data_dict.items():
+            results.append[runtime]
         plt.hist(results,list(time_data_dict.keys()))
         plt.show()
     return 0
@@ -149,7 +149,7 @@ class StateLogic(object):
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the waiting
             # point relative to the camera view. If the waiting point
-            # has been reached, then transition to the waiting state
+            # has been reached, then transition to the WAIT state
             # and tell the main loop to execute the "wait()" function.
             if self.return_commands(positions)==1:
                 return 1
