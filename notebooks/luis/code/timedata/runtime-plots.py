@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
-import subprocess
+import subprocess,sys,os
 def readfile(fname):
     metadata = [] # Each entry is (<num_its>, <runtime_cap>)
     overall_data = {'num_its':{'WAIT':0, 'CHASE':0, 'ACQUIRE':0, 'FETCH':0, 'RETURN':0}, 'runtime':{'WAIT':0, 'CHASE':0, 'ACQUIRE':0, 'FETCH':0, 'RETURN':0}}
@@ -69,7 +69,7 @@ def create_subplots(data,numtests_or_testidx,num_its_total,num_its_test=None,ali
         plt.savefig(pwd+'test{}.png'.format(numtests_or_testidx))
         return num_its,runtimes
 def main():
-    pwd = ""#str(subprocess.check_output(['pwd'],shell=True))+"/"
+    pwd = ""
     dirs = str(subprocess.check_output(["ls"]))[2:-1].split("\\n")[:-1]
     if 'timedata' in dirs:
         pwd+='timedata/'

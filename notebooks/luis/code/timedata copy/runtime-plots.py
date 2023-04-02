@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import subprocess
+from helpers import ls
 def readfile(fname):
     metadata = [] # Each entry is (<num_its>, <runtime_cap>)
     overall_data = {'num_its':{'WAIT':0, 'CHASE':0, 'ACQUIRE':0, 'FETCH':0, 'RETURN':0}, 'runtime':{'WAIT':0, 'CHASE':0, 'ACQUIRE':0, 'FETCH':0, 'RETURN':0}}
@@ -36,7 +37,7 @@ def create_subplots(data,numtests_or_testidx,num_its_total,num_its_test=None,ali
     ax[0].set_ylabel('runtime (milliseconds)')
     ax[0].set_title('Average runtimes (ms) for each state function')
     fig.subplots_adjust(hspace=0.5)
-    dirs = str(subprocess.check_output(["ls"]))[2:-1].split("\\n")[:-1]
+    dirs = ls()
     pwd = ''
     if 'timedata' in dirs:
         pwd+='timedata/'
@@ -70,7 +71,7 @@ def create_subplots(data,numtests_or_testidx,num_its_total,num_its_test=None,ali
         return num_its,runtimes
 def main():
     pwd = ""#str(subprocess.check_output(['pwd'],shell=True))+"/"
-    dirs = str(subprocess.check_output(["ls"]))[2:-1].split("\\n")[:-1]
+    dirs = ls()
     if 'timedata' in dirs:
         pwd+='timedata/'
     data = readfile(pwd+'timedata.csv')
@@ -82,7 +83,7 @@ def main():
         num_its,runtime = create_subplots(unit_data,test_idx,metadata[-1],num_its)
         print("Test {}:\nruntimes (ms): {}\n      num_its: {}\n".format(test_idx,runtime,num_its))
         test_idx+=1
-    dirs = str(subprocess.check_output(["ls",'timedata']))[2:-1].split("\\n")[:-1]
+    dirs = ls('timedata')    
     for i in range(test_idx,len(dirs)):
         if "test{}.png".format(i) in dirs:
             subprocess.run(['rm',pwd+'test{}.png'.format(i)])

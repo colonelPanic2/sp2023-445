@@ -36,16 +36,6 @@ def time_data(args,state,step):
                 time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state]))
             return time_data_dict
     return 0
-def plot_time_data(args):
-    if args=='time':
-        import matplotlib.pyplot as plt
-        import numpy as np
-        results = []
-        for state,runtime in time_data_dict.items():
-            results.append[runtime]
-        plt.hist(results,list(time_data_dict.keys()))
-        plt.show()
-    return 0
 
 class StateLogic(object):
     def __init__(self,control=None,noprint=1):

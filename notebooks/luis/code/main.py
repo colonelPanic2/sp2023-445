@@ -1,9 +1,8 @@
 from gpio import motors
-import state_machine
 from state_machine import *
 from sys import platform
-import sys,getopt,subprocess
-
+import sys,subprocess,multiprocessing
+from helpers import ls
 def writefile(fname,content):
     with open(fname,'a') as f:
         f.write(content)
@@ -46,7 +45,7 @@ def main(args=None):
             return 0
         
 
-def main_():
+def main_fetching():
     argv = sys.argv[1:]
     if len(argv)==4:
         args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3])]
@@ -66,10 +65,10 @@ def main_():
         if len(args)==4:
             max_its = args[3]
             print("\nRunning the simulation with a {}-second time limit {} times. If 0 full loops of any state function are recorded, main will be executed more than {} times until there is valid data to write to 'runtimes.csv'.\n**NOTE: This can be avoided by choosing a larger time limit.\n".format(args[2],max_its,max_its))
-            dirs = str(subprocess.check_output(["ls"]))[2:-1].split("\\n")[:-1]
+            dirs = ls()
             if "timedata" not in dirs:
                 subprocess.run(['mkdir','timedata'])
-            dirs = str(subprocess.check_output(["ls","timedata"]))[2:-1].split("\\n")[:-1]
+            dirs = ls('timedata')
             if "timedata.csv" not in dirs:
                 subprocess.run(["touch",'timedata/timedata.csv'])
                 # categories_csv = "{},{},{},{},{}\n".format("num_its_main","runtime_cap_main","state","num_its_state_function","avg_runtime_state_function")
@@ -112,5 +111,8 @@ def main_():
             print("\n\n------ DESIGN SIMULATION TERMINATED ------\n")
     return 0
 
+def main_img_proc():
+    pass
 if __name__ == '__main__':
-    main_()
+    process1 = multiprocessing.Process(target=main_fetching)
+    process2 = multiprocessing.Process(target=main_img_proc)
