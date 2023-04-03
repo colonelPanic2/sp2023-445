@@ -1,10 +1,10 @@
 import cv2
 
 #im = cv2.imread('sunlight.jpg')
-im = cv2.imread('roomlight.jpg')
+img = cv2.imread('redtriangle.jpg')
 
-#im = cv2.resize(im, (960, 720))
-img = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+img = cv2.resize(img, (1280, 720))
+#img = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 # Open the image form working directory
 print(img.shape)
 while True:
