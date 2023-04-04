@@ -3,6 +3,7 @@ from state_machine import *
 from sys import platform
 import sys,subprocess,multiprocessing
 from helpers import ls
+from camera import camera
 def writefile(fname,content):
     with open(fname,'a') as f:
         f.write(content)

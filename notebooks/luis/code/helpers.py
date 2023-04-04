@@ -39,9 +39,10 @@ class Camera:
         signal.signal(signal.SIGINT, self.signal_handler)
         print("\nInitializing camera...")
         self.cam = cv2.VideoCapture(0)
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1281)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        self.frame_queue = Queue()
+        self.new_image = False
+        self.frame_queue = None#Queue()
         # construct the argument parse and parse the arguments
         if len(sys.argv)==1:
             self.ap = argparse.ArgumentParser()
@@ -61,17 +62,15 @@ class Camera:
         self.grayscale = False
         self.read_thread = False
         self.main_thread_id = threading.current_thread().ident
-        # self.lock = threading.Lock()
+        self.lock = threading.Lock()
         print("Done.")
     def start_capture(self):
-        self.camera = cv2.VideoCapture(0)
         self.read_thread = True
         self.capture_t = threading.Thread(target=self.capture_thread)
         self.capture_t.start()
     def stop_capture(self):
         self.read_thread = False
         self.capture_t.join()
-        self.camera.release()
     # NOTE: The signal handler for KeyboardInterrupts is incomplete
     def signal_handler(self,signum,frame):
         global sigint
@@ -102,20 +101,23 @@ class Camera:
     def capture_thread(self):
         global sigint
         sigint = False
+        global image
+        image = None
         self.child_thread_id = threading.current_thread().ident
         if self.grayscale==False:
             while self.read_thread==True:
                 ret,frame =self.cam.read()
                 if ret:
-                    self.frame_queue.put(frame)
+                    # self.frame_queue.put(frame)
+                    image = frame
         else:
             while self.read_thread==True:
                 ret,frame = self.cam.read()
                 if ret:
-                    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-                    self.frame_queue.put(gray)
+                    image = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
     def getimages(self,time_s=5):
+        global image
         print(f"\nGathering samples from the camera for {time_s} seconds\nand storing as png images in the 'testimg' directory.")
         self.start_capture()
         dirs = ls()
@@ -123,8 +125,9 @@ class Camera:
             subprocess.run("mkdir testimg",shell=True)
         t_init = time.perf_counter()
         while time.perf_counter()-t_init<time_s:
-            if not self.frame_queue.empty():
-                image = self.frame_queue.get() 
+            # if not self.frame_queue.empty():
+            if image is not None:
+                frame = image 
                 cv2.imwrite('testimg/test{}.png'.format(self.image_count), image)
                 self.image_count += 1
         self.stop_capture()
@@ -133,36 +136,37 @@ class Camera:
         img = cv2.imread(dir+filename)
         # print(filename+":")
         result = pytorch_scan(img)
+        return 
         #note: go from below to top is generally faster
-        x,y,pval = 0,0,img[0,0]
-        for i in range(img.shape[0])[::-1]:
-            # i = img.shape[0] - a - 1
-            #break flag
-            flag = False
-            for j in range(img.shape[1]):
-                r = img[i, j, 0]
-                g = img[i, j, 1]
-                b = img[i, j, 2]
-                #black filter
-                if g < 30 or b < 30:
-                    continue
-                #white filter
-                if g > 245 or b > 245:
-                    continue
-                #if r < g * 0.6 and r > g * 0.4:
-                if r<b*0.6 and r>b*0.5:
-                    if g<b*1.05 and g>b*0.95:
-                        x,y,pval = i,j,img[i,j]
-                        flag = True
-                        break
-            if flag == True:
-                break
-        toc = time.perf_counter()
-        # print(f"Runtime (seconds): {toc- tic:0.4f}     Result: {flag}")			
-        # print("{}: {}".format(filename,flag))
-        # if flag==True:
-        #     print(x,y,pval)
-        return (result[0],flag,img,result[1])
+        # x,y,pval = 0,0,img[0,0]
+        # for i in range(img.shape[0])[::-1]:
+        #     # i = img.shape[0] - a - 1
+        #     #break flag
+        #     flag = False
+        #     for j in range(img.shape[1]):
+        #         r = img[i, j, 0]
+        #         g = img[i, j, 1]
+        #         b = img[i, j, 2]
+        #         #black filter
+        #         if g < 30 or b < 30:
+        #             continue
+        #         #white filter
+        #         if g > 245 or b > 245:
+        #             continue
+        #         #if r < g * 0.6 and r > g * 0.4:
+        #         if r<b*0.6 and r>b*0.5:
+        #             if g<b*1.05 and g>b*0.95:
+        #                 x,y,pval = i,j,img[i,j]
+        #                 flag = True
+        #                 break
+        #     if flag == True:
+        #         break
+        # toc = time.perf_counter()
+        # # print(f"Runtime (seconds): {toc- tic:0.4f}     Result: {flag}")			
+        # # print("{}: {}".format(filename,flag))
+        # # if flag==True:
+        # #     print(x,y,pval)
+        # return (result[0],flag,img,result[1])
     def balltrack(self):
         global sigint
         sigint = False
@@ -268,8 +272,8 @@ def main(process,time_s):
                 if results[0]!=results[1]:
                     discrepancies+=1
                     print(file)
-                    # print(np.where(results[2]!=results[3].numpy()))
-                    # cv2.imwrite(file[:-4]+"_diff.png",results[2])
+                    print(np.where(results[2]!=results[3].numpy()))
+                    cv2.imwrite(file[:-4]+"_diff.png",results[2])
     ### cam.balltrack() TEST
     elif process==2:
         cam.balltrack()
@@ -279,7 +283,7 @@ def main(process,time_s):
 
 if __name__=='__main__':
     time_s=None
-    if sys.argv[1]=='2':
+    if len(sys.argv)>1 and sys.argv[1]=='2':
         print("Cannot execute 'balltrack' with command line arguments.")
     else:
         if len(sys.argv)>1:

@@ -42,9 +42,6 @@ class StateLogic(object):
         self.control = control
         self.img = images()
         self.noprint = noprint
-        T0 = 0
-        T0_SET=0
-        T1 = 0
         time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
         super().__init__()
         return
@@ -64,15 +61,16 @@ class StateLogic(object):
             # If the ball has been in the same region(s) of the camera view
             # for some amount of time, then transition to the CHASE state and
             # tell the main loop to execute the "chase()" function.
-            self.img.update_goal_position('ball')
+            self.img.update_goal_position('ball',time.time())
             # NOTE: change this later to make the condition check for the number of
             # seconds that the ball has been in a given region in the camera view
             # '2', like the randomized algorithm that generates it, it a placeholder
             # to be replaced when the image processing has been implemented
-            if 2 in self.img.regions.values():
+            if self.img.timer>=5: # NOTE: software simulation/testing change2 in self.img.regions.values():
                 if not self.noprint: 
                     print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
                     #print("Final pinout data: {}\n".format(self.control.readall()))              
+                self.img.timer = 0
                 self.transition_chase()
                 return 2
         return -2

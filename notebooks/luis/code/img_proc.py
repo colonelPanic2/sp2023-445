@@ -1,48 +1,71 @@
 import random
-import torch
+import torch,time
+from camera import camera
 TL = 0 # Top-left region of camera view
 TM = 1 # Top-middle region of camera view
 TR = 2 # Top-right region of camera view
 BL = 3 # Bottom-left region of camera view
 BM = 4 # Bottom-middle region of camera view
 BR = 5 # Bottom-right region of camera view
+
+T = ['TL','TM','TR','BL','BM','BR']
+def map_to_block_index(col_row,dims=(720,1278)):
+    col_blocks = dims[1]//3
+    row_blocks = dims[0]//2
+    region_index = (col_row[0]//col_blocks) + 3*(col_row[1]>=row_blocks)
+    return region_index
 class images:
     def __init__(self):
         # This array will keep track of where the ball is located in the 6 regions
         # Of the camera view. The ball can be in multiple regions at once.
         self.regions= { TL:0, TM:0, TR:0, BL:0, BM:0, BR:0 }
         self.last_regions = list(self.regions.values())
-    def update_goal_position(self,goal):
+        self.cam = camera()
+        self.cam.start_read()
+        self.goal_timelimits = {'ball':5,'user':2,'waitpoint':2}
+        self.timer = 0
+    def update_goal_position(self,goal,t0=None):
         # NOTE: REPLACE ALL CODE BELOW FOR IMAGE PROCESSING
-        image = torch.randint(0,255,(1280,720)) # Get image from camera
-        if goal=='ball':
-            # NOTE: Replace with the correct criteria for identifying the ball
-            GOAL_COLOR = 127
-        elif goal=='user':
-            # NOTE: Replace with the correct criteria for identifying the user
-            GOAL_COLOR = 191
-        elif goal=='waitpoint':
-            # NOTE: Replace with the correct criteria for identifying the waiting point
-            GOAL_COLOR = 255
-        margin = 0
-        new_image = torch.where(image<=GOAL_COLOR+margin,GOAL_COLOR,0)     # Apply the upper bound to the color
-        new_image = torch.where(GOAL_COLOR-margin<=new_image,GOAL_COLOR,0) # Apply the lower bound to the color
-        # print(new_image.nonzero().flatten())
-        # ball_position>5 is the case in which the ball isn't on the screen   
-        goal_positions = random.choices(list(range(7)),k=2) 
-        # NOTE: REPLACE ALL CODE ABOVE FOR IMAGE PROCESSING 
-
+        position_xy,image = self.cam.getimage() #torch.randint(0,255,(1280,720)) # Get image from camera
+        if position_xy is not None:
+            image = torch.from_numpy(image)
+            # Find the region(s) in which the ball was located, if it was
+            # in the frame NOTE: need to update this to include all regions
+            # that the ball is in, not just the center of the ball
+            region_index = map_to_block_index(position_xy,image.shape)
+            goal_positions = [region_index]
+        else:
+            goal_positions = [0] # The goal is not in the image
+            
+        # # NOTE: Saving this part for non-hardware simulation/testing
+        # # ball_position>5 is the case in which the ball isn't on the screen   
+        # goal_positions = random.choices(list(range(7)),k=2) 
+        
         # Only change the last location of the goal if the goal 
         # is currently in the camera view
-        region_vals = list(self.regions.values())
-        if not (all(pos>5 for pos in goal_positions) or all(pos==0 for pos in region_vals)):
+        if not (all(pos==0 for pos in goal_positions)):# or all(pos>5 for pos in goal_positions)):
+            region_vals = list(self.regions.values())
             self.last_regions = region_vals
         # Change the current goal position
-        for i in range(6):
-            if i not in goal_positions:
-                self.regions[i]=0
-            else:
-                self.regions[i]+=1
+        if t0 is None:
+            # If we only want the position of the goal without timing data,
+            # then update the positions
+            for i in range(6):
+                if i in goal_positions:
+                    self.regions[i]+= 1
+                else:
+                    self.regions[i]=0
+        else:
+            # We need to be able to check the amount of time that the goal has 
+            # been in the given locations
+            t1 = time.time()
+            for i in range(6):
+                if i in goal_positions and t1-t0>=self.goal_timelimits[goal]:
+                    self.regions[i]+= 1
+                    self.timer += t1-t0
+                else:
+                    self.regions[i]=0
+                    self.timer=0
         return 0
     # This function shouldn't need to be changed for image processing
     def get_goal_regions(self):
