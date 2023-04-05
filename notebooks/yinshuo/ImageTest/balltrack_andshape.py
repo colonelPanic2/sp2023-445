@@ -29,7 +29,7 @@ def detect_shape(c):
 
         # A square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle
-        shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
+        shape = "rectangle"
 
     # Pentagon
     elif len(approx) == 5:

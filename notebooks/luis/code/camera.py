@@ -7,7 +7,7 @@ class camera():
         print("Initializing camera...")
         # self.cam = cv2.VideoCapture("rtmp://live.twitch.tv/app/live_733973012_UxcTGuiGVDvcs9ZqDxUVCHT57ZYkcX") # NOTE: Modified for faster connection on windows
         url = "twitch.tv/llllllllllldavila0"
-        quality = '720p'
+        quality = '1080p'
         # Open the stream
         stream_url = streamlink.streams(url)[quality].url
         self.cam = cv2.VideoCapture(stream_url)
@@ -29,6 +29,35 @@ class camera():
         print("Done.")
     def release(self):
         self.cam.release()
+    def detect_shape(c):
+        shape = "empty"
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
+
+    # Triangle
+        if len(approx) == 3:
+            shape = "triangle"
+
+    # Square or rectangle
+        elif len(approx) == 4:
+            (x, y, w, h) = cv2.boundingRect(approx)
+            ar = w / float(h)
+
+        # A square will have an aspect ratio that is approximately
+        # equal to one, otherwise, the shape is a rectangle
+            shape = "rectangle"
+
+    # Pentagon
+        elif len(approx) == 5:
+            shape = "pentagon"
+
+    # Otherwise assume as circle or oval
+        else:
+            (x, y, w, h) = cv2.boundingRect(approx)
+        
+            shape = "circle"
+
+        return shape
     def start_read(self):
         self.capture_t = threading.Thread(target=self.camera_read)
         self.capture_t.start()
@@ -76,19 +105,20 @@ class camera():
                     # find the largest contour in the mask, then use
                     # it to compute the minimum enclosing circle and
                     # centroid
-                    c = max(cnts, key=cv2.contourArea)
-                    ((x, y), radius) = cv2.minEnclosingCircle(c)
-                    M = cv2.moments(c)
-                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                    position = center # NOTE: if the goal is detected, then return its position instead of 'None'
-                    # only proceed if the radius meets a minimum size
-                    #original size as 10
-                    if radius > 3:
-                        # draw the circle and centroid on the frame,
-                        # then update the list of tracked points
-                        cv2.circle(image, (int(x), int(y)), int(radius),
-                            (0, 255, 255), 2)
-                        cv2.circle(image, center, 5, (0, 0, 255), -1)
+                    for c in cnts:
+                        shape = detect_shape(c)
+                        if shape == "circle" :
+                            ((x, y), radius) = cv2.minEnclosingCircle(c)
+                            M = cv2.moments(c)
+                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        # only proceed if the radius meets a minimum size
+        #original size as 10
+                            if radius > 3:
+            # draw the circle and centroid on the frame,
+            # then update the list of tracked points
+                                cv2.circle(frame, (int(x), int(y)), int(radius),
+                                    (0, 255, 255), 2)
+                                cv2.circle(frame, center, 5, (0, 0, 255), -1)
                 # update the points queue
                 self.pts.appendleft(center)
                 # NOTE: comment this out when not doing a demo
