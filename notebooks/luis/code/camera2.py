@@ -1,14 +1,14 @@
-import threading,time,signal,cv2,imutils,traceback,argparse,queue
+import time,signal,cv2,imutils,traceback,argparse,multiprocessing,os
 from collections import deque
 import numpy as np
 
 class camera():
     def __init__(self):
         print("Initializing camera...")
+        self.stop_loop = False
         self.cam = cv2.VideoCapture(0,cv2.CAP_V4L2)
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)   
-        self.lock = threading.Lock() 
         self.ap = argparse.ArgumentParser()
         self.ap.add_argument("-v", "--video",
             help="path to the (optional) video file")
@@ -21,8 +21,27 @@ class camera():
         self.greenUpper = (100, 255, 255)
         #red and blue colorspace as well
         self.pts = deque(maxlen=self.args["buffer"])
-        self.q = queue.Queue()
-        print("Done.\n")
+        self.q = multiprocessing.Queue()
+        self.stop_q = multiprocessing.Queue()
+        self.camera_process = multiprocessing.Process(target=self.camera_read,args=(self.q,self.stop_q,))
+        self.camera_process.start()
+        print("Done.")
+    # NOTE: This isn't working quite as well as I had hoped. Calling this
+    # function on its own doesn't seem to free the process.
+    def destroy(self):
+        self.stop_loop=True
+        print("\nCamera: Halting subprocess...")
+        self.stop_q.put(None)
+        self.q.close()
+        self.stop_q.close()
+        print("Done.")
+    def camera_read(self,q,stop_q):
+        while stop_q.empty():
+            if q.empty() and stop_q.empty():
+                ret,frame = self.cam.read()
+                if ret:
+                    q.put(frame)
+        return
     def detect_shape(self,c):
         shape = "empty"
         peri = cv2.arcLength(c, True)
@@ -45,23 +64,7 @@ class camera():
             (x, y, w, h) = cv2.boundingRect(approx)
             shape = "circle"
         return shape
-    def start_read(self):
-        self.capture_t = threading.Thread(target=self.camera_read)
-        self.capture_t.start()
-    # NOTE: May need to be more complex later
-    def destroy(self):
-        global sigint
-        print("\nHalting program...")
-        sigint = True
-        # Extra teardown work?
-        print("Done.")
-    def camera_read(self):
-        global sigint
-        while sigint==False:
-            ret,frame = self.cam.read()
-            if self.q.empty() and ret:
-                self.q.put(frame)
-        return
+
     # NOTE: Old ball tracking (consistent, but OVERLY sensitive to non-ball objects with a similar color)
     def old_balltrack(self,frame):        
         blurred = cv2.GaussianBlur(frame, (11,11), 0)
@@ -74,6 +77,7 @@ class camera():
         cnts = imutils.grab_contours(cnts)
         center = None
         if len(cnts) > 0:
+            position = None
             c = max(cnts, key=cv2.contourArea)
             ((x,y), radius) = cv2.minEnclosingCircle(c)
             M = cv2.moments(c)
@@ -121,12 +125,11 @@ class camera():
                         cv2.circle(frame, center, 5, (0, 0, 255), -1)
         return center
     def getimage(self):
-        global sigint
-        image=None
-        while sigint==False:
+        center,image = None, None
+        while self.stop_q.empty():
             if not self.q.empty():
                 image = self.q.get()
-                center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
+                center = self.new_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
                 # update the points queue
                 self.pts.appendleft(center)
                 # NOTE: comment this out when not doing a demo
@@ -150,35 +153,45 @@ class camera():
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
-            self.destroy()
+            raise KeyboardInterrupt
         return
+
 def signal_handler(signum,frame):
-    global sigint
-    sigint = True
     global cam
     cam.destroy()
     exit(0)
 
+
+
 def main():
+    global cam
+    cam = camera()
     global sigint
     sigint = False
-    global image
-    image = None
-    global cam
     signal.signal(signal.SIGINT, signal_handler)
-    cam = camera()
     try:
-        cam.start_read()
-        # In the final version, we would call some main program that would
-        # eventually call cam.getimage(), instead of the following while loop
-        while sigint==False:
-            t0 = time.perf_counter()
-            cam.getimage()
-            if sigint==False:
+        try:
+            # In the final version, we would call some main program that would
+            # eventually call cam.getimage(), instead of the following while loop
+            while cam.stop_loop==False:
+                t0 = time.perf_counter()
+                # TODO: We need to be able to keep track of when to switch between basic
+                # color detection and ball tracking (or between the previous version of 
+                # ball tracking and yinshuo's updated version)
+                position,_ = cam.getimage()
                 print('\033[F\033[K' * 1, end = "")
                 print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
+        except KeyboardInterrupt as e:
+            # import warnings
+            # with warnings.catch_warnings():
+            #     warnings.simplefilter("ignore",category=Warning)
+            # NOTE: As of right now, this is the only way to stop the processes,
+            # but it generates a warning that can't be ignored even though this
+            # call doesn't seem to have any consequences.
+            os.kill(0,signal.SIGINT)
     except Exception as e:
         cam.destroy() # Free the threads
         print("ERROR:",e,end='\n\n')
         traceback.print_exc()
 main()
+

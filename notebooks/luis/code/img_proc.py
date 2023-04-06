@@ -1,5 +1,5 @@
-import random
-import torch,time
+import random,time
+import torch # NOTE: torch is not particularly useful at the moment
 from camera import camera
 TL = 0 # Top-left region of camera view
 TM = 1 # Top-middle region of camera view
@@ -8,7 +8,6 @@ BL = 3 # Bottom-left region of camera view
 BM = 4 # Bottom-middle region of camera view
 BR = 5 # Bottom-right region of camera view
 
-T = ['TL','TM','TR','BL','BM','BR']
 def map_to_block_index(col_row,dims=(720,1278)):
     col_blocks = dims[1]//3
     row_blocks = dims[0]//2
@@ -25,10 +24,10 @@ class images:
         self.goal_timelimits = {'ball':5,'user':2,'waitpoint':2}
         self.timer = 0
     def update_goal_position(self,goal,t0=None):
-        # NOTE: REPLACE ALL CODE BELOW FOR IMAGE PROCESSING
+        # NOTE: at the moment, the position only accounts for the center of the ball.
         position_xy,image = self.cam.getimage() #torch.randint(0,255,(1280,720)) # Get image from camera
         if position_xy is not None:
-            image = torch.from_numpy(image)
+            # image = torch.from_numpy(image) # Might be of some use later
             # Find the region(s) in which the ball was located, if it was
             # in the frame NOTE: need to update this to include all regions
             # that the ball is in, not just the center of the ball
