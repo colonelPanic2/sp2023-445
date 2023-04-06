@@ -1,0 +1,32 @@
+ERROR: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args)
+TypeError: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
+
+ERROR: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args)
+TypeError: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
+
+ERROR: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args)
+TypeError: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
+
+ERROR: FSM.__init__() takes 4 positional arguments but 6 were given
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 107, in main_fetching
+    main([None,args[1],1],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 26, in main
+    fsm = FSM(controls,noprint,cam,init_time,logfile)
+TypeError: FSM.__init__() takes 4 positional arguments but 6 were given
+

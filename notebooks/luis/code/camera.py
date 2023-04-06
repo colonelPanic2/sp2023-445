@@ -1,27 +1,28 @@
 import threading,time,signal,cv2,imutils,traceback,argparse,queue
 from collections import deque
 import numpy as np
-
-class camera():
-    def __init__(self):
+from img_proc import images
+class camera(images):
+    def __init__(self,demo=True):
+        global sigint
+        sigint = False
         print("Initializing camera...")
         self.cam = cv2.VideoCapture(0,cv2.CAP_V4L2)
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)   
-        self.lock = threading.Lock() 
-        self.ap = argparse.ArgumentParser()
-        self.ap.add_argument("-v", "--video",
-            help="path to the (optional) video file")
-            #was 64
-        self.ap.add_argument("-b", "--buffer", type=int, default=32,
-            help="max buffer size")
-        self.args = vars(self.ap.parse_args())
-        #original: (29, 86, 6) and (64, 255, 255)
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
+        self.demo = demo 
+        # self.ap = argparse.ArgumentParser()
+        # self.ap.add_argument("-v", "--video",
+        #     help="path to the (optional) video file")
+        #     #was 64
+        # self.ap.add_argument("-b", "--buffer", type=int, default=32,
+        #     help="max buffer size")
+        # self.args = vars(self.ap.parse_args())
         self.greenLower = (30, 86, 46)
         self.greenUpper = (100, 255, 255)
-        #red and blue colorspace as well
-        self.pts = deque(maxlen=self.args["buffer"])
+        # self.pts = deque(maxlen=self.args["buffer"])
         self.q = queue.Queue()
+        super().__init__(self)
         print("Done.\n")
     def detect_shape(self,c):
         shape = "empty"
@@ -53,6 +54,8 @@ class camera():
         global sigint
         print("\nHalting program...")
         sigint = True
+        cv2.destroyAllWindows()
+        raise KeyboardInterrupt
         # Extra teardown work?
         print("Done.")
     def camera_read(self):
@@ -122,29 +125,38 @@ class camera():
         return center
     def getimage(self):
         global sigint
+        center = None
         image=None
         while sigint==False:
             if not self.q.empty():
                 image = self.q.get()
                 center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
                 # update the points queue
-                self.pts.appendleft(center)
-                # NOTE: comment this out when not doing a demo
-                self.show_tracking(image)
+                # self.pts.appendleft(center)
+                if self.demo:
+                    # NOTE: comment this out when not doing a demo
+                    self.show_tracking(image)
                 break
         return center,image
     def show_tracking(self,image):
         #delete this for final project
         # loop over the set of tracked points
-        for i in range(1, len(self.pts)):
-            # if either of the tracked points are None, ignore
-            # them
-            if self.pts[i - 1] is None or self.pts[i] is None:
-                continue
+        # for i in range(1, len(self.pts)):
+        #     # if either of the tracked points are None, ignore
+        #     # them
+        #     if self.pts[i - 1] is None or self.pts[i] is None:
+        #         continue
             # otherwise, compute the thickness of the line and
             # draw the connecting lines
-            thickness = int(np.sqrt(self.args["buffer"] / float(i + 1)) * 2.5)
-            cv2.line(image, self.pts[i - 1], self.pts[i], (0, 0, 255), thickness)
+            # thickness = int(np.sqrt(self.args["buffer"] / float(i + 1)) * 2.5)
+            # cv2.line(image, self.pts[i - 1], self.pts[i], (0, 0, 255), thickness)
+        # Draw lines to show the regions of the screen
+        cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
+        height, width = image.shape[:2]
+        cv2.line(image, (width//3, 0), (width//3, height), (0, 255, 0), 2)
+        cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 255, 0), 2)
+        cv2.line(image, (0, height//2), (width, height//2), (0, 255, 0), 2)
+
         # show the frame to our screen
         cv2.imshow("Camera", image)
         key = cv2.waitKey(1) & 0xFF
@@ -181,4 +193,6 @@ def main():
         cam.destroy() # Free the threads
         print("ERROR:",e,end='\n\n')
         traceback.print_exc()
-main()
+
+if __name__=='__main__':
+    main()

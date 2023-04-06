@@ -1,15 +1,15 @@
 from pystatemachine import *
 import signal
 from sys import platform
-from img_proc import images
+from img_proc import *
 import random # Temporary means of testing state transitions
 import time
 import numpy as np
+from helpers import writefile
 
 
-
-def global_signal_handler(signum,frame):
-    raise KeyboardInterrupt
+# def global_signal_handler(signum,frame):
+#     raise KeyboardInterrupt
 def time_data(args,state,step):
     global T0_SET
     global T0
@@ -21,7 +21,7 @@ def time_data(args,state,step):
             T0 = 0
             T1 = 0
             time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
-            signal.signal(signal.SIGINT, global_signal_handler)
+            # signal.signal(signal.SIGINT, global_signal_handler)
             # signal.alarm(runtime) # trigger an alarm at 'runtime' seconds
         elif step==1:
             T0_SET = 0
@@ -38,11 +38,12 @@ def time_data(args,state,step):
     return 0
 
 class StateLogic(object):
-    def __init__(self,control=None,noprint=1):
+    def __init__(self,control=None,noprint=1,camera=None,demo_=True,init_time=None,logfile=None):
         self.control = control
-        self.img = images()
+        self.img = camera
         self.noprint = noprint
-        time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
+        self.init_time = init_time
+        self.logfile = logfile
         super().__init__()
         return
     def function_call(self,function,args=None):
@@ -50,7 +51,7 @@ class StateLogic(object):
             return function(args)
         except TimeoutError:
             if not self.noprint: 
-                print("{} timed out. Return to waiting point".format(self.get_state()))
+                writefile(self.logfile,"{} timed out. Return to waiting point\n".format(self.get_state()))
             return -1
 
     # WAIT logic #
@@ -66,9 +67,11 @@ class StateLogic(object):
             # seconds that the ball has been in a given region in the camera view
             # '2', like the randomized algorithm that generates it, it a placeholder
             # to be replaced when the image processing has been implemented
+            # TODO: MODIFY THIS CONDITION SO THAT THE FETCHING SUBSYTEM REACTS TO 
+            # THE BALL'S PRESENCE
             if self.img.timer>=5: # NOTE: software simulation/testing change2 in self.img.regions.values():
                 if not self.noprint: 
-                    print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
                     #print("Final pinout data: {}\n".format(self.control.readall()))              
                 self.img.timer = 0
                 self.transition_chase()
@@ -185,7 +188,7 @@ class StateLogic(object):
             self.control.left_stop()
             self.control.pi_int()
             if not self.noprint: 
-                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
                 #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_acquire()
             return 3
@@ -210,7 +213,7 @@ class StateLogic(object):
             self.control.pincers_stop()
             self.control.pi_int()
             if not self.noprint:
-                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
                 #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_fetch()
             return 4
@@ -229,7 +232,7 @@ class StateLogic(object):
             self.control.left_stop()
             self.control.pi_int()
             if not self.noprint: 
-                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
                 #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_chase()
             return 2
@@ -281,7 +284,7 @@ class StateLogic(object):
             self.control.pincers_stop()
             self.control.pi_int()
             if not self.noprint: 
-                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
                 #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_return()
             return 5
@@ -333,7 +336,7 @@ class StateLogic(object):
             self.control.left_stop()
             self.control.pi_int()
             if not self.noprint: 
-                print("\nFinal region data: {}\n".format(list(self.img.regions.values())))
+                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
                 #print("Final pinout data: {}\n".format(self.control.readall()))              
             self.transition_wait()
             return 1
@@ -357,15 +360,9 @@ class FSM(StateLogic):
     ACQUIRE = State('ACQUIRE')
     FETCH = State('FETCH')
     RETURN = State('RETURN')
-    def __init__(self,controls,noprint):
-        try:
-            # NEEDS TESTING ON Pi
-            self.ALRM = signal.SIGALRM
-        except:
-            # This doesn't actually work. Windows doesn't support SIGALRM
-            # without WSL, so this is just to avoid errors. 
-            self.ALRM = signal.SIGABRT 
-        super().__init__(controls,noprint)
+    def __init__(self,controls,noprint,camera,init_time,logfile):
+        self.ALRM = signal.SIGALRM
+        super().__init__(controls,noprint,camera,init_time,logfile)
     # Define a signal handler for when the CHASE or ACQUIRE states time out
     def signal_handler(self,signum,frame):
         raise TimeoutError

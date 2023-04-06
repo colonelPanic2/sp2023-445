@@ -15,6 +15,26 @@ def ls(dir=None):
     else:
         dirs = str(subprocess.check_output(["ls",dir]))[2:-1].split("\\n")[:-1]
     return dirs
+def writefile(fname,content):
+    with open(fname,'a') as f:
+        f.write(content)
+def logdata():
+    current_time = time.localtime()
+    current_date = time.strftime("%Y-%m-%d", current_time)[5:]
+    current_time = time.strftime("%Y-%m-%d_%H:%M:%S", current_time)[11:]
+    dirs = ls('logs')
+    if current_date not in dirs:
+        subprocess.run([f'mkdir logs/{current_date}'],shell=True)
+    logs = ls(f"logs/{current_date}")
+    if f'{current_time}.txt' not in logs:
+        subprocess.run([f"touch logs/{current_date}/{current_time}.txt"],shell=True)
+    if 'err.txt' not in logs:
+        subprocess.run([f'touch logs/{current_date}/err.txt'],shell=True)
+    logfile = f"logs/{current_date}/{current_time}.txt"
+    errfile = f"logs/{current_date}/err.txt"
+    init_time = time.time()
+    return (init_time,logfile,errfile)
+
 def pytorch_scan(img):
     img = torch.from_numpy(img)
     R,G,B = torch.transpose(img,-3,-1).transpose(1,2).reshape((3,-1))
