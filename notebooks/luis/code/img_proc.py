@@ -25,7 +25,7 @@ class images:
         self.regions= { TL:0, TM:0, TR:0, BL:0, BM:0, BR:0 }
         self.last_regions = list(self.regions.values())
         self.goal_timelimits = {'ball':5,'user':2,'waitpoint':2}
-        self.timer = 0
+        self.timers = {TL:0, TM:0, TR:0, BL:0, BM:0, BR:0}
         self.demo=demo
         self.camera_.start_read()
     # def demo_(self,demo):
@@ -63,28 +63,20 @@ class images:
                     self.regions[i]+= 1
                 else:
                     self.regions[i]=0
+            return None
         else:
-            if self.timer==0:
-                self.timer = t0
-            # TODO: We need to be able to check the amount of time that the goal has 
-            # been in the given locations. I'm running into error with my current approach
-            # I'll try to change it to keep track of overall time, instead of increments of 
-            # time, tomorrow.
-            t1 = time.time()
-            # NOTE: If I'm able to keep track of overall time properly, then I won't need
-            # this for loop,
             for i in range(6):
-                if i in goal_positions and self.timer-t0<self.goal_timelimits[goal]:
+                if self.timers[i]==0:
+                    self.timers[i]=t0
+                if i in goal_positions:# and t0-self.timers[i]<self.goal_timelimits[goal]:
                     self.regions[i]+= 1
-                    self.timer += t1-t0
+                    # COMMENT OUT OR REMOVE THIS FOR FINAL DEMO
                     print('\033[F\033[K' * 1, end = "")
-                    print(f"{i}: {self.timer:.4f}")
+                    print(f"{i}: {t0-self.timers[i]:.2f}")
                 else:
                     self.regions[i]=0
-                    self.timer=t0
-            # NOTE: Maybe try something like this?
-            # return (self.timer-t0>=self.goal_timelimits[goal])
-        return 0
+                    self.timers[i] = t0
+            return [t0-self.timers[i] for i in range(6)]
     # This function shouldn't need to be changed for image processing
     def get_goal_regions(self):
         # If the goal is in the camera view, then find the region(s) where it is present

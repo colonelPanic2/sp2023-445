@@ -1,0 +1,13 @@
+ERROR: 'camera' object has no attribute 'timer'
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 139, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 82, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 35, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 73, in wait
+    if self.img.timer>=5: # NOTE: software simulation/testing change2 in self.img.regions.values():
+AttributeError: 'camera' object has no attribute 'timer'
+
