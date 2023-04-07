@@ -21,7 +21,7 @@ def writefile(fname,content):
 def logdata():
     current_time = time.localtime()
     current_date = time.strftime("%Y-%m-%d", current_time)[5:]
-    current_time = time.strftime("%Y-%m-%d_%H:%M:%S", current_time)[11:]
+    current_time = time.strftime("%Y-%m-%d_%H.%M.%S", current_time)[11:]
     dirs = ls('logs')
     if current_date not in dirs:
         subprocess.run([f'mkdir logs/{current_date}'],shell=True)

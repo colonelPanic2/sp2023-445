@@ -64,16 +64,26 @@ class images:
                 else:
                     self.regions[i]=0
         else:
-            # We need to be able to check the amount of time that the goal has 
-            # been in the given locations
+            if self.timer==0:
+                self.timer = t0
+            # TODO: We need to be able to check the amount of time that the goal has 
+            # been in the given locations. I'm running into error with my current approach
+            # I'll try to change it to keep track of overall time, instead of increments of 
+            # time, tomorrow.
             t1 = time.time()
+            # NOTE: If I'm able to keep track of overall time properly, then I won't need
+            # this for loop,
             for i in range(6):
-                if i in goal_positions and t1-t0>=self.goal_timelimits[goal]:
+                if i in goal_positions and self.timer-t0<self.goal_timelimits[goal]:
                     self.regions[i]+= 1
                     self.timer += t1-t0
+                    print('\033[F\033[K' * 1, end = "")
+                    print(f"{i}: {self.timer:.4f}")
                 else:
                     self.regions[i]=0
-                    self.timer=0
+                    self.timer=t0
+            # NOTE: Maybe try something like this?
+            # return (self.timer-t0>=self.goal_timelimits[goal])
         return 0
     # This function shouldn't need to be changed for image processing
     def get_goal_regions(self):
@@ -259,17 +269,18 @@ def iproc_main():
     import time
     from helpers import logdata
     init_time,logfile,errfile = logdata()
-    iproc = camera(demo=True)
+    iproc = camera(demo=True,init_time=init_time,logfile=logfile)
     try:
         while sigint==False:
             t0 = time.perf_counter()
-            iproc.update_goal_position('ball')
+            iproc.update_goal_position('ball',time.time())
             iproc.get_goal_regions()
             # if sigint==False:
             #     print('\033[F\033[K' * 1, end = "")
             #     print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
     except KeyboardInterrupt:
-        writefile(logfile,"\nTerminated by user input.\n")
+        writefile(logfile,'Done.')
+        print("\nTerminated by user input.")
     except Exception as e:
         iproc.destroy() # Free the threads
         writefile(errfile,f"ERROR: {e}\n\n")

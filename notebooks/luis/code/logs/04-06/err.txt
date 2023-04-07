@@ -1,32 +1,159 @@
-ERROR: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
-
-Traceback (most recent call last):
-  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
-    main_fetching(args)
-TypeError: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
-
-ERROR: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
-
-Traceback (most recent call last):
-  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
-    main_fetching(args)
-TypeError: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
-
-ERROR: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
-
-Traceback (most recent call last):
-  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
-    main_fetching(args)
-TypeError: main_fetching() missing 2 required positional arguments: 'init_time' and 'logfile'
-
-ERROR: FSM.__init__() takes 4 positional arguments but 6 were given
+ERROR: expected str, bytes or os.PathLike object, not NoneType
 
 Traceback (most recent call last):
   File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
     main_fetching(args,init_time,logfile)
-  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 107, in main_fetching
-    main([None,args[1],1],init_time,logfile)
-  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 26, in main
-    fsm = FSM(controls,noprint,cam,init_time,logfile)
-TypeError: FSM.__init__() takes 4 positional arguments but 6 were given
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 81, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 34, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 74, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 81, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 34, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 74, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 81, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 34, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 74, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 81, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 34, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 74, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 81, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 34, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 74, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 81, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 34, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 75, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 138, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 81, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 34, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 76, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 139, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 82, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 35, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 76, in wait
+    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+ERROR: FSM.__init__() takes 6 positional arguments but 7 were given
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 139, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 82, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 27, in main
+    fsm = FSM(controls,noprint,cam,demo,init_time,logfile)
+TypeError: FSM.__init__() takes 6 positional arguments but 7 were given
+
+ERROR: writefile() missing 1 required positional argument: 'content'
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 139, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 82, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 47, in main
+    writefile(fsm.get_state()+' ')
+TypeError: writefile() missing 1 required positional argument: 'content'
+
+ERROR: 
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 139, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 82, in main_fetching
+    main(args[:3],init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 47, in main
+    writefile(logfile,fsm.get_state()+' ')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers.py", line 19, in writefile
+    with open(fname,'a') as f:
+  File "/home/ldavila2/miniconda3/lib/python3.10/codecs.py", line 186, in __init__
+    def __init__(self, errors='strict'):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 374, in signal_handler
+    raise TimeoutError
+TimeoutError
 

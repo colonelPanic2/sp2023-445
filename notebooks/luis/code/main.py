@@ -23,7 +23,8 @@ def main(args,init_time,logfile):
     # with WSL.
     controls = motors(manual=(1 & (platform=='win32')),init_time=init_time,logfile=logfile) 
     cam = camera(demo,init_time,logfile)
-    fsm = FSM(controls,noprint,cam,init_time,logfile)
+    print(logfile)
+    fsm = FSM(controls,noprint,cam,demo,init_time,logfile)
     signal.signal(signal.SIGINT, signal_handler)
 
 
@@ -43,7 +44,7 @@ def main(args,init_time,logfile):
                 raise KeyboardInterrupt
             t0 = t1
         if not noprint:
-            writefile(fsm.get_state()+' ')
+            writefile(logfile,fsm.get_state()+' ')
         if next_function_index>=1 and not fsm.get_state()=='RETURN':
             next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
         else:
@@ -124,7 +125,7 @@ if __name__ == '__main__':
             args = [str(argv[0]),int(argv[1]),int(argv[2])]
         elif len(argv)==2:
             # time noprint default_demo=1
-            args = [str(argv[0]),int(argv[1]),1]
+            args = [str(argv[0]),int(argv[1]),0]
         elif len(argv)==1:
             # time(manual interrupt), allow printing, default_demo=1
             if argv[0]=='time':
@@ -133,8 +134,8 @@ if __name__ == '__main__':
             else:
                 args=[None,int(argv[0]),1]
         else:
-            # no timing information, allow printing, default to no demo
-            args=[None,0,0]
+            # no timing information, allow printing, default_demo=1
+            args=[None,0,1]
         main_fetching(args,init_time,logfile)
     except Exception as e:
         writefile(errfile,f"ERROR: {e}\n\n")

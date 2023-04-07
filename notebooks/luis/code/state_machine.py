@@ -43,6 +43,7 @@ class StateLogic(object):
         self.img = camera
         self.noprint = noprint
         self.init_time = init_time
+        print(logfile)
         self.logfile = logfile
         super().__init__()
         return
@@ -71,6 +72,7 @@ class StateLogic(object):
             # THE BALL'S PRESENCE
             if self.img.timer>=5: # NOTE: software simulation/testing change2 in self.img.regions.values():
                 if not self.noprint: 
+                    print(self.logfile,list(self.img.regions.values()))
                     writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
                     #print("Final pinout data: {}\n".format(self.control.readall()))              
                 self.img.timer = 0
@@ -360,9 +362,13 @@ class FSM(StateLogic):
     ACQUIRE = State('ACQUIRE')
     FETCH = State('FETCH')
     RETURN = State('RETURN')
-    def __init__(self,controls,noprint,camera,init_time,logfile):
+    def __init__(self,controls,noprint,camera,demo,init_time,logfile):
         self.ALRM = signal.SIGALRM
-        super().__init__(controls,noprint,camera,init_time,logfile)
+        self.noprint=noprint
+        self.demo=demo
+        self.init_time=init_time
+        self.logfile=logfile
+        super().__init__(controls,noprint,camera,demo,init_time,logfile)
     # Define a signal handler for when the CHASE or ACQUIRE states time out
     def signal_handler(self,signum,frame):
         raise TimeoutError

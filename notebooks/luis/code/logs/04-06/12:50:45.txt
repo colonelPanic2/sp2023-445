@@ -1,6 +1,0 @@
-Initializing camera...  Done.
-WAIT 
-Halting program...  
-
------- DESIGN TERMINATED ------
-
