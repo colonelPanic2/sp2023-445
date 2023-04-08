@@ -230,11 +230,14 @@ class camera(images):
         cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 0, 255), 2)
         cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
         if position_xy is not None:
-            region_map = [(0,0), (width//3,0),(2*width//3,0),(0,height//2),(width//3,height//2),(2*width//3,height//2)]
             block_index = map_to_block_index(position_xy)
-            top_right = region_map[block_index]
-            bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
-            cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
+            if block_index>=0 and block_index<6:
+                region_map = [(0,0), (width//3,0),(2*width//3,0),(0,height//2),(width//3,height//2),(2*width//3,height//2)]
+                top_right = region_map[block_index]
+                bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
+                cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
+            else:
+                print("Unexpected position value")
         # show the frame to our screen
         cv2.imshow("Camera", image)
         key = cv2.waitKey(1) & 0xFF
