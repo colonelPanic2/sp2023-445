@@ -43,7 +43,6 @@ class StateLogic(object):
         self.img = camera
         self.noprint = noprint
         self.init_time = init_time
-        print(logfile)
         self.logfile = logfile
         super().__init__()
         return
@@ -51,10 +50,10 @@ class StateLogic(object):
         try:
             return function(args)
         except TimeoutError:
+            signal.alarm(0)
             if not self.noprint: 
                 writefile(self.logfile,"{} timed out. Return to waiting point\n".format(self.get_state()))
             return -1
-
     # WAIT logic #
     def wait(self,args=None):
         time_data(args,'WAIT',1)
@@ -72,14 +71,12 @@ class StateLogic(object):
             # THE BALL'S PRESENCE
             if not all(dt<self.img.goal_timelimits['ball'] for dt in timers): # NOTE: software simulation/testing change2 in self.img.regions.values():
                 if not self.noprint: 
-                    print(self.logfile,list(self.img.regions.values()))
-                    writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
-                    #print("Final pinout data: {}\n".format(self.control.readall()))              
-                self.img.timer = 0
+                    writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))
+                for region in range(6):
+                    self.img.timers[region]=0
                 self.transition_chase()
                 return 2
         return -2
-    
     # CHASE logic #
     def chase(self,args=None):
         time_data(args,'CHASE',1)
@@ -94,7 +91,6 @@ class StateLogic(object):
             if self.chase_commands(positions)==3:
                 return 3
         return -2
-    
     # ACQUIRE logic #
     def acquire(self,args=None):
         time_data(args,'ACQUIRE',1)
@@ -116,8 +112,6 @@ class StateLogic(object):
         time_data(args,'FETCH',1)
         while self.get_state()=='FETCH':
             time_data(args,'FETCH',2)
-            # NOTE: These 2 functions still need to be 
-            # defined/implemented in 'img_proc.py'
             self.img.update_goal_position('user')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the user
@@ -136,8 +130,6 @@ class StateLogic(object):
         time_data(args,'RETURN',1)
         while self.get_state()=="RETURN":
             time_data(args,'RETURN',2)
-            # NOTE: These 2 functions still need to be
-            # defined/implemented in 'img_proc.py'
             self.img.update_goal_position('waitpoint')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the waiting
@@ -145,13 +137,10 @@ class StateLogic(object):
             # has been reached, then transition to the WAIT state
             # and tell the main loop to execute the "wait()" function.
             if self.return_commands(positions)==1:
+                print(self.get_state())
                 return 1
         return -2
-    
-    # NOTE: REFORMATTED THIS FUNCTION. FINISH THESE FUNCTIONS WHEN YOU GET
-    # BACK FROM GETTING YOUR HAIRCUT
-    # NOTE: STILL NEED TO ADD PI_INT INTERRUPT TO THE END OF EACH CALL FOR EVERY
-    # '*_commands' FUNCTION
+
     def chase_commands(self,positions):
         # No ball was detected in the camera view
         if positions==[]: 
@@ -190,8 +179,7 @@ class StateLogic(object):
             self.control.left_stop()
             self.control.pi_int()
             if not self.noprint: 
-                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
-                #print("Final pinout data: {}\n".format(self.control.readall()))              
+                writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
             self.transition_acquire()
             return 3
         # bottom-right
@@ -215,8 +203,7 @@ class StateLogic(object):
             self.control.pincers_stop()
             self.control.pi_int()
             if not self.noprint:
-                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
-                #print("Final pinout data: {}\n".format(self.control.readall()))              
+                writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
             self.transition_fetch()
             return 4
         # bottom-left
@@ -234,8 +221,7 @@ class StateLogic(object):
             self.control.left_stop()
             self.control.pi_int()
             if not self.noprint: 
-                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
-                #print("Final pinout data: {}\n".format(self.control.readall()))              
+                writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
             self.transition_chase()
             return 2
         self.control.pi_int()
@@ -286,8 +272,7 @@ class StateLogic(object):
             self.control.pincers_stop()
             self.control.pi_int()
             if not self.noprint: 
-                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
-                #print("Final pinout data: {}\n".format(self.control.readall()))              
+                writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
             self.transition_return()
             return 5
         # bottom-right
@@ -338,8 +323,7 @@ class StateLogic(object):
             self.control.left_stop()
             self.control.pi_int()
             if not self.noprint: 
-                writefile(self.logfile,"\nFinal region data: {}\n".format(list(self.img.regions.values())))
-                #print("Final pinout data: {}\n".format(self.control.readall()))              
+                writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
             self.transition_wait()
             return 1
         # bottom-right
@@ -363,47 +347,47 @@ class FSM(StateLogic):
     FETCH = State('FETCH')
     RETURN = State('RETURN')
     def __init__(self,controls,noprint,camera,demo,init_time,logfile):
-        self.ALRM = signal.SIGALRM
         self.noprint=noprint
         self.demo=demo
         self.init_time=init_time
         self.logfile=logfile
         super().__init__(controls,noprint,camera,demo,init_time,logfile)
-    # Define a signal handler for when the CHASE or ACQUIRE states time out
-    def signal_handler(self,signum,frame):
-        raise TimeoutError
     # Get the name of the current state of the FSM as a string
     def get_state(self):
         return StateInfo.get_current_state(self).name
-
+    def signal_handler(self,signum,frame):
+        raise TimeoutError
     # General state transition functions
     @event(from_states=(START, RETURN), to_state=(WAIT))
     def transition_wait(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
+        signal.alarm(0)
         return 0
     @event(from_states=(WAIT,ACQUIRE), to_state=(CHASE))
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
-        if platform=='linux':
-            signal.signal(self.ALRM, self.signal_handler)
-            signal.alarm(60)
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM,self.signal_handler)
+        signal.alarm(5) # NOTE: Remember to change back to 60!
         # *Other pre-processing logic before changing to next state* # 
         return 0
     @event(from_states=(CHASE), to_state=(ACQUIRE))
     def transition_acquire(self,some_variables=None):
         # If we stay in the ACQUIRE state for 30 secs, enter RETURN state. (only works on Linux)
-        if platform=='linux':
-            signal.signal(signal.SIGALRM, self.signal_handler)
-            signal.alarm(30)
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM,self.signal_handler)
+        signal.alarm(5) # NOTE: Remember to change back to 30!
         # *Other pre-processing logic before changing to next state* # 
         return 0
     @event(from_states=(ACQUIRE), to_state=(FETCH))
     def transition_fetch(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
+        signal.alarm(0)
         return 0
     @event(from_states=(CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
+        signal.alarm(0)
         return 0
 
 

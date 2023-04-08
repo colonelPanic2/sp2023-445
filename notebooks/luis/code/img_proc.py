@@ -1,20 +1,13 @@
 import threading,time,signal,cv2,imutils,traceback,argparse,queue
 from collections import deque
 import numpy as np
-import torch # NOTE: torch is not particularly useful at the moment
-from helpers import writefile
+from helpers import writefile,map_to_block_index
 TL = 0 # Top-left region of camera view
 TM = 1 # Top-middle region of camera view
 TR = 2 # Top-right region of camera view
 BL = 3 # Bottom-left region of camera view
 BM = 4 # Bottom-middle region of camera view
 BR = 5 # Bottom-right region of camera view
-
-def map_to_block_index(col_row,dims=(720,1278)):
-    col_blocks = dims[1]//3
-    row_blocks = dims[0]//2
-    region_index = (col_row[0]//col_blocks) + 3*(col_row[1]>=row_blocks)
-    return region_index
 class images:
     def __init__(self,cam,demo=True):
         global sigint
@@ -31,7 +24,7 @@ class images:
     # def demo_(self,demo):
     #     self.demo = demo
     #     self.cam.demo = demo
-    def update_goal_position(self,goal,t0=None):
+    def update_goal_position(self,goal,t0=None,manual=None):
         global sigint
         # NOTE: at the moment, the position only accounts for the center of the ball.
         position_xy,image = self.camera_.getimage() #torch.randint(0,255,(1280,720)) # Get image from camera
@@ -45,7 +38,7 @@ class images:
         else:
             goal_positions = [6] # The goal is not in the image
         if self.demo:
-            self.camera_.show_tracking(image,position_xy)
+            self.camera_.show_tracking(image,position_xy,manual)
         # # NOTE: Saving this part for non-hardware simulation/testing
         # # ball_position>5 is the case in which the ball isn't on the screen   
         # goal_positions = random.choices(list(range(7)),k=2) 
@@ -216,14 +209,9 @@ class camera(images):
             if not self.q.empty():
                 image = self.q.get()
                 center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
-                # update the points queue
-                # self.pts.appendleft(center)
-                # if self.demo:
-                #     # NOTE: comment this out when not doing a demo
-                #     self.show_tracking(image)
                 break
         return center,image
-    def show_tracking(self,image,position_xy):
+    def show_tracking(self,image,position_xy,manual=None):
         #delete this for final project
         # loop over the set of tracked points
         # for i in range(1, len(self.pts)):
@@ -251,8 +239,8 @@ class camera(images):
         cv2.imshow("Camera", image)
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
-        if key == ord("q"):
-            self.destroy()
+        if manual is None and key == ord("q"):
+            self.destroy()            
         return
 # Special function for testing the image processing code directly
 def iproc_main():

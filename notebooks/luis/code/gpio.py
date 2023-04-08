@@ -41,15 +41,16 @@ except:
 from tkinter import *
 from helpers import writefile
 import time
-
+from img_proc import images,camera
 class motors:
     # Initialize the object with a set of GPIO pin #s for the Pi
-    def __init__(self,manual=1,init_time=None,logfile=None,pins=[7,0,1,5,6,12,13,19]):
+    def __init__(self,manual=1,init_time=None,logfile=None,cam=None,demo=None,pins=[7,0,1,5,6,12,13,19]):
         self.init_time=init_time
         self.logfile = logfile
         self.pins=pins # the default pins are all GPIO pins
         self.instruction={'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0}
         self.manual_mode=manual
+        self.demo=demo
         io.setmode(io.BCM)
         io.setwarnings(False)
         for pin in self.pins:
@@ -59,10 +60,40 @@ class motors:
             else:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
-        if self.manual_mode!=0:
+        if self.manual_mode!=0 and self.demo:
+            print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
+         While in manual control mode, the fetching subsystem is inactive.\n\
+         However, the camera's input to the fetching subsystem is visible.\n\
+         The small, blank window represents the input manual input to the \n\
+         control subsystem. Click on this window and press the Q,W,E,A,S,D\n\
+         keys in order to issue orders to the control subsystem. These \n\
+         controls will be saved in {self.logfile}. The region currently\n\
+         occupied by the ball and the time that the ball has spent in that \n\
+         region can be seen in the terminal.\n\n\
+         Pressing CTRL+C in either the blank window or the terminal will\n\
+         exit manual control mode and switch to auto control mode, which\n\
+         is where the fetching subsystem is used. In auto mode, more \n\
+         outputs information about the state of the program, such as state, \n\
+         will be written to {self.logfile}. The timing data visible in the\n\
+         terminal during manual control mode will be visible, in auto control\n\
+         mode, but only when the FSM is in the 'WAIT' state.\n\n\
+         In order to completely end the program, press CTRL+C in the\n\
+         terminal or 'q' in the 'Camera' window.\n\n")
+            self.cam = cam
+            self.cam.start_read()
             self.manual_setup()
         return
-    
+    def video_update(self):
+        try:
+            self.cam.update_goal_position('ball',time.time(),manual=self.manual_mode)
+            self.root.after(25,self.video_update)
+        except KeyboardInterrupt:
+            self.manual_mode = 0
+            for i in range(len(self.pins)):
+                self.setpin(i,0)
+            writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
+            self.root.destroy()
+            writefile(self.logfile,"\nManual control mode exited successfully!\n\n")
     ### MANUAL MOTOR CONTROLS: uses functions from MOTOR CONTROLS
     # Sets up manual motor controls
     def manual_setup(self):
@@ -85,6 +116,8 @@ class motors:
         self.root.bind('e',self.pincers_close)
         self.root.bind('<KeyRelease-e>',self.pincers_off_close)
         self.root.bind('<Control-c>',self.exit_)
+        if self.demo:
+            self.video_update()
         self.root.mainloop()
         return
         
@@ -94,7 +127,7 @@ class motors:
         self.right_move()
         self.setpin(7,1)
         if self.manual_mode!=0 and self.instruction['FORWARD']==0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7),+' ')
+            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
         time.sleep(0.005)
         self.setpin(7,0)
         if self.manual_mode!=0 and self.instruction['FORWARD']==0:
@@ -157,7 +190,7 @@ class motors:
         time.sleep(0.005)
         self.setpin(7,0)
         if self.manual_mode!=0 and self.instruction['LEFT']==0:
-            writefile(self.logfile,self.read(7)+' ')
+            writefile(self.logfile,self.read(7)+'\n')
         self.instruction['LEFT'] = 1
     # Stop moving the right motors if the car isn't moving forward OR backward
     def left_(self,event=None):
@@ -256,7 +289,7 @@ class motors:
         time.sleep(0.005)
         self.setpin(7,0)
         if self.manual_mode!=0:
-            self.writefile(self.logfile,self.read(7)+'\n')
+            writefile(self.logfile,self.read(7)+'\n')
         return
     # If the user terminates manual control mode, return to auto control mode
     def exit_(self,event=None):

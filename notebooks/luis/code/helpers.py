@@ -1,23 +1,24 @@
-import subprocess,cv2,time,threading,signal,sys
-import torch,argparse,imutils
+import subprocess,cv2,time,threading,signal,sys,argparse,imutils
 from queue import Queue
 from collections import deque
 from imutils.video import VideoStream
 import matplotlib.pyplot as plt
 import numpy as np
-# functions to run yinshuo's image processing code
-# def ball_detect():
-#     subprocess.run(['python3','yinshuo_img_proc/ball_detect.py'],shell=True)
-# My functions 
+
+def writefile(fname,content):
+    with open(fname,'a') as f:
+        f.write(content)
+def map_to_block_index(col_row,dims=(720,1278)):
+    col_blocks = dims[1]//3
+    row_blocks = dims[0]//2
+    region_index = (col_row[0]//col_blocks) + 3*(col_row[1]>=row_blocks)
+    return region_index
 def ls(dir=None):
     if dir==None:
         dirs = str(subprocess.check_output(["ls"]))[2:-1].split("\\n")[:-1]
     else:
         dirs = str(subprocess.check_output(["ls",dir]))[2:-1].split("\\n")[:-1]
     return dirs
-def writefile(fname,content):
-    with open(fname,'a') as f:
-        f.write(content)
 def logdata():
     current_time = time.localtime()
     current_date = time.strftime("%Y-%m-%d", current_time)[5:]
@@ -35,6 +36,12 @@ def logdata():
     init_time = time.time()
     return (init_time,logfile,errfile)
 
+
+
+
+
+# NOTE: All of the following code is outdated, but it still implements some features that 
+# might be useful later. So I've decided to keep it even though it isn't in use right now.
 def pytorch_scan(img):
     img = torch.from_numpy(img)
     R,G,B = torch.transpose(img,-3,-1).transpose(1,2).reshape((3,-1))
@@ -52,7 +59,6 @@ def pytorch_scan(img):
     result = torch.count_nonzero(filtered!=0)>torch.tensor(n_pixels)# and torch.count_nonzero(G_filtered!=0)>torch.tensor(n_pixels)
     # print(f"Runtime (seconds): {time.perf_counter()-t0:0.4f}     Result: {result}")
     return (result,img)
-# Handles all operations/data involving the camera
 class Camera:
     def __init__(self):
         self.child_thread_id=None

@@ -1,7 +1,7 @@
-from gpio import motors
-from state_machine import *
 from sys import platform
 import sys,subprocess,traceback
+from gpio import motors
+from state_machine import *
 from helpers import ls,writefile,logdata
 from img_proc import images,camera
 def signal_handler(signum,frame):
@@ -21,9 +21,8 @@ def main(args,init_time,logfile):
     # When testing on the Pi, remove the "platform=='win32' condition"
     # The win32 condition is there because I couldn't make tkinter work
     # with WSL.
-    controls = motors(manual=(1 & (platform=='win32')),init_time=init_time,logfile=logfile) 
     cam = camera(demo,init_time,logfile)
-    print(logfile)
+    controls = motors(manual=1,init_time=init_time,logfile=logfile,cam=cam,demo=demo) 
     fsm = FSM(controls,noprint,cam,demo,init_time,logfile)
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -45,11 +44,16 @@ def main(args,init_time,logfile):
             t0 = t1
         if not noprint:
             writefile(logfile,fsm.get_state()+' ')
-        if next_function_index>=1 and not fsm.get_state()=='RETURN':
+        if next_function_index>=1:
             next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
         else:
             writefile(logfile,f"ERROR: Failed in {fsm.get_state()}. Returning to waiting point\n")
-            fsm.ret()    
+            if not noprint and fsm.get_state()!='RETURN':
+                writefile(logfile,f"Attempting to transition to RETURN from {fsm.get_state()}...")
+                fsm.transition_return()
+            if not noprint:
+                writefile(logfile,'\n'+fsm.get_state()+' ')
+            next_function_index = fsm.ret()    
         
 
 def main_fetching(args,init_time,logfile):
@@ -102,7 +106,6 @@ def main_fetching(args,init_time,logfile):
                 else:
                     writefile(logfile,"Done.\n")
                     its += 1
-
     else:
         try:
             main([None,args[1],1],init_time,logfile)
@@ -138,8 +141,8 @@ if __name__ == '__main__':
             args=[None,0,1]
         main_fetching(args,init_time,logfile)
     except Exception as e:
-        writefile(errfile,f"ERROR: {e}\n\n")
+        writefile(errfile,f"ERROR: {e}\n")
         backtrace = traceback.format_exc()
         writefile(errfile,backtrace + '\n')
-        writefile(logfile,f'\n\nRan for {time.time()-init_time:.2f} seconds.\n\n')
+        writefile(errfile,f'Ran for {time.time()-init_time:.2f} seconds.\n\n')
         print(f"Error, traceback, or warning generated in {errfile}")
