@@ -5,7 +5,28 @@ try:
     import RPi.GPIO as io
 except:
     from helpers.helpers import  io
-# Motor pin mapping:
+
+# NOTE: UNTESTED MICROCONTROLLER COMMS CODE (needs to be fully implemented)
+def callback_SIGUSR1(channel):
+    print("The call back will be used to invoke the \n\
+          'microcontroller_signal_handler' function \n\
+          in main.py somehow")  
+    ## TODO: The following lines are 2 different options that I found 
+    ## for sending a signal to the current process. I don't know which
+    ## one works, if any.
+    # signal.raise_signal(signal.SIGUSR1)
+    # os.kill(os.getpid(),signal.SIGUSR1)
+def callback_SIGUSR2(channel):
+    print("The call back will be used to invoke the \n\
+          'microcontroller_signal_handler' function \n\
+          in main.py somehow")  
+    ## TODO: The following lines are 2 different options that I found for 
+    ## sending a signal to the current process. I don't know which
+    ## one works, if any.
+    # signal.raise_signal(signal.SIGUSR2)
+    # os.kill(os.getpid(),signal.SIGUSR2)
+
+# Control pin mapping:
 # self.pins[0]: 1 to reverse the left motors, 0 else
 # self.pins[1]: 1 to move the left motors, 0 else
 # self.pins[2]: 1 to reverse the right motors, 0 else
@@ -14,27 +35,6 @@ except:
 # self.pins[5]: 1 to close the pincers, 0 to open them
 # self.pins[6]: 1 to activate manual mode, 0 to keep auto mode
 # self.pins[7]: 1 to trigger the Pi_INT on the microcontroller, 0 else
-
-# NOTE: UNTESTED MICROCONTROLLER COMMS CODE (needs to be fully implemented)
-def callback_SIGUSR1(channel):
-    print("The call back will be used to invoke the \
-          'microcontroller_signal_handler' function \
-          in main.py somehow")  
-    ## TODO: The following lines are 2 different options that I found 
-    ## for sending a signal to the current process. I don't know which
-    ## one works, if any.
-    # signal.raise_signal(signal.SIGUSR1)
-    # os.kill(os.getpid(),signal.SIGUSR1)
-def callback_SIGUSR2(channel):
-    print("The call back will be used to invoke the \
-          'microcontroller_signal_handler' function \
-          in main.py somehow")  
-    ## TODO: The following lines are 2 different options that I found for 
-    ## sending a signal to the current process. I don't know which
-    ## one works, if any.
-    # signal.raise_signal(signal.SIGUSR2)
-    # os.kill(os.getpid(),signal.SIGUSR2)
-
 class control:
     # Initialize the object with a set of GPIO pin #s for the Pi
     def __init__(self,cam,gettimes,noprint,demo,manual,init_time,logfile):

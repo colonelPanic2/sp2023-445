@@ -427,3 +427,21 @@ AttributeError: type object 'remote_gpio' has no attribute 'BCM'
 
 Ran for 0.71 seconds.
 
+Time: 21.53.09
+ERROR: name 'args' is not defined
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 109, in <module>
+    main_fetching(args,init_time,logfile)
+NameError: name 'args' is not defined
+
+Ran for 0.00 seconds.
+
+Time: 21.53.28
+ERROR: invalid literal for int() with base 10: 'time'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 108, in <module>
+    args = [None,int(argv[0]),1,int(argv[1])]
+ValueError: invalid literal for int() with base 10: 'time'
+
+Ran for 0.00 seconds.
+

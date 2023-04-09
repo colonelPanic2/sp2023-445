@@ -1,5 +1,4 @@
-import threading,time,signal,cv2,imutils,traceback,argparse,queue
-from collections import deque
+import threading,cv2,imutils,traceback,queue
 import numpy as np
 from helpers.helpers import writefile,map_to_block_index
 TL = 0 # Top-left region of camera view

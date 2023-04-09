@@ -1,0 +1,3 @@
+Initializing camera...  Done.
+
+Halting program...  Done.
