@@ -1,49 +1,9 @@
-from pystatemachine import *
-import signal
-from sys import platform
-from img_proc import *
-import random # Temporary means of testing state transitions
-import time
-import numpy as np
-from helpers import writefile
-
-
-# def global_signal_handler(signum,frame):
-#     raise KeyboardInterrupt
-def time_data(args,state,step):
-    global T0_SET
-    global T0
-    global T1
-    global time_data_dict
-    if args=='time':
-        if step==0:
-            T0_SET = 0
-            T0 = 0
-            T1 = 0
-            time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
-            # signal.signal(signal.SIGINT, global_signal_handler)
-            # signal.alarm(runtime) # trigger an alarm at 'runtime' seconds
-        elif step==1:
-            T0_SET = 0
-        elif step==2:
-            T1 = time.perf_counter()
-            if T0_SET==1:
-                time_data_dict[state].append(round(1000*(T1-T0),2))
-            T0=time.perf_counter()
-            T0_SET = 1
-        elif step==3:
-            for state,runtimes in list(time_data_dict.items()):
-                time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state]))
-            return time_data_dict
-    return 0
+import signal,time
+from helpers.pystatemachine import *
+from helpers.helpers import writefile
 
 class StateLogic(object):
-    def __init__(self,control=None,noprint=1,camera=None,demo_=True,init_time=None,logfile=None):
-        self.control = control
-        self.img = camera
-        self.noprint = noprint
-        self.init_time = init_time
-        self.logfile = logfile
+    def __init__(self):
         super().__init__()
         return
     def function_call(self,function,args=None):
@@ -56,9 +16,9 @@ class StateLogic(object):
             return -1
     # WAIT logic #
     def wait(self,args=None):
-        time_data(args,'WAIT',1)
+        #time_data(args,'WAIT',1)
         while self.get_state()=='WAIT': 
-            time_data(args,'WAIT',2)
+            #time_data(args,'WAIT',2)
             # If the ball has been in the same region(s) of the camera view
             # for some amount of time, then transition to the CHASE state and
             # tell the main loop to execute the "chase()" function.
@@ -79,9 +39,9 @@ class StateLogic(object):
         return -2
     # CHASE logic #
     def chase(self,args=None):
-        time_data(args,'CHASE',1)
+        #time_data(args,'CHASE',1)
         while self.get_state()=='CHASE':
-            time_data(args,'CHASE',2)
+            #time_data(args,'CHASE',2)
             self.img.update_goal_position('ball')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the ball
@@ -93,9 +53,7 @@ class StateLogic(object):
         return -2
     # ACQUIRE logic #
     def acquire(self,args=None):
-        time_data(args,'ACQUIRE',1)
         while self.get_state()=='ACQUIRE':
-            time_data(args,'ACQUIRE',2)
             self.img.update_goal_position('ball')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller when the ball is inside of 
@@ -109,9 +67,7 @@ class StateLogic(object):
         return -2
     # FETCH logic #
     def fetch(self,args=None):
-        time_data(args,'FETCH',1)
         while self.get_state()=='FETCH':
-            time_data(args,'FETCH',2)
             self.img.update_goal_position('user')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the user
@@ -127,9 +83,7 @@ class StateLogic(object):
         return -2
     # RETURN logic #
     def ret(self,args=None):
-        time_data(args,'RETURN',1)
         while self.get_state()=="RETURN":
-            time_data(args,'RETURN',2)
             self.img.update_goal_position('waitpoint')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the waiting
@@ -137,10 +91,12 @@ class StateLogic(object):
             # has been reached, then transition to the WAIT state
             # and tell the main loop to execute the "wait()" function.
             if self.return_commands(positions)==1:
-                print(self.get_state())
                 return 1
         return -2
-
+    # The following 3 functions define the fetching subsystem's output to
+    # the control subsytem for the CHASE, ACQUIRE, FETCH, and RETURN states, 
+    # respectively. They also decide when to transition between states 
+    # (given that the current state hasn't failed yet)
     def chase_commands(self,positions):
         # No ball was detected in the camera view
         if positions==[]: 
@@ -178,6 +134,7 @@ class StateLogic(object):
             self.control.right_stop()
             self.control.left_stop()
             self.control.pi_int()
+            self.INT_start_time=time.time()
             if not self.noprint: 
                 writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
             self.transition_acquire()
@@ -187,6 +144,7 @@ class StateLogic(object):
             self.control.right_move(1)
             self.control.left_stop()
         self.control.pi_int()
+        self.INT_start_time=time.time()
         return 0
     def acquire_commands(self,positions):
         if 4 in positions:
@@ -194,6 +152,7 @@ class StateLogic(object):
             self.control.left_stop()
             self.control.pincers_move(1)
             self.control.pi_int()
+            self.INT_start_time=time.time()
             # NOTE: I don't know how we're going to confirm that the ball has
             # been acquired successfully, so my temporary solution is to wait 
             # for 2 seconds after telling the microcontroller to close the pincers,
@@ -230,7 +189,6 @@ class StateLogic(object):
         # NOTE: I don't know how we're planning on setting up the tag for the user,
         # so I don't know how to set up the commands for the fetch protocol. For now,
         # The fetch commands are basically just a copy-paste of the acquire commands.
-
         # User wasn't detected in the camera view
         if positions==[]: 
             # The user may be off the left side of the camera view
@@ -285,7 +243,6 @@ class StateLogic(object):
         # NOTE: Since the waiting point flag will be at about the same height as the 
         # ball, it makes sense that the return commands should look similar to the 
         # acquire commands in the final version of the code. 
-
         # The waiting point wasn't detected in the camera view
         if positions==[]: 
             # The waiting point may be off the left side of the camera view
@@ -332,12 +289,16 @@ class StateLogic(object):
             self.control.left_stop()  
         self.control.pi_int()
         return 0
+    def manual_off(self):
+        self.control.manual=0
+        self.img.manual=0
+        self.img.camera_.manual=0
+        self.manual=0
 
-# RETURN to WAIT:
+# RETURN if...
 # -  CHASE   for 60 seconds
 # -  ACQUIRE for 30 seconds
 # -  FETCH   successful
-
 @acts_as_state_machine
 class FSM(StateLogic):
     START = State('START',initial=True)
@@ -346,15 +307,26 @@ class FSM(StateLogic):
     ACQUIRE = State('ACQUIRE')
     FETCH = State('FETCH')
     RETURN = State('RETURN')
-    def __init__(self,controls,noprint,camera,demo,init_time,logfile):
-        self.noprint=noprint
-        self.demo=demo
-        self.init_time=init_time
-        self.logfile=logfile
-        super().__init__(controls,noprint,camera,demo,init_time,logfile)
+    def __init__(self,control,camera,gettimes,noprint,demo,manual,init_time,logfile):
+        signal.signal(signal.SIGALRM,self.signal_handler)
+        self.control = control
+        self.img = camera
+        self.gettimes=gettimes
+        self.noprint = noprint
+        self.demo = demo
+        self.manual = manual
+        self.init_time = init_time
+        self.logfile = logfile
+        self.manual_off() # This object is can only be initialized in auto control mode.
+        self.INT_start_time = 0
+        self.proximity = 0
+        super().__init__()
     # Get the name of the current state of the FSM as a string
     def get_state(self):
         return StateInfo.get_current_state(self).name
+    # If the timer expires in CHASE or ACQUIRE, then catch the resulting
+    # SIGALRM signal and raise a TimeoutError which will be caught in the 
+    # 'function_call' function defined in StateLogic.
     def signal_handler(self,signum,frame):
         raise TimeoutError
     # General state transition functions
@@ -367,7 +339,6 @@ class FSM(StateLogic):
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        signal.signal(signal.SIGALRM,self.signal_handler)
         signal.alarm(5) # NOTE: Remember to change back to 60!
         # *Other pre-processing logic before changing to next state* # 
         return 0
@@ -389,5 +360,3 @@ class FSM(StateLogic):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
         return 0
-
-

@@ -1,3 +1,10 @@
+import time
+from tkinter import *
+from helpers.helpers import writefile
+try: 
+    import RPi.GPIO as io
+except:
+    from helpers.helpers import  io
 # Motor pin mapping:
 # self.pins[0]: 1 to reverse the left motors, 0 else
 # self.pins[1]: 1 to move the left motors, 0 else
@@ -8,49 +15,37 @@
 # self.pins[6]: 1 to activate manual mode, 0 to keep auto mode
 # self.pins[7]: 1 to trigger the Pi_INT on the microcontroller, 0 else
 
-# Class for remote testing of the manual controls. Mimics
-# the behavior of the RPi.GPIO library functions
-class remote_gpio:
-    def __init__(self,pins=[7,0,1,5,6,12,13,19]):
-        self.pins=pins
-        self.pinout={}
-        self.OUT = 'OUT'
-        self.BCM = 'BCM'
-        self.mode = None
-        self.warnings=None
-        return
-    def setmode(self,mode):
-        self.mode=mode
-    def setwarnings(self,val):
-        self.warnings=val
-    def setup(self,pin,direction):
-        return
-    def output(self,pin,val):
-        self.pinout[pin]=val
-    def input(self,pin):
-        return self.pinout[pin]
+# NOTE: UNTESTED MICROCONTROLLER COMMS CODE (needs to be fully implemented)
+def callback_SIGUSR1(channel):
+    print("The call back will be used to invoke the \
+          'microcontroller_signal_handler' function \
+          in main.py somehow")  
+    ## TODO: The following lines are 2 different options that I found 
+    ## for sending a signal to the current process. I don't know which
+    ## one works, if any.
+    # signal.raise_signal(signal.SIGUSR1)
+    # os.kill(os.getpid(),signal.SIGUSR1)
+def callback_SIGUSR2(channel):
+    print("The call back will be used to invoke the \
+          'microcontroller_signal_handler' function \
+          in main.py somehow")  
+    ## TODO: The following lines are 2 different options that I found for 
+    ## sending a signal to the current process. I don't know which
+    ## one works, if any.
+    # signal.raise_signal(signal.SIGUSR2)
+    # os.kill(os.getpid(),signal.SIGUSR2)
 
-# If the test is being done on the Pi, the library for the
-# GPIO pins (RPi.GPIO) will be imported. Otherwise, we can 
-# still test for the expected values of the pins  
-try: 
-    import RPi.GPIO as io
-    
-except:
-    io = remote_gpio()
-from tkinter import *
-from helpers import writefile
-import time
-from img_proc import images,camera
-class motors:
+class control:
     # Initialize the object with a set of GPIO pin #s for the Pi
-    def __init__(self,manual=1,init_time=None,logfile=None,cam=None,demo=None,pins=[7,0,1,5,6,12,13,19]):
+    def __init__(self,cam,gettimes,noprint,demo,manual,init_time,logfile):
+        self.gettimes=gettimes
+        self.noprint=noprint
+        self.demo=demo
+        self.manual=manual
         self.init_time=init_time
         self.logfile = logfile
-        self.pins=pins # the default pins are all GPIO pins
+        self.pins=[7,0,1,5,6,12,13,19, 16,26] # the default pins are all GPIO pins
         self.instruction={'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0}
-        self.manual_mode=manual
-        self.demo=demo
         io.setmode(io.BCM)
         io.setwarnings(False)
         for pin in self.pins:
@@ -60,16 +55,20 @@ class motors:
             else:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
-        if self.manual_mode!=0 and self.demo:
+        # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
+        io.setup(self.pins[8],io.IN,pull_up_down=io.PUD_DOWN)
+        io.add_event_detect(self.pins[8],io.RISING,callback=callback_SIGUSR1)
+        io.setup(self.pins[9],io.IN,pull_up_down=io.PUD_DOWN)
+        io.add_event_detect(self.pins[9],io.RISING,callback=callback_SIGUSR2)
+        if self.manual!=0:
             print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
          While in manual control mode, the fetching subsystem is inactive.\n\
          However, the camera's input to the fetching subsystem is visible.\n\
          The small, blank window represents the input manual input to the \n\
          control subsystem. Click on this window and press the Q,W,E,A,S,D\n\
-         keys in order to issue orders to the control subsystem. These \n\
-         controls will be saved in {self.logfile}. The region currently\n\
-         occupied by the ball and the time that the ball has spent in that \n\
-         region can be seen in the terminal.\n\n\
+         keys in order to issue orders to the control subsystem. The region\n\
+         currently occupied by the ball and the time that the ball has spent\n\
+         in that region can be seen in the terminal.\n\n\
          Pressing CTRL+C in either the blank window or the terminal will\n\
          exit manual control mode and switch to auto control mode, which\n\
          is where the fetching subsystem is used. In auto mode, more \n\
@@ -83,12 +82,13 @@ class motors:
             self.cam.start_read()
             self.manual_setup()
         return
+    # Show the camera view in a window while in manual control mode.
     def video_update(self):
         try:
-            self.cam.update_goal_position('ball',time.time(),manual=self.manual_mode)
-            self.root.after(25,self.video_update)
+            self.cam.update_goal_position('ball',time.time())
+            self.root.after(25,self.video_update) # Call this function every 25ms
         except KeyboardInterrupt:
-            self.manual_mode = 0
+            self.manual = 0
             for i in range(len(self.pins)):
                 self.setpin(i,0)
             writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
@@ -126,12 +126,14 @@ class motors:
         self.left_move()
         self.right_move()
         self.setpin(7,1)
-        if self.manual_mode!=0 and self.instruction['FORWARD']==0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0 and self.instruction['FORWARD']==0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0 and self.instruction['FORWARD']==0:
-            writefile(self.logfile,self.read(7)+"\n")
+        if self.manual!=0 and self.instruction['FORWARD']==0:
+            # writefile(self.logfile,self.read(7)+"\n")
+            print(self.read(7))
         self.instruction['FORWARD'] = 1
         return
     # Stop if the car isn't moving left OR right
@@ -143,12 +145,14 @@ class motors:
         if not self.instruction['LEFT']:
             self.right_stop()
         self.setpin(7,1)
-        if self.manual_mode!=0 and self.instruction['FORWARD']==0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0 and self.instruction['FORWARD']==0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0 and self.instruction['FORWARD']==0:
-            writefile(self.logfile,self.read(7)+'\n')
+        if self.manual!=0 and self.instruction['FORWARD']==0:
+            # writefile(self.logfile,self.read(7)+'\n')
+            print(self.read(7))
     # Make the car turn right
     def right(self,event=None):
         if self.instruction['BACK'] and not self.instruction['LEFT']:
@@ -157,12 +161,14 @@ class motors:
         else:
             self.left_move()
         self.setpin(7,1)
-        if self.manual_mode!=0 and self.instruction['RIGHT']==0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0 and self.instruction['RIGHT']==0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0 and self.instruction['RIGHT']==0:
-            writefile(self.logfile,self.read(7)+'\n')
+        if self.manual!=0 and self.instruction['RIGHT']==0:
+            # writefile(self.logfile,self.read(7)+'\n')
+            print(self.read(7))
         self.instruction['RIGHT'] = 1
     # Stop moving the left motors if the car isn't moving forward OR backward
     def right_(self,event=None):
@@ -170,12 +176,14 @@ class motors:
         if not self.instruction['FORWARD'] and not self.instruction['BACK']:
             self.left_stop()
             self.setpin(7,1)
-            if self.manual_mode!=0 and self.instruction['RIGHT']==0:
-                writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+            if self.manual!=0 and self.instruction['RIGHT']==0:
+                # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+                print(self.readall()[:-3]+" "+self.read(7),end=' ')
             time.sleep(0.005)
             self.setpin(7,0)
-            if self.manual_mode!=0 and self.instruction['RIGHT']==0:
-                writefile(self.logfile,self.read(7)+'\n')
+            if self.manual!=0 and self.instruction['RIGHT']==0:
+                # writefile(self.logfile,self.read(7)+'\n')
+                print(self.read(7))
         return
     # Make the car turn left
     def left(self,event=None):
@@ -185,12 +193,14 @@ class motors:
         else: 
             self.right_move()
         self.setpin(7,1)
-        if self.manual_mode!=0 and self.instruction['LEFT']==0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0 and self.instruction['LEFT']==0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0 and self.instruction['LEFT']==0:
-            writefile(self.logfile,self.read(7)+'\n')
+        if self.manual!=0 and self.instruction['LEFT']==0:
+            # writefile(self.logfile,self.read(7)+'\n')
+            print(self.read(7))
         self.instruction['LEFT'] = 1
     # Stop moving the right motors if the car isn't moving forward OR backward
     def left_(self,event=None):
@@ -198,12 +208,14 @@ class motors:
         if not self.instruction['FORWARD'] and not self.instruction['BACK']:
             self.right_stop()
             self.setpin(7,1)
-            if self.manual_mode!=0 and self.instruction['LEFT']==0:
-                writefile(self.logfile,self.readall()[:-1] + " " + self.read(7)+' ')
+            if self.manual!=0 and self.instruction['LEFT']==0:
+                # writefile(self.logfile,self.readall()[:-3] + " " + self.read(7)+' ')
+                print(self.readall()[:-3]+" "+self.read(7),end=' ')
             time.sleep(0.005)
             self.setpin(7,0)
-            if self.manual_mode!=0 and self.instruction['LEFT']==0:
-                writefile(self.logfile,self.read(7)+'\n')
+            if self.manual!=0 and self.instruction['LEFT']==0:
+                # writefile(self.logfile,self.read(7)+'\n')
+                print(self.read(7))
     # Make the car move backwards
     def back(self,event=None):
         if self.instruction['LEFT'] and not self.instruction['RIGHT']:
@@ -214,12 +226,14 @@ class motors:
             self.right_move(1)
             self.left_move(1)
         self.setpin(7,1)
-        if self.manual_mode!=0 and self.instruction['BACK']==0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0 and self.instruction['BACK']==0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0 and self.instruction['BACK']==0:
-            writefile(self.logfile,self.read(7)+'\n')
+        if self.manual!=0 and self.instruction['BACK']==0:
+            # writefile(self.logfile,self.read(7)+'\n')
+            print(self.read(7))
         self.instruction['BACK'] = 1
 
     # Stop if the car isn't moving left OR right
@@ -231,24 +245,28 @@ class motors:
         if not self.instruction['RIGHT']:
             self.left_stop()
         self.setpin(7,1)
-        if self.manual_mode!=0 and self.instruction['BACK']==0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0 and self.instruction['BACK']==0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0 and self.instruction['BACK']==0:
-            writefile(self.logfile,self.read(7)+'\n')
+        if self.manual!=0 and self.instruction['BACK']==0:
+            # writefile(self.logfile,self.read(7)+'\n')
+            print(self.read(7))
         return
     # Open the pincers
     def pincers_open(self,event=None):
         if self.instruction['CLOSE']==0:
             self.pincers_move(0)
             self.setpin(7,1)
-            if self.manual_mode!=0 and self.instruction['OPEN']==0:
-                writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+            if self.manual!=0 and self.instruction['OPEN']==0:
+                # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+                print(self.readall()[:-3]+" "+self.read(7),end=' ')
             time.sleep(0.005)
             self.setpin(7,0)
-            if self.manual_mode!=0 and self.instruction['OPEN']==0:
-                writefile(self.logfile,self.read(7)+'\n')
+            if self.manual!=0 and self.instruction['OPEN']==0:
+                # writefile(self.logfile,self.read(7)+'\n')
+                print(self.read(7))
             self.instruction['OPEN'] = 1
         return
     # Close the pincers
@@ -256,12 +274,14 @@ class motors:
         if self.instruction['OPEN']==0:
             self.pincers_move(1)
             self.setpin(7,1)
-            if self.manual_mode!=0 and self.instruction['CLOSE']==0:
-                writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+            if self.manual!=0 and self.instruction['CLOSE']==0:
+                # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+                print(self.readall()[:-3]+" "+self.read(7),end=' ')
             time.sleep(0.005)
             self.setpin(7,0)
-            if self.manual_mode!=0 and self.instruction['CLOSE']==0:
-                writefile(self.logfile,self.read(7)+'\n')
+            if self.manual!=0 and self.instruction['CLOSE']==0:
+                # writefile(self.logfile,self.read(7)+'\n')
+                print(self.read(7))
             self.instruction['CLOSE'] = 1  
         return
     # If the pincers are not being used, then set the control outputs to 0
@@ -271,12 +291,14 @@ class motors:
             self.setpin(4,0)
             self.setpin(5,0)
         self.setpin(7,1)
-        if self.manual_mode!=0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0:
-            writefile(self.logfile,self.read(7)+'\n')
+        if self.manual!=0:
+            # writefile(self.logfile,self.read(7)+'\n')
+            print(self.read(7))
         return
     def pincers_off_close(self,event=None):
         self.instruction['CLOSE'] = 0
@@ -284,21 +306,25 @@ class motors:
             self.setpin(4,0)
             self.setpin(5,0)
         self.setpin(7,1)
-        if self.manual_mode!=0:
-            writefile(self.logfile,self.readall()[:-1]+" "+self.read(7)+' ')
+        if self.manual!=0:
+            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
+            print(self.readall()[:-3]+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual_mode!=0:
-            writefile(self.logfile,self.read(7)+'\n')
+        if self.manual!=0:
+            # writefile(self.logfile,self.read(7)+'\n')
+            print(self.read(7))
         return
     # If the user terminates manual control mode, return to auto control mode
     def exit_(self,event=None):
-        self.manual_mode = 0
+        self.manual = 0
         for i in range(len(self.pins)):
             self.setpin(i,0)
         writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
+        print("Exiting manual controls.\nFinal output: "+self.readall())
         self.root.destroy()
-        writefile(self.logfile,"\nManual control mode exited successfully!\n\n")
+        writefile(self.logfile,"Manual control mode exited successfully!\n\n")
+        print("Manual control mode exited successfully!\n\n")
         
     ### MOTOR CONTROLS: use functions from the GENERAL FUNCTIONS to set output signals
     # Make the left motors move forward (reverse=0) or backward (reverse=1).

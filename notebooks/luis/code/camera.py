@@ -1,29 +1,91 @@
 import threading,time,signal,cv2,imutils,traceback,argparse,queue
 from collections import deque
 import numpy as np
-from img_proc import images
-class camera(images):
-    def __init__(self,demo=True):
+from helpers.helpers import writefile,map_to_block_index
+TL = 0 # Top-left region of camera view
+TM = 1 # Top-middle region of camera view
+TR = 2 # Top-right region of camera view
+BL = 3 # Bottom-left region of camera view
+BM = 4 # Bottom-middle region of camera view
+BR = 5 # Bottom-right region of camera view
+class images:
+    def __init__(self,cam):
         global sigint
         sigint = False
-        print("Initializing camera...")
+        self.camera_ = cam
+        # This array will keep track of where the ball is located in the 6 regions
+        # Of the camera view. The ball can be in multiple regions at once.
+        self.regions= { TL:0, TM:0, TR:0, BL:0, BM:0, BR:0 }
+        self.last_regions = list(self.regions.values())
+        self.goal_timelimits = {'ball':5,'user':2,'waitpoint':2} # I don't expect that we'll need time limits for the user or the waitpoint
+        self.timers = {TL:0, TM:0, TR:0, BL:0, BM:0, BR:0}
+        self.camera_.start_read()
+        return
+    def update_goal_position(self,goal,t0=None):
+        global sigint
+        position_xy,image = self.camera_.getimage()
+        if position_xy is not None:
+            region_index = map_to_block_index(position_xy,image.shape)
+            goal_positions = [region_index]
+        else:
+            goal_positions = [6] # The goal is not in the image
+        if self.camera_.demo:
+            self.camera_.show_tracking(image,position_xy)
+        # Only update the last location of the goal if the goal 
+        # is currently in the camera view
+        if not (all(pos==6 for pos in goal_positions)):# or all(pos>5 for pos in goal_positions)):
+            self.last_regions = list(self.regions.values())
+        # Update the current goal position
+        if t0 is None:
+            for i in range(6):
+                if i in goal_positions:
+                    self.regions[i]+= 1
+                else:
+                    self.regions[i]=0
+            return None
+        # Update the current goal position and the current timer
+        else:
+            for i in range(6):
+                if self.timers[i]==0:
+                    self.timers[i]=t0
+                if i in goal_positions:
+                    self.regions[i]+= 1
+                    if not self.camera_.noprint:
+                        print('\033[F\033[K' * 1, end = "")
+                        print(f"{i}: {t0-self.timers[i]:.2f}")
+                else:
+                    self.regions[i]=0
+                    self.timers[i] = t0
+            return [t0-self.timers[i] for i in range(6)]
+    # Get the relevant positional data for the goal.
+    def get_goal_regions(self):
+        # If the goal is in the camera view, then find the region(s) where it is present
+        if not all(self.regions[i]==0 for i in range(6)):
+            return [i for i in range(6) if self.regions[i]>0]
+        # Otherwise, get the last known region(s) in which the goal was in the camera view
+        return [j for j in range(6) if self.last_regions[j]>0]
+        
+class camera(images):
+    def __init__(self,noprint,demo,manual,init_time,logfile):
+        writefile(logfile,"Initializing camera...  ")
+        global sigint
+        self.capture_t = None
+        sigint = False
+        self.noprint=noprint
+        self.demo=demo
+        self.manual=manual
+        self.init_time = init_time
+        self.logfile = logfile
         self.cam = cv2.VideoCapture(0,cv2.CAP_V4L2)
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
-        self.demo = demo 
-        # self.ap = argparse.ArgumentParser()
-        # self.ap.add_argument("-v", "--video",
-        #     help="path to the (optional) video file")
-        #     #was 64
-        # self.ap.add_argument("-b", "--buffer", type=int, default=32,
-        #     help="max buffer size")
-        # self.args = vars(self.ap.parse_args())
         self.greenLower = (30, 86, 46)
         self.greenUpper = (100, 255, 255)
-        # self.pts = deque(maxlen=self.args["buffer"])
         self.q = queue.Queue()
         super().__init__(self)
-        print("Done.\n")
+        writefile(self.logfile,"Done.\n")
+    # NOTE: This function is still unused because I don't quite know how to use
+    # it. I'll have to ask yinhuo for help with integrating this into the design.
     def detect_shape(self,c):
         shape = "empty"
         peri = cv2.arcLength(c, True)
@@ -46,18 +108,28 @@ class camera(images):
             (x, y, w, h) = cv2.boundingRect(approx)
             shape = "circle"
         return shape
+    # Spawn a camera thread to constantly read the camera's input.
     def start_read(self):
         self.capture_t = threading.Thread(target=self.camera_read)
         self.capture_t.start()
-    # NOTE: May need to be more complex later
+    # Tell the camera thread to end smoothly, and raise a KeyboardInterupt
+    # that will be caught in the 'main_fetching' function in main.py
     def destroy(self):
         global sigint
-        print("\nHalting program...")
+        writefile(self.logfile,"\nHalting program...  ")
         sigint = True
-        cv2.destroyAllWindows()
+        self.cam.release()
+        if self.demo:
+            cv2.destroyAllWindows()
+        # NOTE: This doesn't seem to be causing any problems, but it doesn't seem to 
+        # help much, either. There is an occasional error added as a manual entry near 
+        # the end of the err.txt log for 04-08.
+        with threading.Lock():
+            if self.capture_t is not None and self.capture_t.is_alive():
+                self.capture_t.join()
         raise KeyboardInterrupt
-        # Extra teardown work?
-        print("Done.")
+    # (camera thread) Read an image from the camera and store it in 
+    # a queue to be accessed by the main thread in the 'getimage' function.
     def camera_read(self):
         global sigint
         while sigint==False:
@@ -123,6 +195,9 @@ class camera(images):
                             (0, 255, 255), 2)
                         cv2.circle(frame, center, 5, (0, 0, 255), -1)
         return center
+    # (main thread) Get an image from the camera thread by accessing a shared queue, and
+    # use it to determine the (x,y) coordinates of the center of the goal. If the goal
+    # isn't detected in the image, then center = None.
     def getimage(self):
         global sigint
         center = None
@@ -131,68 +206,66 @@ class camera(images):
             if not self.q.empty():
                 image = self.q.get()
                 center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
-                # update the points queue
-                # self.pts.appendleft(center)
-                if self.demo:
-                    # NOTE: comment this out when not doing a demo
-                    self.show_tracking(image)
                 break
         return center,image
-    def show_tracking(self,image):
-        #delete this for final project
-        # loop over the set of tracked points
-        # for i in range(1, len(self.pts)):
-        #     # if either of the tracked points are None, ignore
-        #     # them
-        #     if self.pts[i - 1] is None or self.pts[i] is None:
-        #         continue
-            # otherwise, compute the thickness of the line and
-            # draw the connecting lines
-            # thickness = int(np.sqrt(self.args["buffer"] / float(i + 1)) * 2.5)
-            # cv2.line(image, self.pts[i - 1], self.pts[i], (0, 0, 255), thickness)
+    # Draw the lines showing the 6 regions of the image. If the goal is in a region,
+    # then outline the region in green. Otherwise, outline it in red.
+    def show_tracking(self,image,position_xy):
         # Draw lines to show the regions of the screen
         cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
         height, width = image.shape[:2]
-        cv2.line(image, (width//3, 0), (width//3, height), (0, 255, 0), 2)
-        cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 255, 0), 2)
-        cv2.line(image, (0, height//2), (width, height//2), (0, 255, 0), 2)
-
+        cv2.line(image, (width//3, 0), (width//3, height), (0, 0, 255), 2)
+        cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 0, 255), 2)
+        cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
+        if position_xy is not None:
+            block_index = map_to_block_index(position_xy)
+            if block_index>=0 and block_index<6:
+                region_map = [        (0,0),        (width//3,0),        (2*width//3,0),\
+                              (0,height//2),(width//3,height//2),(2*width//3,height//2)]
+                top_right = region_map[block_index]
+                bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
+                cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
+            else:
+                print(f"\nUnexpected position value: map_to_block_index({position_xy}) -> {block_index}\n")
         # show the frame to our screen
         cv2.imshow("Camera", image)
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
-        if key == ord("q"):
-            self.destroy()
+        if self.manual==0 and key == ord("q"):
+            self.destroy()            
         return
-def signal_handler(signum,frame):
-    global sigint
-    sigint = True
-    global cam
-    cam.destroy()
-    exit(0)
+    
 
-def main():
+
+
+
+
+# Special function for testing the image processing code directly
+def iproc_main():
     global sigint
-    sigint = False
-    global image
-    image = None
-    global cam
-    signal.signal(signal.SIGINT, signal_handler)
-    cam = camera()
+    sigint=False
+    import time
+    from helpers.helpers import logdata
+    init_time,logfile,errfile = logdata()
+    iproc = camera(demo=True,init_time=init_time,logfile=logfile)
     try:
-        cam.start_read()
-        # In the final version, we would call some main program that would
-        # eventually call cam.getimage(), instead of the following while loop
         while sigint==False:
             t0 = time.perf_counter()
-            cam.getimage()
+            iproc.update_goal_position('ball',time.time())
+            iproc.get_goal_regions()
             if sigint==False:
                 print('\033[F\033[K' * 1, end = "")
                 print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
+    except KeyboardInterrupt:
+        writefile(logfile,'Done.')
+        print("\nTerminated by user input.")
     except Exception as e:
-        cam.destroy() # Free the threads
-        print("ERROR:",e,end='\n\n')
-        traceback.print_exc()
+        iproc.destroy() # Free the threads
+        writefile(errfile,f"ERROR: {e}\n\n")
+        backtrace = traceback.format_exc()
+        writefile(errfile,backtrace + '\n')
+        return 0
+
 
 if __name__=='__main__':
-    main()
+    iproc_main()
