@@ -1,0 +1,3 @@
+Initializing camera...  Done.
+
+Terminated by user input.

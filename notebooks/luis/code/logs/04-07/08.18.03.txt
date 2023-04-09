@@ -1,0 +1,4 @@
+Initializing camera...  Done.
+
+04-07
+Terminated by user input.
