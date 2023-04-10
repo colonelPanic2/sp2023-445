@@ -45,7 +45,7 @@ class control:
         self.init_time=init_time
         self.logfile = logfile
         self.pins=[7,0,1,5,6,12,13,19, 16,26] # the default pins are all GPIO pins
-        self.instruction={'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0}
+        self.instruction={'CAMSWITCH':0,'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0}
         io.setmode(io.BCM)
         io.setwarnings(False)
         for pin in self.pins:
@@ -103,6 +103,8 @@ class control:
         self.root.geometry("64x64")
         self.app = Frame(self.root)
         self.app.grid()
+        self.root.bind('c',self.camswitch)
+        self.root.bind('KeyRelease-c',self.camswitch_)
         self.root.bind('w',self.forward)
         self.root.bind('<KeyRelease-w>',self.forward_)
         self.root.bind('a',self.left)
@@ -120,11 +122,20 @@ class control:
             self.video_update()
         self.root.mainloop()
         return
-        
+    def camswitch(self,event=None):
+        if self.instruction['CAMSWITCH']==0:
+            self.cam.camera_.camswitch()
+        self.instruction['CAMSWITCH']=1
+    def camswitch_(self,event=None):
+        self.instruction['CAMSWITCH']=0
     # Make the car move forward
     def forward(self,event=None):
-        self.left_move()
-        self.right_move()
+        if self.cam.index==0:
+            self.left_move()
+            self.right_move()
+        else: 
+            self.left_move(1)
+            self.right_move(1)
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['FORWARD']==0:
             # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
@@ -155,11 +166,18 @@ class control:
             print(self.read(7))
     # Make the car turn right
     def right(self,event=None):
-        if self.instruction['BACK'] and not self.instruction['LEFT']:
-            self.right_stop()
-            self.left_move(1) # only move the left motors backward
+        if self.cam.index==0:
+            if self.instruction['BACK'] and not self.instruction['LEFT']:
+                self.right_stop()
+                self.left_move(1) # only move the left motors backward
+            else:
+                self.left_move()
         else:
-            self.left_move()
+            if self.instruction['BACK'] and not self.instruction['LEFT']:
+                self.left_stop()
+                self.right_move() # only move the 'left' motors 'backward'
+            else:
+                self.right_move(1)            
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['RIGHT']==0:
             # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
@@ -174,7 +192,10 @@ class control:
     def right_(self,event=None):
         self.instruction['RIGHT'] = 0
         if not self.instruction['FORWARD'] and not self.instruction['BACK']:
-            self.left_stop()
+            if self.cam.index==0:
+                self.left_stop()
+            else:
+                self.right_stop()
             self.setpin(7,1)
             if self.manual!=0 and self.instruction['RIGHT']==0:
                 # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
@@ -187,11 +208,18 @@ class control:
         return
     # Make the car turn left
     def left(self,event=None):
-        if self.instruction['BACK'] and not self.instruction['RIGHT']:
-            self.left_stop()
-            self.right_move(1) # only move the right motors backward
-        else: 
-            self.right_move()
+        if self.cam.index==0:
+            if self.instruction['BACK'] and not self.instruction['RIGHT']:
+                self.left_stop()
+                self.right_move(1) # only move the right motors backward
+            else: 
+                self.right_move()
+        else:
+            if self.instruction['BACK'] and not self.instruction['RIGHT']:
+                self.right_stop()
+                self.left_move() # only move the 'right' motors 'backward'
+            else: 
+                self.left_move(1)            
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['LEFT']==0:
             # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
@@ -206,7 +234,10 @@ class control:
     def left_(self,event=None):
         self.instruction['LEFT'] = 0
         if not self.instruction['FORWARD'] and not self.instruction['BACK']:
-            self.right_stop()
+            if self.cam.index==0:
+                self.right_stop()
+            else:
+                self.left_stop()
             self.setpin(7,1)
             if self.manual!=0 and self.instruction['LEFT']==0:
                 # writefile(self.logfile,self.readall()[:-3] + " " + self.read(7)+' ')
@@ -218,13 +249,22 @@ class control:
                 print(self.read(7))
     # Make the car move backwards
     def back(self,event=None):
-        if self.instruction['LEFT'] and not self.instruction['RIGHT']:
-            self.right_move(1) # reverse only the right motors
-        elif self.instruction['RIGHT'] and not self.instruction['LEFT']:
-            self.left_move(1) # reverse only the left motors
+        if self.cam.index==0:
+            if self.instruction['LEFT'] and not self.instruction['RIGHT']:
+                self.right_move(1) # reverse only the right motors
+            elif self.instruction['RIGHT'] and not self.instruction['LEFT']:
+                self.left_move(1) # reverse only the left motors
+            else:
+                self.right_move(1)
+                self.left_move(1)
         else:
-            self.right_move(1)
-            self.left_move(1)
+            if self.instruction['LEFT'] and not self.instruction['RIGHT']:
+                self.left_move() # 'reverse' only the 'right' motors
+            elif self.instruction['RIGHT'] and not self.instruction['LEFT']:
+                self.right_move() # 'reverse' only the 'left' motors
+            else:
+                self.right_move()
+                self.left_move()            
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['BACK']==0:
             # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')

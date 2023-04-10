@@ -1,5 +1,5 @@
 import threading,cv2,imutils,traceback,queue
-import numpy as np
+from sys import platform
 from helpers.helpers import writefile,map_to_block_index
 TL = 0 # Top-left region of camera view
 TM = 1 # Top-middle region of camera view
@@ -75,7 +75,9 @@ class camera(images):
         self.manual=manual
         self.init_time = init_time
         self.logfile = logfile
-        self.cam = cv2.VideoCapture(0,cv2.CAP_V4L2)
+        self.index = 0 # NOTE: Keep track of the camera being used (front=0, back=1)
+        cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
+        self.cam = cv2.VideoCapture(self.index,cam_backends[int(platform=='linux')])
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
         self.greenLower = (30, 86, 46)
@@ -83,6 +85,21 @@ class camera(images):
         self.q = queue.Queue()
         super().__init__(self)
         writefile(self.logfile,"Done.\n")
+    def camswitch(self):
+        global sigint
+        if self.capture_t!=None:
+            sigint=True
+            self.capture_t.join()
+            sigint=False
+            self.cam.release()
+            while not self.q.empty():
+                _ = self.q.get()
+            self.index = int(not self.index)
+            cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
+            self.cam = cv2.VideoCapture(self.index,cam_backends[int(platform=='linux')])            
+            self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+            self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
+            self.start_read()
     # NOTE: This function is still unused because I don't quite know how to use
     # it. I'll have to ask yinhuo for help with integrating this into the design.
     def detect_shape(self,c):

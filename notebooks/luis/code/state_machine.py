@@ -185,6 +185,7 @@ class StateLogic(object):
             return 2
         self.control.pi_int()
         return 0
+    # TODO: Reverse the control signals for 'fetch_commands' and 'return_commands'
     def fetch_commands(self,positions):
         # NOTE: I don't know how we're planning on setting up the tag for the user,
         # so I don't know how to set up the commands for the fetch protocol. For now,
@@ -193,21 +194,29 @@ class StateLogic(object):
         if positions==[]: 
             # The user may be off the left side of the camera view
             if not all(region==0 for region in self.img.last_regions[::3]):
-                self.control.right_move()
-                self.control.left_stop()
+                # self.control.right_move()
+                self.control.left_move(1)
+                # self.control.left_stop()
+                self.control.right_stop()
             # The user may be off the right side of the camera view
             elif not all(region==0 for region in self.img.last_regions[2::3]):
-                self.control.right_step()
-                self.control.left_move()
+                # self.control.right_stop()
+                self.control.left_stop()
+                # self.control.left_move()
+                self.control.right_move(1)
             # The user may be behind the camera view, or they might be
             # too far to be detected (NOTE: this may need extra logic later).
             else:
-                self.control.right_move(1)
+                # self.control.right_move(1)
                 self.control.left_move()
+                # self.control.left_move()
+                self.control.right_move(1)
         # top-left
         elif 0 in positions:
-            self.control.right_move()
-            self.control.left_stop()
+            # self.control.right_move()
+            self.control.left_move(1)
+            # self.control.left_stop()
+            self.control.right_stop()
         # top-middle
         elif 1 in positions:
             self.control.right_move()
