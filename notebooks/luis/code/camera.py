@@ -247,8 +247,11 @@ class camera(images):
         cv2.imshow("Camera", image)
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
-        if self.manual==0 and key == ord("q"):
-            self.destroy()            
+        if self.manual==0:
+            if key == ord("q"):
+                self.destroy()
+            elif key == ord('c') :
+                self.camswitch()
         return
     
 
@@ -262,24 +265,26 @@ def iproc_main():
     sigint=False
     import time
     from helpers.helpers import logdata
-    init_time,logfile,errfile = logdata()
-    iproc = camera(demo=True,init_time=init_time,logfile=logfile)
+    # init_time,logfile,errfile = logdata()
+    iproc = camera(             noprint=0,demo=1,manual=0,init_time=0,logfile='logfile')
     try:
         while sigint==False:
             t0 = time.perf_counter()
             iproc.update_goal_position('ball',time.time())
             iproc.get_goal_regions()
-            if sigint==False:
-                print('\033[F\033[K' * 1, end = "")
-                print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
+            # if sigint==False:
+            #     print('\033[F\033[K' * 1, end = "")
+            #     print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
     except KeyboardInterrupt:
-        writefile(logfile,'Done.')
+        writefile('logfile','Done.')
         print("\nTerminated by user input.")
+        import os,signal
+        os.kill(os.getpid(),signal.SIGTERM)
     except Exception as e:
         iproc.destroy() # Free the threads
-        writefile(errfile,f"ERROR: {e}\n\n")
+        writefile('errfile',f"ERROR: {e}\n\n")
         backtrace = traceback.format_exc()
-        writefile(errfile,backtrace + '\n')
+        writefile('errfile',backtrace + '\n')
         return 0
 
 
