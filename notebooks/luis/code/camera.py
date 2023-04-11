@@ -264,14 +264,17 @@ def iproc_main():
     global sigint
     sigint=False
     import time
-    from helpers.helpers import logdata
-    # init_time,logfile,errfile = logdata()
-    iproc = camera(             noprint=0,demo=1,manual=0,init_time=0,logfile='logfile')
+    from gpio import control
+
+    cam = camera(                    noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
+    ctrl = control(cam,gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
+    ctrl.manual=0
+    cam.manual=0
     try:
         while sigint==False:
             t0 = time.perf_counter()
-            iproc.update_goal_position('ball',time.time())
-            iproc.get_goal_regions()
+            cam.update_goal_position('ball',time.time())
+            cam.get_goal_regions()
             # if sigint==False:
             #     print('\033[F\033[K' * 1, end = "")
             #     print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
@@ -281,7 +284,7 @@ def iproc_main():
         import os,signal
         os.kill(os.getpid(),signal.SIGTERM)
     except Exception as e:
-        iproc.destroy() # Free the threads
+        cam.destroy() # Free the threads
         writefile('errfile',f"ERROR: {e}\n\n")
         backtrace = traceback.format_exc()
         writefile('errfile',backtrace + '\n')

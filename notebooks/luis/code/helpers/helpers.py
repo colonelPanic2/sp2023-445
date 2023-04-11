@@ -1,9 +1,10 @@
-import subprocess,cv2,time,threading,signal,sys,argparse,imutils,torch
+import subprocess,cv2,time,threading,signal,sys,argparse,imutils,torch,shlex
 from queue import Queue
 from collections import deque
 from imutils.video import VideoStream
 import matplotlib.pyplot as plt
 import numpy as np
+platform=sys.platform
 # Class for remote testing of the manual controls. Mimics
 # the behavior of the RPi.GPIO library functions. Don't
 # try to implement any of these functions. They are only
@@ -54,10 +55,17 @@ def map_to_block_index(col_row,dims=(1080,1920)):
 # *** Doesn't seem to work with '..' directory.
 def ls(dir=None):
     if dir==None:
-        dirs = str(subprocess.check_output(["ls"]))[2:-1].split("\\n")[:-1]
+        dirs = str(subprocess.check_output(shlex.split(["dir","ls"][int(platform=='linux')])))[2:-1].split("\\n")[:-1]
     else:
-        dirs = str(subprocess.check_output(["ls",dir]))[2:-1].split("\\n")[:-1]
+        dirs = str(subprocess.check_output(shlex.split(["dir","ls"][int(platform=='linux')])))[2:-1].split("\\n")[:-1]
     return dirs
+# Clear the terminal
+def clear():
+    clear_command = shlex.split(['cls','clear'][int(platform=='linux')])
+    if platform=='linux':
+        subprocess.run(clear_command)
+    else:
+        subprocess.run(clear_command,shell=True)
 # Creates an error and a logging file. Returns the paths to each file as strings
 # along withe the time of creation.
 def logdata():

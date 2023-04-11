@@ -1,6 +1,6 @@
-import time
+import time,subprocess
 from tkinter import *
-from helpers.helpers import writefile
+from helpers.helpers import writefile,platform,clear
 try: 
     import RPi.GPIO as io
 except:
@@ -104,7 +104,7 @@ class control:
         self.app = Frame(self.root)
         self.app.grid()
         self.root.bind('c',self.camswitch)
-        self.root.bind('KeyRelease-c',self.camswitch_)
+        self.root.bind('<KeyRelease-c>',self.camswitch_)
         self.root.bind('w',self.forward)
         self.root.bind('<KeyRelease-w>',self.forward_)
         self.root.bind('a',self.left)
@@ -118,6 +118,7 @@ class control:
         self.root.bind('e',self.pincers_close)
         self.root.bind('<KeyRelease-e>',self.pincers_off_close)
         self.root.bind('<Control-c>',self.exit_)
+        self.root.bind('<l>',self.clear_terminal)
         if self.demo:
             self.video_update()
         self.root.mainloop()
@@ -417,6 +418,9 @@ class control:
         for pin_idx in range(len(self.pins)):
             outputs+=self.read(pin_idx)
         return outputs
+    def clear_terminal(self,event=None):
+        clear()
+
 
     
 
