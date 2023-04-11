@@ -1,4 +1,4 @@
-import subprocess,cv2,time,threading,signal,sys,argparse,imutils,torch,shlex
+import subprocess,cv2,time,threading,signal,sys,argparse,imutils,shlex
 from queue import Queue
 from collections import deque
 from imutils.video import VideoStream
@@ -125,23 +125,6 @@ def time_data(args,state,step):
 
 # NOTE: All of the following code is outdated, but it still implements some features that 
 # might be useful later. So I've decided to keep it even though it isn't in use right now.
-def pytorch_scan(img):
-    img = torch.from_numpy(img)
-    R,G,B = torch.transpose(img,-3,-1).transpose(1,2).reshape((3,-1))
-    t0 = time.perf_counter()
-    # Check for 'r<b*0.6 and r>b*0.5' for each pair of R,B values from the same pixel
-    R_filtered = torch.where((R>B*0.5) & (R<B*0.6),R,0)
-    # Check for 'g<b*1.05 and g>b*0.95' for each pair of G,B values from the same pixel
-    G = torch.where((G>B*0.95) & (G<B*1.05), G,0)
-    # filter out black/white pixels
-    GB_filtered = torch.where((G>=30) & (G<=245) & (B>=30) & (B<=245), 1,0)
-    filtered = R_filtered*GB_filtered
-    # If the number of nonzero values in 'filtered' is above some minimum threshold value, 
-    # then there is a ball in the frame
-    n_pixels = 0
-    result = torch.count_nonzero(filtered!=0)>torch.tensor(n_pixels)# and torch.count_nonzero(G_filtered!=0)>torch.tensor(n_pixels)
-    # print(f"Runtime (seconds): {time.perf_counter()-t0:0.4f}     Result: {result}")
-    return (result,img)
 class Camera:
     def __init__(self):
         self.child_thread_id=None
@@ -244,38 +227,36 @@ class Camera:
         tic = time.perf_counter()
         img = cv2.imread(dir+filename)
         # print(filename+":")
-        result = pytorch_scan(img)
-        return 
         #note: go from below to top is generally faster
-        # x,y,pval = 0,0,img[0,0]
-        # for i in range(img.shape[0])[::-1]:
-        #     # i = img.shape[0] - a - 1
-        #     #break flag
-        #     flag = False
-        #     for j in range(img.shape[1]):
-        #         r = img[i, j, 0]
-        #         g = img[i, j, 1]
-        #         b = img[i, j, 2]
-        #         #black filter
-        #         if g < 30 or b < 30:
-        #             continue
-        #         #white filter
-        #         if g > 245 or b > 245:
-        #             continue
-        #         #if r < g * 0.6 and r > g * 0.4:
-        #         if r<b*0.6 and r>b*0.5:
-        #             if g<b*1.05 and g>b*0.95:
-        #                 x,y,pval = i,j,img[i,j]
-        #                 flag = True
-        #                 break
-        #     if flag == True:
-        #         break
-        # toc = time.perf_counter()
-        # # print(f"Runtime (seconds): {toc- tic:0.4f}     Result: {flag}")			
-        # # print("{}: {}".format(filename,flag))
-        # # if flag==True:
-        # #     print(x,y,pval)
-        # return (result[0],flag,img,result[1])
+        x,y,pval = 0,0,img[0,0]
+        for i in range(img.shape[0])[::-1]:
+            # i = img.shape[0] - a - 1
+            #break flag
+            flag = False
+            for j in range(img.shape[1]):
+                r = img[i, j, 0]
+                g = img[i, j, 1]
+                b = img[i, j, 2]
+                #black filter
+                if g < 30 or b < 30:
+                    continue
+                #white filter
+                if g > 245 or b > 245:
+                    continue
+                #if r < g * 0.6 and r > g * 0.4:
+                if r<b*0.6 and r>b*0.5:
+                    if g<b*1.05 and g>b*0.95:
+                        x,y,pval = i,j,img[i,j]
+                        flag = True
+                        break
+            if flag == True:
+                break
+        toc = time.perf_counter()
+        # print(f"Runtime (seconds): {toc- tic:0.4f}     Result: {flag}")			
+        # print("{}: {}".format(filename,flag))
+        # if flag==True:
+        #     print(x,y,pval)
+        return (result[0],flag,img,result[1])
     def balltrack(self):
         global sigint
         sigint = False
@@ -405,12 +386,3 @@ if __name__=='__main__':
         else:
             process = 2 # Manually choose the process (edge_detect requires no extra args)
         main(process,time_s)
-### Sanity check: example of working torch transformation
-###                   R,G,B
-# t = torch.tensor([\
-#                   [[1,2,3],\
-#                    [4,5,6]],\
-#                   [[7,8,9],\
-#                    [10,11,12]]\
-#                  ])
-# print(torch.transpose(t,-3,-1).transpose(1,2).reshape((3,-1)))
