@@ -1,0 +1,8 @@
+Initializing camera...  Done.
+Exiting manual controls.
+Final output: 0000000000
+Manual control mode exited successfully!
+
+WAIT 
+Halting program...  
+Halting program...  
