@@ -250,7 +250,7 @@ class camera(images):
         if self.manual==0:
             if key == ord("q"):
                 self.destroy()
-            elif key == ord('c') :
+            elif self.demo==1 and key == ord('c') :
                 self.camswitch()
         return
     
@@ -268,6 +268,8 @@ def iproc_main():
 
     cam = camera(                    noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
     ctrl = control(cam,gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
+    # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
+    # after which we will no longer be in manual control mode
     ctrl.manual=0
     cam.manual=0
     try:

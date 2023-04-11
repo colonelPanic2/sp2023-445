@@ -68,7 +68,10 @@ class control:
          control subsystem. Click on this window and press the Q,W,E,A,S,D\n\
          keys in order to issue orders to the control subsystem. The region\n\
          currently occupied by the ball and the time that the ball has spent\n\
-         in that region can be seen in the terminal.\n\n\
+         in that region can be seen in the terminal. You can clear the text\n\
+         in the terminal by pressing 'l', and you can switch cameras by\n\
+         pressing 'c'. YOU MUST HAVE AT LEAST 2 CAMERAS CONNECTED TO YOUR\n\
+         COMPUTER WHEN TRYING TO SWITCH CAMERAS, OR THE PROGRAM WILL CRASH.\n\n\
          Pressing CTRL+C in either the blank window or the terminal will\n\
          exit manual control mode and switch to auto control mode, which\n\
          is where the fetching subsystem is used. In auto mode, more \n\
