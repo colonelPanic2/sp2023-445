@@ -256,7 +256,7 @@ class Camera:
         # print("{}: {}".format(filename,flag))
         # if flag==True:
         #     print(x,y,pval)
-        return (result[0],flag,img,result[1])
+        return (flag,img)
     def balltrack(self):
         global sigint
         sigint = False
