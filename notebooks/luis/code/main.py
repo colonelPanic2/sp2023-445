@@ -58,6 +58,7 @@ def main_fetching(args,init_time,logfile):
     # by the program's response to user input and that the program 
     # exited normally
     except KeyboardInterrupt:
+        print("\nDone.\nTerminated by user input.")
         writefile(logfile,"Done.\n")
     return 0
 

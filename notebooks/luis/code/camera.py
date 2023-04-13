@@ -132,7 +132,8 @@ class camera(images):
     # that will be caught in the 'main_fetching' function in main.py
     def destroy(self):
         global sigint
-        writefile(self.logfile,"\nHalting program...  ")
+        print("\nHalting program...")
+        writefile(self.logfile,"\n\nHalting program...  ")
         sigint = True
         self.cam.release()
         if self.demo:
@@ -265,7 +266,6 @@ def iproc_main():
     sigint=False
     import time
     from gpio import control
-
     cam = camera(                    noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
     ctrl = control(cam,gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
     # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
