@@ -1,4 +1,4 @@
-notebooks/luis/code/__pycache__
-notebooks/luis/code/helpers/__pycache__
-notebooks/luis/code/logs
+notebooks/luis/code/__pycache__/*
+notebooks/luis/code/helpers/__pycache__/*
+notebooks/luis/code/logs/*
 
