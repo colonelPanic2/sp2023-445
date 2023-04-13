@@ -282,14 +282,7 @@ def iproc_main():
             #     print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
     except KeyboardInterrupt:
         writefile('cam-dot-py-logfile','Done.')
-        print("\nTerminated by user input.")
-        import os,signal
-        if platform=='linux':
-            sig = signal.SIGINT
-        else:
-            sig = signal.SIGTERM
-        print("Done.")
-        os.kill(os.getpid(),sig)
+        print("\nDone.\nTerminated by user input.")
     except Exception as e:
         cam.destroy() # Free the threads
         writefile('errfile',f"ERROR: {e}\n\n")
