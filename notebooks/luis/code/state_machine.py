@@ -1,6 +1,6 @@
 import signal,time
 from helpers.pystatemachine import *
-from helpers.helpers import writefile
+from helpers.helpers import writefile,time_data
 
 class StateLogic(object):
     def __init__(self):
@@ -16,9 +16,9 @@ class StateLogic(object):
             return -1
     # WAIT logic #
     def wait(self,args=None):
-        #time_data(args,'WAIT',1)
+        time_data(args,'WAIT',1)
         while self.get_state()=='WAIT': 
-            #time_data(args,'WAIT',2)
+            time_data(args,'WAIT',2)
             # If the ball has been in the same region(s) of the camera view
             # for some amount of time, then transition to the CHASE state and
             # tell the main loop to execute the "chase()" function.
@@ -33,9 +33,9 @@ class StateLogic(object):
         return -2
     # CHASE logic #
     def chase(self,args=None):
-        #time_data(args,'CHASE',1)
+        time_data(args,'CHASE',1)
         while self.get_state()=='CHASE':
-            #time_data(args,'CHASE',2)
+            time_data(args,'CHASE',2)
             self.img.update_goal_position('ball')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the ball
@@ -47,7 +47,9 @@ class StateLogic(object):
         return -2
     # ACQUIRE logic #
     def acquire(self,args=None):
+        time_data(args,'ACQUIRE',1)
         while self.get_state()=='ACQUIRE':
+            time_data(args,'ACQUIRE',2)
             self.img.update_goal_position('ball')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller when the ball is inside of 
@@ -61,7 +63,9 @@ class StateLogic(object):
         return -2
     # FETCH logic #
     def fetch(self,args=None):
+        time_data(args,'FETCH',1)
         while self.get_state()=='FETCH':
+            time_data(args,'FETCH',2)
             self.img.update_goal_position('user')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the user
@@ -77,7 +81,9 @@ class StateLogic(object):
         return -2
     # RETURN logic #
     def ret(self,args=None):
+        time_data(args,'RETURN',1)
         while self.get_state()=="RETURN":
+            time_data(args,'RETURN',2)
             self.img.update_goal_position('waitpoint')
             positions = self.img.get_goal_regions()
             # Tell the microcontroller the position of the waiting

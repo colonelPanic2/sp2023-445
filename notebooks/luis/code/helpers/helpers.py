@@ -121,7 +121,15 @@ def time_data(args,state,step):
             return microcontroller_time_data_list
     return 0
 
-
+def timedata_files(init_time):
+    dirs = ls()
+    if "timedata" not in dirs:
+        subprocess.run(shlex.split("mkdir timedata"))
+    dirs = ls('timedata')
+    if "timedata.csv" not in dirs:
+        subprocess.run(shlex.split("touch timedata/timedata.csv"))
+    # number of times "main" was called, runtime of call to main
+    writefile('timedata/timedata.csv',f"{1},{round(time.time()-init_time,2)}\n")
 
 
 # NOTE: All of the following code is outdated, but it still implements some features that 

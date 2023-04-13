@@ -1,5 +1,5 @@
 import sys,traceback,signal,time
-from helpers.helpers import writefile,logdata,time_data
+from helpers.helpers import writefile,logdata,time_data,timedata_files
 from camera import camera
 from gpio import control
 from state_machine import FSM
@@ -12,6 +12,9 @@ def main(gettimes,noprint,demo,manual,init_time,logfile):
     cam   = camera(             noprint,demo,manual,init_time,logfile)
     ctrl = control(cam,gettimes,noprint,demo,manual,init_time,logfile) 
     fsm = FSM(ctrl,cam,gettimes,noprint,demo,manual,init_time,logfile)
+    # If gettimes=='time', then set up for runtime data collection
+    # for each of the state function loops
+    time_data(gettimes,'',0)
     # Set up the signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
@@ -42,6 +45,7 @@ def main(gettimes,noprint,demo,manual,init_time,logfile):
             writefile(logfile,f"ERROR: Failed in {fsm.get_state()}. Returning to waiting point\n")
             if not noprint:
                 writefile(logfile,f"Attempting to transition to RETURN from {fsm.get_state()}...\n")
+            time_data(gettimes,fsm.get_state(),2)
             fsm.transition_return()
             if not noprint:
                 writefile(logfile,fsm.get_state()+' ')
@@ -54,6 +58,17 @@ def main_fetching(args,init_time,logfile):
     try:
         gettimes,noprint,demo,manual=args[:4]
         main(gettimes,noprint,demo,manual,init_time,logfile)
+        if gettimes is not None and gettimes=='time':
+            timedata_files(init_time)
+            time_data_dict = time_data(gettimes,'',3)
+            print("\n -------- RUNTIME DATA ACQUIRED --------")
+            for state,runtime_loopnum in list(time_data_dict.items()):
+                if runtime_loopnum[1]==0:
+                    data_content_csv=f"{state},{-1},{-1}\n"
+                else:
+                    data_content_csv=f"{state},{runtime_loopnum[1]},{runtime_loopnum[0]}\n"
+                writefile('timedata/timedata.csv',data_content_csv)
+                
     # If there is a Keyboard interrupt, assume that it was raised 
     # by the program's response to user input and that the program 
     # exited normally
