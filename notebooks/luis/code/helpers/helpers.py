@@ -57,7 +57,7 @@ def ls(dir=None):
     if dir==None:
         dirs = str(subprocess.check_output(shlex.split(["dir","ls"][int(platform=='linux')])))[2:-1].split("\\n")[:-1]
     else:
-        dirs = str(subprocess.check_output(shlex.split(["dir","ls"][int(platform=='linux')])))[2:-1].split("\\n")[:-1]
+        dirs = str(subprocess.check_output(shlex.split(["dir "+dir,"ls "+dir][int(platform=='linux')])))[2:-1].split("\\n")[:-1]
     return dirs
 # Clear the terminal
 def clear():
@@ -74,12 +74,13 @@ def logdata():
     current_time = time.strftime("%Y-%m-%d_%H.%M.%S", current_time)[11:]
     dirs = ls('logs')
     if current_date not in dirs:
-        subprocess.run([f'mkdir logs/{current_date}'],shell=True)
+        print(dirs)
+        subprocess.run(shlex.split(f'mkdir logs/{current_date}'))
     logs = ls(f"logs/{current_date}")
     if f'{current_time}.txt' not in logs:
-        subprocess.run([f"touch logs/{current_date}/{current_time}.txt"],shell=True)
+        subprocess.run(shlex.split(f"touch logs/{current_date}/{current_time}.txt"))
     if 'err.txt' not in logs:
-        subprocess.run([f'touch logs/{current_date}/err.txt'],shell=True)
+        subprocess.run(shlex.split(f'touch logs/{current_date}/err.txt'))
     logfile = f"logs/{current_date}/{current_time}.txt"
     errfile = f"logs/{current_date}/err.txt"
     init_time = time.time()

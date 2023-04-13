@@ -1,0 +1,19 @@
+Time: 09.55.38
+ERROR: 'NoneType' object has no attribute 'shape'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 109, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 56, in main_fetching
+    main(gettimes,noprint,demo,manual,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 48, in main
+    next_function_index = fsm.ret()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 81, in ret
+    self.img.update_goal_position('waitpoint')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 32, in update_goal_position
+    self.camera_.show_tracking(image,position_xy)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 232, in show_tracking
+    height, width = image.shape[:2]
+AttributeError: 'NoneType' object has no attribute 'shape'
+
+Ran for 17.44 seconds.
+
