@@ -23,12 +23,6 @@ class StateLogic(object):
             # for some amount of time, then transition to the CHASE state and
             # tell the main loop to execute the "chase()" function.
             timers = self.img.update_goal_position('ball',time.time())
-            # NOTE: change this later to make the condition check for the number of
-            # seconds that the ball has been in a given region in the camera view
-            # '2', like the randomized algorithm that generates it, it a placeholder
-            # to be replaced when the image processing has been implemented
-            # TODO: MODIFY THIS CONDITION SO THAT THE FETCHING SUBSYTEM REACTS TO 
-            # THE BALL'S PRESENCE
             if not all(dt<self.img.goal_timelimits['ball'] for dt in timers): # NOTE: software simulation/testing change2 in self.img.regions.values():
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))

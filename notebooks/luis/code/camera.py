@@ -284,7 +284,11 @@ def iproc_main():
         writefile('logfile','Done.')
         print("\nTerminated by user input.")
         import os,signal
-        os.kill(os.getpid(),signal.SIGTERM)
+        if platform=='linux':
+            sig = signal.SIGINT
+        else:
+            sig = signal.SIGTERM
+        os.kill(os.getpid(),sig)
     except Exception as e:
         cam.destroy() # Free the threads
         writefile('errfile',f"ERROR: {e}\n\n")
