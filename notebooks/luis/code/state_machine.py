@@ -213,16 +213,22 @@ class StateLogic(object):
             self.control.right_stop()
         # top-middle
         elif 1 in positions:
-            self.control.right_move()
-            self.control.left_move()
+            # self.control.right_move()
+            self.control.left_move(1)
+            # self.control.left_move()
+            self.control.right_move(1)
         # top-right
         elif 2 in positions:
-            self.control.right_stop()
-            self.control.left_move()
+            # self.control.right_stop()
+            self.control.left_stop()
+            # self.control.left_move()
+            self.control.right_move(1)
         # bottom-left
         elif 3 in positions:
-            self.control.right_stop()
-            self.control.left_move(1)
+            # self.control.right_stop()
+            self.control.left_stop()
+            # self.control.left_move(1)
+            self.control.right_move()
         # bottom-middle
         elif 4 in positions:
             self.control.right_stop()
@@ -238,8 +244,10 @@ class StateLogic(object):
             return 5
         # bottom-right
         elif 5 in positions:
-            self.control.right_move(1)
-            self.control.left_stop()   
+            # self.control.right_move(1)
+            self.control.left_move()
+            # self.control.left_stop()   
+            self.control.right_stop()
         self.control.pi_int()             
         return 0
     def return_commands(self,positions):
@@ -250,33 +258,47 @@ class StateLogic(object):
         if positions==[]: 
             # The waiting point may be off the left side of the camera view
             if not all(region==0 for region in self.img.last_regions[::3]):
-                self.control.right_move()
-                self.control.left_stop()
+                # self.control.right_move()
+                self.control.left_move(1)
+                # self.control.left_stop()
+                self.control.right_stop()
             # The waiting point may be off the right side of the camera view
             elif not all(region==0 for region in self.img.last_regions[2::3]):
-                self.control.right_stop()
-                self.control.left_move()
+                # self.control.right_stop()
+                self.control.left_stop()
+                # self.control.left_move()
+                self.control.right_move(1)
             # The waiting point may be behind the camera view, or it may be
             # too far to be detected (NOTE: this may need extra logic later).
             else:
-                self.control.right_move(1)
+                # self.control.right_move(1)
                 self.control.left_move()
+                # self.control.left_move()
+                self.control.right_move(1)
         # top-left
         elif 0 in positions:
-            self.control.right_move()
-            self.control.left_stop()
+            # self.control.right_move()
+            self.control.left_move(1)
+            # self.control.left_stop()
+            self.control.right_stop()
         # top-middle
         elif 1 in positions:
-            self.control.right_move()
-            self.control.left_move()
+            # self.control.right_move()
+            self.control.left_move(1)
+            # self.control.left_move()
+            self.control.right_move(1)
         # top-right
         elif 2 in positions:
-            self.control.right_stop()
-            self.control.left_move()
+            # self.control.right_stop()
+            self.control.left_stop()
+            # self.control.left_move()
+            self.control.right_move(1)
         # bottom-left
         elif 3 in positions:
-            self.control.right_stop()
-            self.control.left_move(1)
+            # self.control.right_stop()
+            self.control.left_move()
+            # self.control.left_move(1)
+            self.control.right_move()
         # bottom-middle
         elif 4 in positions:
             self.control.right_stop()
@@ -288,8 +310,10 @@ class StateLogic(object):
             return 1
         # bottom-right
         elif 5 in positions:
-            self.control.right_move(1)
-            self.control.left_stop()  
+            # self.control.right_move(1)
+            self.control.left_move()
+            # self.control.left_stop()  
+            self.control.right_stop()
         self.control.pi_int()
         return 0
     def manual_off(self):
