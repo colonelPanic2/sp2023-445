@@ -58,17 +58,10 @@ def main_fetching(args,init_time,logfile):
     try:
         gettimes,noprint,demo,manual=args[:4]
         main(gettimes,noprint,demo,manual,init_time,logfile)
+        # If we were collecting time data for that run, then write
+        # it to the .csv file in the 'timedata' directory.
         if gettimes is not None and gettimes=='time':
             timedata_files(init_time)
-            time_data_dict = time_data(gettimes,'',3)
-            print("\n -------- RUNTIME DATA ACQUIRED --------")
-            for state,runtime_loopnum in list(time_data_dict.items()):
-                if runtime_loopnum[1]==0:
-                    data_content_csv=f"{state},{-1},{-1}\n"
-                else:
-                    data_content_csv=f"{state},{runtime_loopnum[1]},{runtime_loopnum[0]}\n"
-                writefile('timedata/timedata.csv',data_content_csv)
-                
     # If there is a Keyboard interrupt, assume that it was raised 
     # by the program's response to user input and that the program 
     # exited normally
