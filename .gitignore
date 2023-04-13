@@ -2,3 +2,8 @@ notebooks/luis/code/__pycache__/*
 notebooks/luis/code/helpers/__pycache__/*
 notebooks/luis/code/logs/*
 
+notebooks/luis/code/__pycache__/gpio.cpython-310.pyc
+notebooks/luis/code/helpers/__pycache__/helpers.cpython-310.pyc
+notebooks/luis/code/logfile
+notebooks/luis/code/cam-dot-py-logfile
+notebooks/luis/code/__pycache__/gpio.cpython-310.pyc
