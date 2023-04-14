@@ -1,4 +1,4 @@
-import subprocess,cv2,time,threading,signal,sys,argparse,imutils,shlex
+import subprocess,cv2,time,threading,signal,sys,shlex,os,traceback
 from queue import Queue
 from collections import deque
 from imutils.video import VideoStream
@@ -40,6 +40,16 @@ class remote_gpio:
         # when the given condition is met on the given pin.
         return
 io = remote_gpio()
+def teardown_timeout_handler(signum,frame):
+    current_time = time.localtime()
+    current_date = time.strftime("%Y-%m-%d", current_time)[5:]
+    current_time = time.strftime("%Y-%m-%d_%H.%M.%S", current_time)[11:]
+    # backtrace = traceback.format_exc()
+    err_message = "ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE\nTHE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.\n\nAttempting processicide..."
+    output = f"\n\n{current_time}\n{err_message}"#\n\n{backtrace}\n"
+    writefile(f'logs/{current_date}/err.txt',output)
+    print(f'{err_message}')#\n\n{backtrace}')
+    os.kill(os.getpid(), signal.SIGKILL)
 # Write the input string to the end of the file with the given name. 
 def writefile(fname,content):
     with open(fname,'a') as f:
@@ -108,9 +118,20 @@ def time_data(args,state,step):
                 time_data_dict[state].append(round(1000*(T1-T0),2))
             T0=time.perf_counter()
             T0_SET = 1
+            # if len(time_data_dict[state])>0:
+            #     print(time_data_dict[state][-1])
         elif step==3:
             for state,runtimes in list(time_data_dict.items()):
-                time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state]))
+                # print(f"{state}: {runtimes}")
+                # TODO: ENCOUNTERED AN ERROR IN WHICH THE FIRST ENTRY IN THE TIMEDATA
+                # IS OFTEN DISPROPORTIONATELY LARGER THAN THE REST OF THE RUNTIME
+                # DATA. IT SHOULD BE A PRIORITY TO UNDERSTAND WHY THIS IS HAPPENING.
+                # THE MODIFICATIONS BELOW ARE AN ATTEMPT AT A TEMPORARY SOLUTION
+                if len(runtimes)==1:
+                    runtimes=[]
+                elif len(runtimes)>1:
+                    runtimes=runtimes[1:]
+                time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state])-int(len(time_data_dict[state])>1))
             return time_data_dict
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
     elif type(args)==type(list) and args[0]=='time':
@@ -120,24 +141,27 @@ def time_data(args,state,step):
         elif step==5:
             return microcontroller_time_data_list
     return 0
-
-def timedata_files(init_time):
-    dirs = ls()
-    if "timedata" not in dirs:
-        subprocess.run(shlex.split("mkdir timedata"))
-    dirs = ls('timedata')
-    if "timedata.csv" not in dirs:
-        subprocess.run(shlex.split("touch timedata/timedata.csv"))
-    # number of times "main" was called, runtime of call to main
-    writefile('timedata/timedata.csv',f"{1},{round(time.time()-init_time,2)}\n")
-    time_data_dict = time_data('time','',3)
-    print("\n -------- RUNTIME DATA ACQUIRED --------")
-    for state,runtime_loopnum in list(time_data_dict.items()):
-        if runtime_loopnum[1]==0:
-            data_content_csv=f"{state},{-1},{-1}\n"
-        else:
-            data_content_csv=f"{state},{runtime_loopnum[1]},{runtime_loopnum[0]}\n"
-        writefile('timedata/timedata.csv',data_content_csv)
+# If we were collecting time data for a complete run of the program
+# then write the data to the .csv file in the 'timedata' directory.
+def timedata_files(gettimes,init_time):
+    if gettimes is not None and gettimes=='time':
+        dirs = ls()
+        if "timedata" not in dirs:
+            subprocess.run(shlex.split("mkdir timedata"))
+        dirs = ls('timedata')
+        if "timedata.csv" not in dirs:
+            subprocess.run(shlex.split("touch timedata/timedata.csv"))
+        time_data_dict = time_data(gettimes,'',3)
+        print("\n -------- RUNTIME DATA ACQUIRED --------")
+        for state,runtime_loopnum in list(time_data_dict.items()):
+            if runtime_loopnum[1]==0:
+                data_content_csv=f"{state},{0},{0}\n"
+            else:
+                data_content_csv=f"{state},{runtime_loopnum[1]},{runtime_loopnum[0]}\n"
+            writefile('timedata/timedata.csv',data_content_csv)
+        # number of times "main" was called, runtime of call to main
+        writefile('timedata/timedata.csv',f"{1},{round(time.time()-init_time,2)}\n")
+        subprocess.run(shlex.split("python3 timedata/runtime-plots.py"))
 
 # NOTE: All of the following code is outdated, but it still implements some features that 
 # might be useful later. So I've decided to keep it even though it isn't in use right now.

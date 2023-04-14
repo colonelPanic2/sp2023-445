@@ -16,9 +16,12 @@ class StateLogic(object):
             return -1
     # WAIT logic #
     def wait(self,args=None):
-        time_data(args,'WAIT',1)
+        if self.gettimes is not None and self.start_state!=self.get_state():
+            self.transition_chase()
+            return 2
+        time_data(self.gettimes,'WAIT',1)
         while self.get_state()=='WAIT': 
-            time_data(args,'WAIT',2)
+            time_data(self.gettimes,'WAIT',2)
             # If the ball has been in the same region(s) of the camera view
             # for some amount of time, then transition to the CHASE state and
             # tell the main loop to execute the "chase()" function.
@@ -33,6 +36,9 @@ class StateLogic(object):
         return -2
     # CHASE logic #
     def chase(self,args=None):
+        if self.gettimes is not None and self.start_state!=self.get_state():
+            self.transition_acquire()
+            return 3
         time_data(args,'CHASE',1)
         while self.get_state()=='CHASE':
             time_data(args,'CHASE',2)
@@ -47,6 +53,9 @@ class StateLogic(object):
         return -2
     # ACQUIRE logic #
     def acquire(self,args=None):
+        if self.gettimes is not None and self.start_state!=self.get_state():
+            self.transition_fetch()
+            return 4
         time_data(args,'ACQUIRE',1)
         while self.get_state()=='ACQUIRE':
             time_data(args,'ACQUIRE',2)
@@ -63,6 +72,9 @@ class StateLogic(object):
         return -2
     # FETCH logic #
     def fetch(self,args=None):
+        if self.gettimes is not None and self.start_state!=self.get_state():
+            self.transition_return()
+            return 5
         time_data(args,'FETCH',1)
         while self.get_state()=='FETCH':
             time_data(args,'FETCH',2)
@@ -81,6 +93,9 @@ class StateLogic(object):
         return -2
     # RETURN logic #
     def ret(self,args=None):
+        if self.gettimes is not None and self.start_state!=self.get_state():
+            self.transition_wait()
+            return 1
         time_data(args,'RETURN',1)
         while self.get_state()=="RETURN":
             time_data(args,'RETURN',2)
@@ -185,7 +200,6 @@ class StateLogic(object):
             return 2
         self.control.pi_int()
         return 0
-    # TODO: Reverse the control signals for 'fetch_commands' and 'return_commands'
     def fetch_commands(self,positions):
         # NOTE: I don't know how we're planning on setting up the tag for the user,
         # so I don't know how to set up the commands for the fetch protocol. For now,
@@ -340,7 +354,7 @@ class FSM(StateLogic):
     ACQUIRE = State('ACQUIRE')
     FETCH = State('FETCH')
     RETURN = State('RETURN')
-    def __init__(self,control,camera,gettimes,noprint,demo,manual,init_time,logfile):
+    def __init__(self,control,camera,gettimes,noprint,demo,manual,init_time,logfile,start_state):
         signal.signal(signal.SIGALRM,self.signal_handler)
         self.control = control
         self.img = camera
@@ -350,6 +364,11 @@ class FSM(StateLogic):
         self.manual = manual
         self.init_time = init_time
         self.logfile = logfile
+        self.start_state = start_state
+        if start_state=='WAIT':
+            self.img.goal_timelimits['ball'] = 5
+        else:
+            self.img.goal_timelimits['ball'] = 0.005
         self.manual_off() # This object is can only be initialized in auto control mode.
         self.INT_start_time = 0
         self.proximity = 0
@@ -368,14 +387,14 @@ class FSM(StateLogic):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
         return 0
-    @event(from_states=(WAIT,ACQUIRE), to_state=(CHASE))
+    @event(from_states=(START,WAIT,ACQUIRE), to_state=(CHASE))
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
         signal.alarm(5) # NOTE: Remember to change back to 60!
         # *Other pre-processing logic before changing to next state* # 
         return 0
-    @event(from_states=(CHASE), to_state=(ACQUIRE))
+    @event(from_states=(START,CHASE), to_state=(ACQUIRE))
     def transition_acquire(self,some_variables=None):
         # If we stay in the ACQUIRE state for 30 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
@@ -383,12 +402,12 @@ class FSM(StateLogic):
         signal.alarm(5) # NOTE: Remember to change back to 30!
         # *Other pre-processing logic before changing to next state* # 
         return 0
-    @event(from_states=(ACQUIRE), to_state=(FETCH))
+    @event(from_states=(START,ACQUIRE), to_state=(FETCH))
     def transition_fetch(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
         return 0
-    @event(from_states=(CHASE, ACQUIRE, FETCH), to_state=(RETURN))
+    @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)

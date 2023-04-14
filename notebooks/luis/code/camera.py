@@ -1,6 +1,8 @@
 import threading,cv2,imutils,traceback,queue
 from sys import platform
-from helpers.helpers import writefile,map_to_block_index
+import signal
+
+from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler
 TL = 0 # Top-left region of camera view
 TM = 1 # Top-middle region of camera view
 TR = 2 # Top-right region of camera view
@@ -133,17 +135,28 @@ class camera(images):
     def destroy(self):
         global sigint
         print("\nHalting program...")
-        writefile(self.logfile,"\n\nHalting program...  ")
+        writefile(self.logfile,"\nHalting program...  ")
         sigint = True
-        self.cam.release()
+        # TODO: FIGURE OUT THE CAUSE OF OCCASIONAL TIMEOUTS WHEN TRYING TO 
+        # RELEASE THE CAMERA OR JOIN THE THREADS
+        if platform=='linux':
+            signal.signal(signal.SIGALRM, teardown_timeout_handler)
+            signal.alarm(2)
+        # self.cam.release()
         if self.demo:
             cv2.destroyAllWindows()
         # NOTE: This doesn't seem to be causing any problems, but it doesn't seem to 
         # help much, either. There is an occasional error added as a manual entry near 
         # the end of the err.txt log for 04-08.
+        print("Joining camera thread and main thread...",end='  ')
         with threading.Lock():
             if self.capture_t is not None and self.capture_t.is_alive():
                 self.capture_t.join()
+        if platform=='linux':
+            signal.alarm(0)
+        self.cam.release()
+        print('thread join successful')
+
         raise KeyboardInterrupt
     # (camera thread) Read an image from the camera and store it in 
     # a queue to be accessed by the main thread in the 'getimage' function.
@@ -228,31 +241,32 @@ class camera(images):
     # Draw the lines showing the 6 regions of the image. If the goal is in a region,
     # then outline the region in green. Otherwise, outline it in red.
     def show_tracking(self,image,position_xy):
-        # Draw lines to show the regions of the screen
-        cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
-        height, width = image.shape[:2]
-        cv2.line(image, (width//3, 0), (width//3, height), (0, 0, 255), 2)
-        cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 0, 255), 2)
-        cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
-        if position_xy is not None:
-            block_index = map_to_block_index(position_xy,image.shape)
-            if block_index>=0 and block_index<6:
-                region_map = [        (0,0),        (width//3,0),        (2*width//3,0),\
-                              (0,height//2),(width//3,height//2),(2*width//3,height//2)]
-                top_right = region_map[block_index]
-                bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
-                cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
-            else:
-                print(f"\nUnexpected position value: map_to_block_index({position_xy}) -> {block_index}\n")
-        # show the frame to our screen
-        cv2.imshow("Camera", image)
-        key = cv2.waitKey(1) & 0xFF
-        # if the 'q' key is pressed, stop the loop
-        if self.manual==0:
-            if key == ord("q"):
-                self.destroy()
-            elif self.demo==1 and key == ord('c') :
-                self.camswitch()
+        if image is not None:
+            # Draw lines to show the regions of the screen
+            cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
+            height, width = image.shape[:2]
+            cv2.line(image, (width//3, 0), (width//3, height), (0, 0, 255), 2)
+            cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 0, 255), 2)
+            cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
+            if position_xy is not None:
+                block_index = map_to_block_index(position_xy,image.shape)
+                if block_index>=0 and block_index<6:
+                    region_map = [        (0,0),        (width//3,0),        (2*width//3,0),\
+                                (0,height//2),(width//3,height//2),(2*width//3,height//2)]
+                    top_right = region_map[block_index]
+                    bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
+                    cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
+                else:
+                    print(f"\nUnexpected position value: map_to_block_index({position_xy}) -> {block_index}\n")
+            # show the frame to our screen
+            cv2.imshow("Camera", image)
+            key = cv2.waitKey(1) & 0xFF
+            # if the 'q' key is pressed, stop the loop
+            if self.manual==0:
+                if key == ord("q"):
+                    self.destroy()
+                elif self.demo==1 and key == ord('c') :
+                    self.camswitch()
         return
     
 
