@@ -17,21 +17,36 @@ def signal_handler(signum,frame):
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
 def microcontroller_signal_handler(signum,frame):
     global fsm 
-    if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-        time_data([fsm.gettimes,fsm.INT_start_time,time.time()],fsm.get_state(),4)
-    elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
-        fsm.proximity = int(not fsm.proximity)
+    while True:
+        try:
+            if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
+                time_data([fsm.gettimes,fsm.INT_start_time,time.time()],fsm.get_state(),4)
+                fsm.DONE = True
+            elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
+                fsm.proximity = int(not fsm.proximity)
+            return
+        except:
+            print("EXCEPTION OR SIGNAL RAISED WHILE IN 'microcontroller_signal_handler'")
+            pass
     # Return to the location in the code where the interrupt was received.
     return
 
-def main(gettimes,noprint,demo,manual,start_state,init_time,logfile):
+def main(gettimes,noprint,demo,manual,start_state):
+    global init_time
+    global logfile
+    global errfile
+    _,logfile,errfile = logdata()
     # Declare the global variable that will be used by our 
     # signal handlers for SIGINT, SIGUSR1, and SIGUSR2.
     global fsm
     # Initialize the camera, control, and fsm objects.
-    cam  = camera(               noprint,demo,manual,init_time,logfile)
-    ctrl = control( cam,gettimes,noprint,demo,manual,init_time,logfile) 
-    fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,init_time,logfile,start_state)
+    cam  = camera(               noprint,demo,manual,0,logfile)
+    ctrl = control( cam,gettimes,noprint,demo,manual,0,logfile) 
+    fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
+    init_time = time.time()
+    cam.init_time=init_time
+    ctrl.init_time=init_time
+    fsm.init_time=init_time
     # If gettimes=='time', then set up for runtime data collection
     # for each of the state function loops
     time_data(gettimes,'',0)
@@ -64,7 +79,7 @@ def main(gettimes,noprint,demo,manual,start_state,init_time,logfile):
         # Otherwise, the previous state function failed due to a timeout. This should mean 
         # that the previous state was either CHASE or ACQUIRE, as these are the only 2 states 
         # with a time limit.
-        else:
+        elif next_function_index!=-13:
             writefile(logfile,f"ERROR: Failed in {fsm.get_state()}. Returning to waiting point\n")
             if not noprint:
                 writefile(logfile,f"Attempting to transition to RETURN from {fsm.get_state()}...\n")
@@ -72,15 +87,23 @@ def main(gettimes,noprint,demo,manual,start_state,init_time,logfile):
             fsm.transition_return()
             if not noprint:
                 writefile(logfile,fsm.get_state()+' ')
-            next_function_index = fsm.ret()    
+            next_function_index = fsm.ret()  
+        else:
+            #   signal.alarm(0)
+            #   timedata_files(gettimes,init_time)
+              print(f"\nDone collecting runtime data for {fsm.start_state}")
+              fsm.img.camera_.destroy()
+
         
 
-def init_fetching(args,init_time,logfile):
+def init_fetching(args):
+    global init_time
+    global logfile
     gettimes,noprint,demo,manual,start_state=args[:5]
     # Run main with the processed command line arguments as well as the time
     # of initialization and the log file.
     try:
-        main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+        main(gettimes,noprint,demo,manual,start_state)
     # If there is a Keyboard interrupt, assume that it was raised 
     # by the program's response to user input and that the program 
     # exited normally
@@ -93,8 +116,9 @@ def init_fetching(args,init_time,logfile):
         writefile(logfile,"Done.\n")
     return 0
 
-if __name__ == '__main__':
-    init_time,logfile,errfile = logdata()
+def parse_args():
+    global init_time
+    global errfile
     try:        
         # time    - ("time" if recording timedata)   Choose whether time data is recorded 
         # noprint - (0 if allowed, 1 else)           Choose whether printing/logging during runtime is allowed 
@@ -139,7 +163,7 @@ if __name__ == '__main__':
             else:
                 # argv = [demo]
                 args = [None,0,int(argv[0]),0,'WAIT']
-        init_fetching(args,init_time,logfile)
+        init_fetching(args)
     except Exception as e:
         # If an unexpected Exception has occured, then write an error log
         # to the err.txt file generated for the date and time when the 
@@ -153,3 +177,7 @@ if __name__ == '__main__':
 
 
 
+
+
+if __name__ == '__main__':
+    parse_args()

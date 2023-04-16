@@ -18,7 +18,7 @@ class images:
         # Of the camera view. The ball can be in multiple regions at once.
         self.regions= { TL:0, TM:0, TR:0, BL:0, BM:0, BR:0 }
         self.last_regions = list(self.regions.values())
-        self.goal_timelimits = {'ball':5,'user':2,'waitpoint':2} # I don't expect that we'll need time limits for the user or the waitpoint
+        self.goal_timelimits = {'ball_W':5,'ball_C':2,'ball_A':2,'user':3,'waitpoint':3} # I don't expect that we'll need time limits for the user or the waitpoint
         self.timers = {TL:0, TM:0, TR:0, BL:0, BM:0, BR:0}
         self.camera_.start_read()
         return
@@ -37,27 +37,27 @@ class images:
         if not (all(pos==6 for pos in goal_positions)):# or all(pos>5 for pos in goal_positions)):
             self.last_regions = list(self.regions.values())
         # Update the current goal position
-        if t0 is None:
-            for i in range(6):
-                if i in goal_positions:
-                    self.regions[i]+= 1
-                else:
-                    self.regions[i]=0
-            return None
-        # Update the current goal position and the current timer
-        else:
-            for i in range(6):
-                if self.timers[i]==0:
-                    self.timers[i]=t0
-                if i in goal_positions:
-                    self.regions[i]+= 1
-                    if not self.camera_.noprint:
-                        print('\033[F\033[K' * 1, end = "")
-                        print(f"{i}: {t0-self.timers[i]:.2f}")
-                else:
-                    self.regions[i]=0
-                    self.timers[i] = t0
-            return [t0-self.timers[i] for i in range(6)]
+        # if t0 is None:
+        #     for i in range(6):
+        #         if i in goal_positions:
+        #             self.regions[i]+= 1
+        #         else:
+        #             self.regions[i]=0
+        #     return None
+        # # Update the current goal position and the current timer
+        # else:
+        for i in range(6):
+            if self.timers[i]==0:
+                self.timers[i]=t0
+            if i in goal_positions:
+                self.regions[i]+= 1
+                if not self.camera_.noprint:
+                    print('\033[F\033[K' * 1, end = "")
+                    print(f"{i}: {t0-self.timers[i]:.2f}")
+            else:
+                self.regions[i]=0
+                self.timers[i] = t0
+        return [t0-self.timers[i] for i in range(6)]
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):
         # If the goal is in the camera view, then find the region(s) where it is present

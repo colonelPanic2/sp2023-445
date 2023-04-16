@@ -97,7 +97,7 @@ def logdata():
     return (init_time,logfile,errfile)
 # Keep track of the runtime data for the fetching subsystem. 
 # (unusable with the current code)
-def time_data(args,state,step):
+def time_data(args,state,step,t0=0):
     global T0_SET
     global T0
     global T1
@@ -118,15 +118,15 @@ def time_data(args,state,step):
                 time_data_dict[state].append(round(1000*(T1-T0),2))
             T0=time.perf_counter()
             T0_SET = 1
-            # if len(time_data_dict[state])>0:
-            #     print(time_data_dict[state][-1])
+            if time.time()-t0>5:
+                print(time.time()-t0)
+                return -13
         elif step==3:
             for state,runtimes in list(time_data_dict.items()):
                 # print(f"{state}: {runtimes}")
                 # TODO: ENCOUNTERED AN ERROR IN WHICH THE FIRST ENTRY IN THE TIMEDATA
                 # IS OFTEN DISPROPORTIONATELY LARGER THAN THE REST OF THE RUNTIME
-                # DATA. IT SHOULD BE A PRIORITY TO UNDERSTAND WHY THIS IS HAPPENING.
-                # THE MODIFICATIONS BELOW ARE AN ATTEMPT AT A TEMPORARY SOLUTION
+                # DATA. THE MODIFICATIONS BELOW ARE AN ATTEMPT AT A TEMPORARY SOLUTION
                 if len(runtimes)==1:
                     runtimes=[]
                 elif len(runtimes)>1:
