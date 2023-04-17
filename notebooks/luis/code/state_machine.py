@@ -151,11 +151,11 @@ class StateLogic(object):
             self.control.left_move(1)
         # bottom-middle
         elif 4 in positions:
-            if self.proximity==1 and not all(dt<self.img.goal_timelimits['ball_C'] for dt in timers):
+            if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['ball_C'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pi_int()
-                self.INT_start_time=time.time()
+                self.control.INT_start_time=time.time()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_acquire()
@@ -167,16 +167,16 @@ class StateLogic(object):
             self.control.right_move(1)
             self.control.left_stop()
         self.control.pi_int()
-        self.INT_start_time=time.time()
+        self.control.INT_start_time=time.time()
         return 0
     def acquire_commands(self,positions,timers):
         if 4 in positions:
-            if self.proximity==1 and not all(dt<self.img.goal_timelimits['ball_A'] for dt in timers):
+            if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['ball_A'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pincers_move(1)
                 self.control.pi_int()
-                self.INT_start_time=time.time()
+                self.control.INT_start_time=time.time()
                 # NOTE: I don't know how we're going to confirm that the ball has
                 # been acquired successfully, so my temporary solution is to wait 
                 # for 2 seconds after telling the microcontroller to close the pincers,
@@ -262,7 +262,7 @@ class StateLogic(object):
             self.control.right_move()
         # bottom-middle
         elif 4 in positions:
-            if self.proximity==1 and not all(dt<self.img.goal_timelimits['user'] for dt in timers):
+            if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['user'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pincers_move()
@@ -334,7 +334,7 @@ class StateLogic(object):
             self.control.right_move()
         # bottom-middle
         elif 4 in positions:
-            if self.proximity==1 and not all(dt<self.img.goal_timelimits['waitpoint'] for dt in timers):
+            if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['waitpoint'] for dt in timers):
                 print(timers)
                 self.control.right_stop()
                 self.control.left_stop()
@@ -387,9 +387,9 @@ class FSM(StateLogic):
         else:
             self.img.goal_timelimits['ball'] = 0.005
         self.manual_off() # This object is can only be initialized in auto control mode.
-        self.INT_start_time = 0
-        self.proximity = 0
-        self.DONE = False
+        self.control.INT_start_time = 0
+        self.control.proximity = 0
+        self.control.DONE = False
         super().__init__()
     # Get the name of the current state of the FSM as a string
     def get_state(self):
@@ -404,15 +404,15 @@ class FSM(StateLogic):
     def transition_wait(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        self.proximity = 0
-        self.DONE = False
+        self.control.proximity = 0
+        self.control.DONE = False
         return 0
     @event(from_states=(START,WAIT,ACQUIRE), to_state=(CHASE))
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        self.proximity = 0
-        self.DONE = False
+        self.control.proximity = 0
+        self.control.DONE = False
         signal.alarm(5) # NOTE: Remember to change back to 60!
         # *Other pre-processing logic before changing to next state* # 
         return 0
@@ -420,8 +420,8 @@ class FSM(StateLogic):
     def transition_acquire(self,some_variables=None):
         # If we stay in the ACQUIRE state for 30 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        self.proximity = 0
-        self.DONE = False
+        self.control.proximity = 0
+        self.control.DONE = False
         signal.signal(signal.SIGALRM,self.signal_handler)
         signal.alarm(5) # NOTE: Remember to change back to 30!
         # *Other pre-processing logic before changing to next state* # 
@@ -430,13 +430,13 @@ class FSM(StateLogic):
     def transition_fetch(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        self.proximity = 0
-        self.DONE = False
+        self.control.proximity = 0
+        self.control.DONE = False
         return 0
     @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        self.proximity = 0
-        self.DONE = False
+        self.control.proximity = 0
+        self.control.DONE = False
         return 0

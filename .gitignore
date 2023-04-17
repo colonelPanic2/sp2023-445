@@ -8,6 +8,8 @@ notebooks/luis/code/logfile
 notebooks/luis/code/cam-dot-py-logfile
 notebooks/luis/code/__pycache__/camera.cpython-310.pyc
 notebooks/luis/code/__pycache__/state_machine.cpython-310.pyc
-noteboooks/luis/code/timedata/*.png
+notebooks/luis/code/timedata/
 notebooks/luis/code/timedata/*.csv
-
+notebooks/luis/code/timedata/__pycache__
+notebooks/luis/code/timedata/fetching-tests/
+notebooks/luis/code/timedata/microcontroller-runtimes.csv

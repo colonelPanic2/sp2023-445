@@ -36,16 +36,6 @@ class images:
         # is currently in the camera view
         if not (all(pos==6 for pos in goal_positions)):# or all(pos>5 for pos in goal_positions)):
             self.last_regions = list(self.regions.values())
-        # Update the current goal position
-        # if t0 is None:
-        #     for i in range(6):
-        #         if i in goal_positions:
-        #             self.regions[i]+= 1
-        #         else:
-        #             self.regions[i]=0
-        #     return None
-        # # Update the current goal position and the current timer
-        # else:
         for i in range(6):
             if self.timers[i]==0:
                 self.timers[i]=t0
@@ -156,7 +146,7 @@ class camera(images):
             signal.alarm(0)
         self.cam.release()
         print('thread join successful')
-
+        writefile(self.logfile,'\nDone.\nRaising KeyboardInterrupt to end the process...\n')
         raise KeyboardInterrupt
     # (camera thread) Read an image from the camera and store it in 
     # a queue to be accessed by the main thread in the 'getimage' function.

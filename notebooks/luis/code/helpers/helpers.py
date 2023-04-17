@@ -1,8 +1,5 @@
-import subprocess,cv2,time,threading,signal,sys,shlex,os,traceback
-from queue import Queue
-from collections import deque
-from imutils.video import VideoStream
-import matplotlib.pyplot as plt
+import subprocess,time,signal,sys,shlex,os
+from timedata.plots import process_data
 import numpy as np
 platform=sys.platform
 # Class for remote testing of the manual controls. Mimics
@@ -119,7 +116,7 @@ def time_data(args,state,step,t0=0):
             T0=time.perf_counter()
             T0_SET = 1
             if time.time()-t0>5:
-                print(time.time()-t0)
+                # print(time.time()-t0)
                 return -13
         elif step==3:
             for state,runtimes in list(time_data_dict.items()):
@@ -133,13 +130,14 @@ def time_data(args,state,step,t0=0):
                     runtimes=runtimes[1:]
                 time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state])-int(len(time_data_dict[state])>1))
             return time_data_dict
-    # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-    elif type(args)==type(list) and args[0]=='time':
-        if step==4:
-            _, INT_start_time, INT_end_time = args
-            microcontroller_time_data_list.append(round(INT_end_time-INT_start_time,6)*1e3)
         elif step==5:
             return microcontroller_time_data_list
+        # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
+    elif type(args) == list and step==4:
+        _, INT_start_time, INT_end_time = args
+        microcontroller_time_data_list.append(round((INT_end_time-INT_start_time)*1000,2))
+        if microcontroller_time_data_list[-1]>10:
+            print(microcontroller_time_data_list[-1])
     return 0
 # If we were collecting time data for a complete run of the program
 # then write the data to the .csv file in the 'timedata' directory.
@@ -151,7 +149,7 @@ def timedata_files(gettimes,init_time):
         dirs = ls('timedata')
         if "timedata.csv" not in dirs:
             subprocess.run(shlex.split("touch timedata/timedata.csv"))
-        time_data_dict = time_data(gettimes,'',3)
+        time_data_dict                 = time_data(gettimes,'',3)
         print("\n -------- RUNTIME DATA ACQUIRED --------")
         for state,runtime_loopnum in list(time_data_dict.items()):
             if runtime_loopnum[1]==0:
@@ -161,10 +159,14 @@ def timedata_files(gettimes,init_time):
             writefile('timedata/timedata.csv',data_content_csv)
         # number of times "main" was called, runtime of call to main
         writefile('timedata/timedata.csv',f"{1},{round(time.time()-init_time,2)}\n")
-        subprocess.run(shlex.split("python3 timedata/runtime-plots.py"))
-
+        microcontroller_time_data_list = time_data(gettimes,'',5)
+        process_data(microcontroller_time_data_list)
 # NOTE: All of the following code is outdated, but it still implements some features that 
 # might be useful later. So I've decided to keep it even though it isn't in use right now.
+# from queue import Queue
+# from collections import deque
+# from imutils.video import VideoStream
+# import matplotlib.pyplot as plt
 # class Camera:
 #     def __init__(self):
 #         self.child_thread_id=None

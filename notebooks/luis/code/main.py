@@ -7,23 +7,26 @@ from state_machine import FSM
 # camera and finish. Then raise a KeyboardInterrupt to exit
 # gracefully
 def signal_handler(signum,frame):
-    global fsm
+    global cam
     signal.alarm(0)
-    fsm.img.destroy()
+    cam.destroy()
     # The program should never be able to reach this
     # call to 'exit(0)'. It is just a precaution.
     exit(0)
-
+# Use this for files/directories whose changes you want to ignore (after having added said files/directories to the .gitignore file in the main directory):
+# git rm -r --cached directory_name
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
 def microcontroller_signal_handler(signum,frame):
-    global fsm 
+    global ctrl 
     while True:
         try:
             if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-                time_data([fsm.gettimes,fsm.INT_start_time,time.time()],fsm.get_state(),4)
-                fsm.DONE = True
+                time_data([ctrl.gettimes,ctrl.INT_start_time,time.time()],'fsm.get_state()',4)
+                ctrl.DONE = True
+                print(ctrl.DONE)
             elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
-                fsm.proximity = int(not fsm.proximity)
+                ctrl.proximity = int(not ctrl.proximity)
+                print(ctrl.proximity)
             return
         except:
             print("EXCEPTION OR SIGNAL RAISED WHILE IN 'microcontroller_signal_handler'")
@@ -33,28 +36,25 @@ def microcontroller_signal_handler(signum,frame):
 
 def main(gettimes,noprint,demo,manual,start_state):
     global init_time
-    global logfile
     global errfile
-    _,logfile,errfile = logdata()
-    # Declare the global variable that will be used by our 
+    init_time,logfile,errfile = logdata()
+    # Declare the global variables that will be used by our 
     # signal handlers for SIGINT, SIGUSR1, and SIGUSR2.
-    global fsm
+    global cam
+    global ctrl
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
-    ctrl = control( cam,gettimes,noprint,demo,manual,0,logfile) 
-    fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
-    init_time = time.time()
-    cam.init_time=init_time
-    ctrl.init_time=init_time
-    fsm.init_time=init_time
-    # If gettimes=='time', then set up for runtime data collection
-    # for each of the state function loops
-    time_data(gettimes,'',0)
     # Set up the signal handlers
     signal.signal(signal.SIGINT, signal_handler)
+    ctrl = control(     gettimes,noprint,demo,manual,0,logfile) 
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
     signal.signal(signal.SIGUSR1, microcontroller_signal_handler)
     signal.signal(signal.SIGUSR2, microcontroller_signal_handler)
+    if manual==1:
+        ctrl.init_manual_control(cam)
+    fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
+
+
     # Make a list of state functions in their intended order of 
     # execution. The output of each state function will be used 
     # as an index into this list.
@@ -62,6 +62,10 @@ def main(gettimes,noprint,demo,manual,start_state):
     transitions = [fsm.transition_wait, fsm.transition_chase,fsm.transition_acquire,\
                    fsm.transition_fetch,fsm.transition_return]
     functions = [fsm.wait,fsm.chase,fsm.acquire,fsm.fetch,fsm.ret]
+    init_time = time.time()
+    cam.init_time=init_time
+    ctrl.init_time=init_time
+    fsm.init_time=init_time
     # Before entering the main loop, enter the WAIT state and run the
     # wait() function to get the first index into the functions list.
     transitions[states.index(fsm.start_state)]() # fsm.transition_wait()
@@ -80,25 +84,21 @@ def main(gettimes,noprint,demo,manual,start_state):
         # that the previous state was either CHASE or ACQUIRE, as these are the only 2 states 
         # with a time limit.
         elif next_function_index!=-13:
-            writefile(logfile,f"ERROR: Failed in {fsm.get_state()}. Returning to waiting point\n")
             if not noprint:
-                writefile(logfile,f"Attempting to transition to RETURN from {fsm.get_state()}...\n")
+                writefile(logfile,f"ERROR: Failed in {fsm.get_state()}. Attempting to transition to RETURN from {fsm.get_state()}...\n")
             time_data(gettimes,fsm.get_state(),2)
             fsm.transition_return()
             if not noprint:
                 writefile(logfile,fsm.get_state()+' ')
             next_function_index = fsm.ret()  
         else:
-            #   signal.alarm(0)
-            #   timedata_files(gettimes,init_time)
-              print(f"\nDone collecting runtime data for {fsm.start_state}")
-              fsm.img.camera_.destroy()
+            if gettimes is not None:
+                print(f"\nDone collecting runtime data for {fsm.start_state}")
+            fsm.img.camera_.destroy()
 
         
 
 def init_fetching(args):
-    global init_time
-    global logfile
     gettimes,noprint,demo,manual,start_state=args[:5]
     # Run main with the processed command line arguments as well as the time
     # of initialization and the log file.
@@ -113,12 +113,13 @@ def init_fetching(args):
         signal.alarm(0)
         timedata_files(gettimes,init_time)
         print("\nDone.\nTerminated by user input.")
-        writefile(logfile,"Done.\n")
     return 0
 
 def parse_args():
     global init_time
     global errfile
+    init_time = time.time()
+    errfile = 'init-err.txt'
     try:        
         # time    - ("time" if recording timedata)   Choose whether time data is recorded 
         # noprint - (0 if allowed, 1 else)           Choose whether printing/logging during runtime is allowed 
