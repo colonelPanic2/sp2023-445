@@ -18,20 +18,14 @@ def signal_handler(signum,frame):
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
 def microcontroller_signal_handler(signum,frame):
     global ctrl 
-    while True:
-        try:
-            if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-                time_data([ctrl.gettimes,ctrl.INT_start_time,time.time()],'fsm.get_state()',4)
-                ctrl.DONE = True
-                print(ctrl.DONE)
-            elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
-                ctrl.proximity = int(not ctrl.proximity)
-                print(ctrl.proximity)
-            return
-        except:
-            print("EXCEPTION OR SIGNAL RAISED WHILE IN 'microcontroller_signal_handler'")
-            pass
-    # Return to the location in the code where the interrupt was received.
+    if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
+        time_data([ctrl.gettimes,ctrl.INT_start_time,time.time()],'fsm.get_state()',4)
+        ctrl.DONE = True
+        print(ctrl.DONE)
+    elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
+        ctrl.proximity = int(not ctrl.proximity)
+        print(ctrl.proximity)
+    signal.signal(signum,microcontroller_signal_handler)
     return
 
 def main(gettimes,noprint,demo,manual,start_state):

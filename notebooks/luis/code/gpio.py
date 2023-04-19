@@ -65,7 +65,7 @@ class control:
          exit manual control mode and switch to auto control mode, which\n\
          is where the fetching subsystem is used. In auto mode, more \n\
          outputs information about the state of the program, such as state, \n\
-         will be written to {self.logfile}. The timing data visible in the\n\
+         will be written to {self.logfile}. The ti222ming data visible in the\n\
          terminal during manual control mode will be visible, in auto control\n\
          mode, but only when the FSM is in the 'WAIT' state.\n\n\
          In order to completely end the program, press CTRL+C in the\n\
@@ -118,7 +118,8 @@ class control:
         self.root.bind('<KeyRelease-e>',self.pincers_off_close)
         self.root.bind('<Control-c>',self.exit_)
         self.root.bind('<l>',self.clear_terminal)
-        self.root.bind('<Key-1>',self.callback_SIGUSR1_helper)
+        if self.gettimes is not None:
+            self.root.bind('<Key-1>',self.callback_SIGUSR1_helper)
         self.root.bind('<Key-2>',self.callback_SIGUSR2_helper)
         if self.demo:
             self.video_update()
