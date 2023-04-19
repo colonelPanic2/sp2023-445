@@ -133,7 +133,7 @@ def time_data(args,state,step,t0=0):
         elif step==5:
             return microcontroller_time_data_list
         # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-    elif type(args) == list and step==4:
+    elif step==4 and args[0] is not None:
         _, INT_start_time, INT_end_time = args
         microcontroller_time_data_list.append(round((INT_end_time-INT_start_time)*1000,2))
         if microcontroller_time_data_list[-1]>10:

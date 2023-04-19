@@ -256,8 +256,12 @@ class camera(images):
             if self.manual==0:
                 if key == ord("q"):
                     self.destroy()
-                elif self.demo==1 and key == ord('c') :
-                    self.camswitch()
+                elif self.demo==1:
+                    if key == ord('c') :
+                        self.camswitch()
+                    elif key == ord('2'):
+                        signal.raise_signal(signal.SIGUSR2)
+
         return
     
 
