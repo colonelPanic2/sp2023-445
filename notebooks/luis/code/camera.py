@@ -1,6 +1,8 @@
 import threading,cv2,imutils,traceback,queue
 from sys import platform
-from helpers.helpers import writefile,map_to_block_index
+import signal
+
+from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler
 TL = 0 # Top-left region of camera view
 TM = 1 # Top-middle region of camera view
 TR = 2 # Top-right region of camera view
@@ -16,7 +18,7 @@ class images:
         # Of the camera view. The ball can be in multiple regions at once.
         self.regions= { TL:0, TM:0, TR:0, BL:0, BM:0, BR:0 }
         self.last_regions = list(self.regions.values())
-        self.goal_timelimits = {'ball':5,'user':2,'waitpoint':2} # I don't expect that we'll need time limits for the user or the waitpoint
+        self.goal_timelimits = {'ball_W':5,'ball_C':2,'ball_A':2,'user':3,'waitpoint':3} # I don't expect that we'll need time limits for the user or the waitpoint
         self.timers = {TL:0, TM:0, TR:0, BL:0, BM:0, BR:0}
         self.camera_.start_read()
         return
@@ -34,28 +36,18 @@ class images:
         # is currently in the camera view
         if not (all(pos==6 for pos in goal_positions)):# or all(pos>5 for pos in goal_positions)):
             self.last_regions = list(self.regions.values())
-        # Update the current goal position
-        if t0 is None:
-            for i in range(6):
-                if i in goal_positions:
-                    self.regions[i]+= 1
-                else:
-                    self.regions[i]=0
-            return None
-        # Update the current goal position and the current timer
-        else:
-            for i in range(6):
-                if self.timers[i]==0:
-                    self.timers[i]=t0
-                if i in goal_positions:
-                    self.regions[i]+= 1
-                    if not self.camera_.noprint:
-                        print('\033[F\033[K' * 1, end = "")
-                        print(f"{i}: {t0-self.timers[i]:.2f}")
-                else:
-                    self.regions[i]=0
-                    self.timers[i] = t0
-            return [t0-self.timers[i] for i in range(6)]
+        for i in range(6):
+            if self.timers[i]==0:
+                self.timers[i]=t0
+            if i in goal_positions:
+                self.regions[i]+= 1
+                if not self.camera_.noprint:
+                    print('\033[F\033[K' * 1, end = "")
+                    print(f"{i}: {t0-self.timers[i]:.2f}")
+            else:
+                self.regions[i]=0
+                self.timers[i] = t0
+        return [t0-self.timers[i] for i in range(6)]
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):
         # If the goal is in the camera view, then find the region(s) where it is present
@@ -96,6 +88,7 @@ class camera(images):
                 _ = self.q.get()
             self.index = int(not self.index)
             cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
+            # NOTE: multiply the self.index by 2 when on the Pi
             self.cam = cv2.VideoCapture(self.index,cam_backends[int(platform=='linux')])            
             self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
             self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
@@ -133,17 +126,28 @@ class camera(images):
     def destroy(self):
         global sigint
         print("\nHalting program...")
-        writefile(self.logfile,"\n\nHalting program...  ")
+        writefile(self.logfile,"\nHalting program...  ")
         sigint = True
-        self.cam.release()
+        # TODO: FIGURE OUT THE CAUSE OF OCCASIONAL TIMEOUTS WHEN TRYING TO 
+        # RELEASE THE CAMERA OR JOIN THE THREADS
+        if platform=='linux':
+            signal.signal(signal.SIGALRM, teardown_timeout_handler)
+            signal.alarm(2)
+        # self.cam.release()
         if self.demo:
             cv2.destroyAllWindows()
         # NOTE: This doesn't seem to be causing any problems, but it doesn't seem to 
         # help much, either. There is an occasional error added as a manual entry near 
         # the end of the err.txt log for 04-08.
+        print("Joining camera thread and main thread...",end='  ')
         with threading.Lock():
             if self.capture_t is not None and self.capture_t.is_alive():
                 self.capture_t.join()
+        if platform=='linux':
+            signal.alarm(0)
+        self.cam.release()
+        print('thread join successful')
+        writefile(self.logfile,'\nDone.\nRaising KeyboardInterrupt to end the process...\n')
         raise KeyboardInterrupt
     # (camera thread) Read an image from the camera and store it in 
     # a queue to be accessed by the main thread in the 'getimage' function.
@@ -228,31 +232,36 @@ class camera(images):
     # Draw the lines showing the 6 regions of the image. If the goal is in a region,
     # then outline the region in green. Otherwise, outline it in red.
     def show_tracking(self,image,position_xy):
-        # Draw lines to show the regions of the screen
-        cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
-        height, width = image.shape[:2]
-        cv2.line(image, (width//3, 0), (width//3, height), (0, 0, 255), 2)
-        cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 0, 255), 2)
-        cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
-        if position_xy is not None:
-            block_index = map_to_block_index(position_xy,image.shape)
-            if block_index>=0 and block_index<6:
-                region_map = [        (0,0),        (width//3,0),        (2*width//3,0),\
-                              (0,height//2),(width//3,height//2),(2*width//3,height//2)]
-                top_right = region_map[block_index]
-                bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
-                cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
-            else:
-                print(f"\nUnexpected position value: map_to_block_index({position_xy}) -> {block_index}\n")
-        # show the frame to our screen
-        cv2.imshow("Camera", image)
-        key = cv2.waitKey(1) & 0xFF
-        # if the 'q' key is pressed, stop the loop
-        if self.manual==0:
-            if key == ord("q"):
-                self.destroy()
-            elif self.demo==1 and key == ord('c') :
-                self.camswitch()
+        if image is not None:
+            # Draw lines to show the regions of the screen
+            cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
+            height, width = image.shape[:2]
+            cv2.line(image, (width//3, 0), (width//3, height), (0, 0, 255), 2)
+            cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 0, 255), 2)
+            cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
+            if position_xy is not None:
+                block_index = map_to_block_index(position_xy,image.shape)
+                if block_index>=0 and block_index<6:
+                    region_map = [        (0,0),        (width//3,0),        (2*width//3,0),\
+                                (0,height//2),(width//3,height//2),(2*width//3,height//2)]
+                    top_right = region_map[block_index]
+                    bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
+                    cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
+                else:
+                    print(f"\nUnexpected position value: map_to_block_index({position_xy}) -> {block_index}\n")
+            # show the frame to our screen
+            cv2.imshow("Camera", image)
+            key = cv2.waitKey(1) & 0xFF
+            # if the 'q' key is pressed, stop the loop
+            if self.manual==0:
+                if key == ord("q"):
+                    self.destroy()
+                elif self.demo==1:
+                    if key == ord('c') :
+                        self.camswitch()
+                    elif key == ord('2'):
+                        signal.raise_signal(signal.SIGUSR2)
+
         return
     
 
