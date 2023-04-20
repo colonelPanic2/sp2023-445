@@ -286,16 +286,21 @@ def iproc_main():
     sigint=False
     import time
     from gpio import control
-    cam = camera(                    noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
-    ctrl = control(cam,gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
+    cam = camera(                    noprint=0,demo=1,manual=0,init_time=0,logfile='cam-dot-py-logfile')
+    ctrl = control(    gettimes=None,noprint=0,demo=1,manual=0,init_time=0,logfile='cam-dot-py-logfile') 
     # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
     # after which we will no longer be in manual control mode
     ctrl.manual=0
     cam.manual=0
+    from sys import argv
+    if len(argv[1:]) == 0:
+        args='ball'
+    else:
+        args=argv[1]
     try:
         while sigint==False:
             t0 = time.perf_counter()
-            cam.update_goal_position('ball',time.time())
+            cam.update_goal_position(args,time.time())
             cam.get_goal_regions()
             # if sigint==False:
             #     print('\033[F\033[K' * 1, end = "")

@@ -37,15 +37,15 @@ def detect_shape(c):
 
     # 6
     elif len(approx) == 6:
-	shape = 'hexagon'
-	
+        shape = "hexagon"
+        
     # Otherwise assume as circle or oval
     else:
         (x, y, w, h) = cv2.boundingRect(approx)
-        
         shape = "circle"
-
+    
     return shape
+
     
     
 cam = cv2.VideoCapture(0)
