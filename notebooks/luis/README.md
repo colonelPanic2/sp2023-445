@@ -17,7 +17,6 @@
 
 We've set up what is expected to be the base of the final version of the PCB. We still need to decide on the power supply that we're going to use, and how we should connect it to the rest of the design. For now, our best idea for the power subsystem is to connect a high-voltage battery to the design with resistors to control the power supplied to each component.
 
-
 # 2023-02-26 - Re-evaluating the power subsystem
 
 Due to conflicting research data, we'll have to test our design's motors ourselves. With the data we've acquired beforehand, its hard to know for sure if the car we bought will be powerful enough to move under the weight of the full design. Also, we need to know how much power will be consumed at different weights.
@@ -27,40 +26,47 @@ It looks like the motors can be relied upon to handle about 0.8kg with a power s
 ####MAKE SURE TO INCLUDE CALCULATIONS                          ####
 
 # 2023-03-02 - PCB redesign 1
-(microcontroller interrupts, new H-bridges, full fetching output to control)
 
 We need to review our PCB to make sure that the control and fetching subsystems can communicate with each other and the ultrasonic sensors asynchronously without using extra resources. Also, we need to establish the mappings of the fetching subsystem's outputs to the control subsystem. 
 
 Our design wasn't making use of the interrupt pins on the microcontroller. We've added an interrupt for the Pi and an interrupt for the ultrasonic sensors. We don't know if the sensor interrupt will be helpful because we don't know how long they will take to respond with data after being triggered. We've decided to keep the interrupt for now as a precaution. The Pi interrupt will be necessary if we want the microcontroller read the Pi input as a byte of data. Using interrupts will also prevent us from using unnecessary resources on polling all of the input pins on each iteration of the main loop for the microcontroller code. The Pi's output will consist of 2 bits per pair of motors, 1 bit to tell the control subsystem whether the design is in manual or auto control mode, and another bit to generate the microcontroller interrupt to read data from the Pi. The Pi's inputs to the microcontroller will be mapped as shown below:
 
-![](Pi_to_microcontroller_pin_mapping.png)
+![](images/pinmap-1.png)
+
+The row 1 mapping will communicate the direction of the left motors, row 2 will communicate whether the left motors should be moving or not. Rows 3 and 4 will communicate the direction and movement, repectively, of the right motors. Rows 5 and 6 will communicate the movement and direction, respectively, of the pincer motors. Row 7 will communicate the information about the control state (manual or auto mode). Row 8 will communicate the Pi interrupt to the microcontroller to read the input data from the Pi. Row 9 will communicate the sensor interrupt to the microcontroller through an OR gate. The outputs of both of the sensors will be the inputs to the OR gate.
 
 Also, we'll have to use different H-bridges if we want to free up enough pins on the microcontroller to be able to include the Pi inputs and the sensor inputs.
+
+[new-Hbridges]()
 
 # 2023-03-05/06 - Buck converters for power subsystem
 
 We're testing the power consumption of the motors under weights of up to 1.3kg. We need to know if our new approach with the Pi battery and the PCB/motors battery combined with buck converters will be able to provide a sufficient power supply to move the design and power the PCB components at maximum power consumption for up to 45 minutes. 
 
 It looks like we've underestimated our motors. The car motors can move at a moderate speed while carrying 1.3kg and with a supply voltage of 5V at 0.7A. We expect the pincer motors and the rest of the PCB to consume no more than 1A at any given point in time. So if we convert the supply voltage down to 5V and use 2 buck converters with a current capacity of about 1A each, we whould be able to run the design with maximum power consumption for about (11.1-5)(5.2)/(5)(1.7) = 3.7 hours, where 5 is subtracted from the battery voltage because 5V is the minimum cutoff voltage that can be supplied to the converters.
-
+####DOUBLE-CHECK THE CUTOFF VOLTAGE FOR THE CONVERTERS
 
 # 2023-03-13 - Fetching subsystem rough draft
 
 We need to get started on the code base for the fetching subsystem. Since the image processing code is unavailable, we'll also have to implement some way to simulate an input from the image processing code.
 
-The structure for the fetching subsystem has been implemented using a state machine library found online called 'pystatemachine'. The state machine is initialized by defining an object from the 'FSM' class, which then initializes a parent class called 'StateLogic'. The 'FSM' class defines all of state objects and functions called when the conditions for a state transition are satisfied. The 'StateLogic' class defines the functions which dictate the design's behavior in each state. Both of these classes are implemented in state_machine.py, and the 'FSM' class uses the pystatemachine library. All functions directly involved in the handling of the fetching subsystem's output to the control subsystem are implemented in a class called 'control' in gpio.py. In order to run/debug the fetching subsystem, we've implemented functions in img_proc.py that generate a random output in the format of the expected output from the image processing code. Once the image processing code is ready, calls to these functions will be replaced with calls to their counterparts in the image processing code.
+The structure for the fetching subsystem has been implemented using a state machine library found online called 'pystatemachine'. The state machine is initialized by defining an object from the 'FSM' class, which then initializes a parent class called 'StateLogic'. The 'FSM' class defines all of state objects and functions called when the conditions for a state transition are satisfied. The 'StateLogic' class defines the functions which dictate the design's behavior in each state. Both of these classes are implemented in state_machine.py, and the 'FSM' class uses the pystatemachine library. All functions directly involved in the handling of the fetching subsystem's output to the control subsystem are implemented in a class called 'control' in gpio.py. In order to run/debug the fetching subsystem, we've implemented functions in img_proc.py that generate a random output in the format of the expected output from the image processing code. Once the image processing code is ready, calls to these functions will be replaced with calls to their counterparts in the image processing code. The FSM has a total of 6 states, and the state machine diagram is shown below:
+
+![](images/fsm-diagram-1.png)
+
+[pystatemachine](https://pypi.org/project/pystatemachine/#:~:text=pystatemachine%20is%20a%20versatile%2C%20yet%20easy-to-use%20finite-state%20machine,another%20when%20initiated%20by%20a%20triggering%20event.%20Usage)
 
 # 2023-03-15 - Microcontroller code rough draft
 
 In preparation for the hardware integration, we should have a code base that sets up and implements the interrupt handlers for the Pi and sensor interrupts, and uses this input data to define the necessary outputs to the motors.
 
-A rough draft of the microcontroller code has been implemnted. The input and output pins are all defined as specified on the PCB design document, and logic has been implemented to interpret inputs from the sensors/Pi into commands for the motors. Unfortunately, we won't be able to test this code until the hardware is ready. Also, some research suggests that the delay on the response of the ultrasonic sensors is shorter than we anticipated when we reserved an interrupt pin for the ultrasonic sensors on the microcontroller. It looks like we might not need the sensor interrupt.
+A rough draft of the microcontroller code has been implemented. The input and output pins are all defined as specified on the PCB design document and the mapping shown in [2023-03-02](#2023-03-02---pcb-redesign-1), and logic has been implemented to interpret inputs from the sensors/Pi into commands for the motors. Unfortunately, we won't be able to test this code until the hardware is ready. Also, some research suggests that the delay on the response of the ultrasonic sensors is shorter than we anticipated when we reserved an interrupt pin for the ultrasonic sensors on the microcontroller. It looks like we might not need the sensor interrupt.
 
 # 2023-03-29 - Image processing update
 
 Now that we have the image processing code, we need to update the fetching subsystem to use the new functions instead of the randomized ones. Since we have a program built in to measure the runtimes of the state functions using the randomized functions, it should be easy to measure the average runtimes of each of the state functions using the image processing code once they've replaced the randomized functions.
 
-The image processing code has been implemented into the rough draft, but it looks like we'll have to get rid of the runtime sampling program and re-implement it with the image processing code. Since the tests are being run by us rather than the computer, it takes much longer to get enough samples for each state function in the state machine. Now that the image processing is integrated, we should start focusing on how our code will handle state changes that require the state machine to effectively pause for an unknown amount of time.
+The image processing code has been implemented into the rough draft, but it looks like we'll have to get rid of the runtime sampling program and re-implement it with the image processing code. Since the tests are being run by us rather than the computer, it takes much longer to get enough samples for each state function in the state machine. Now that the image processing is integrated, we should start focusing on how our code will handle state changes that require the state machine to wait for an unknown amount of time.
 
 # 2023-04-01 - Parallelization
 
@@ -70,8 +76,6 @@ After trying both thread and process-wise parallelization, we have decided that 
 ####CHECK THE DIFFERENCES IN PERFORMANCE FOR THE PARALLEL APPROACH AND THE REGULAR, SEQUENTIAL APPROACH OF READING FROM THE CAMERA
 
 # 2023-04-04 - PCB redesign 2
-
-(remove ultrasonic sensor interrupt, forward 1 bit of proximity data to the pi, replace a second, redundant trigger for the ultrasonic sensors with an output to the Pi for recording runtime data/determining when to send the next signal from the Pi)
 
 While setting up the code base for the microcontroller, we found that the interrupt for the ultrasonic sensors had no practical value. Also, we found that we could free a pin on the microcontroller if we eliminated a redundant second trigger for the ultrasonic sensors and had one trigger that activated both sensors at once. Our goal is to find out how we should repurpose these two pins on the microcontroller.
 
