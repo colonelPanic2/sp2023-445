@@ -1,6 +1,17 @@
-# Luis Worklog
+# Luis Notebook
 
-[[_TOC_]]
+# Table of contents
+- [2023-02-14](#2023-02-14---initial-pcb-design)
+- [2023-02-26](#2023-02-26---re-evaluating-the-power-subsystem)
+- [2023-03-02](#2023-03-02---pcb-redesign-1)
+- [2023-03-05](#2023-03-0506---buck-converters-for-power-subsystem)
+- [2023-03-06](#2023-03-0506---buck-converters-for-power-subsystem)
+- [2023-03-13](#2023-03-13---fetching-subsystem-rough-draft)
+- [2023-03-15](#2023-03-15---microcontroller-code-rough-draft)
+- [2023-03-29](#2023-03-29---image-processing-update)
+- [2023-04-01](#2023-04-01---parallelization)
+- [2023-04-04](#2023-04-04---pcb-redesign-2)
+- [2023-04-16](#2023-04-16---working-software-demo)
 
 # 2023-02-14 - Initial PCB design
 
@@ -15,7 +26,8 @@ It looks like the motors can be relied upon to handle about 0.8kg with a power s
 ####GET INFORMATION ABOUT FETCHING SUBSYSTEM POWER CONSUMPTION?####
 ####MAKE SURE TO INCLUDE CALCULATIONS                          ####
 
-# 2023-03-02 - PCB redesign (microcontroller interrupts, new H-bridges, full fetching/control I/O)
+# 2023-03-02 - PCB redesign 1
+(microcontroller interrupts, new H-bridges, full fetching output to control)
 
 We need to review our PCB to make sure that the control and fetching subsystems can communicate with each other and the ultrasonic sensors asynchronously without using extra resources. Also, we need to establish the mappings of the fetching subsystem's outputs to the control subsystem. 
 
@@ -57,7 +69,9 @@ The frame rate of the image processing code is somewhat low. Our goal is to para
 After trying both thread and process-wise parallelization, we have decided that creating the simplest and most effective way to parallelize the image processing code, given our experience and time constraints, would be to simply spawn a second thread that constantly reads the input from the camera and saves it in a queue to be read by the main thread in the state machine. The queue was maintained as a means to ensure that the 2 threads never attempted to access the same data during normal operation. 
 ####CHECK THE DIFFERENCES IN PERFORMANCE FOR THE PARALLEL APPROACH AND THE REGULAR, SEQUENTIAL APPROACH OF READING FROM THE CAMERA
 
-# 2023-04-04 - PCB redesign (remove ultrasonic sensor interrupt, forward 1 bit of proximity data to the pi, replace a second, redundant trigger for the ultrasonic sensors with an output to the Pi for recording runtime data/determining when to send the next signal from the Pi)
+# 2023-04-04 - PCB redesign 2
+
+(remove ultrasonic sensor interrupt, forward 1 bit of proximity data to the pi, replace a second, redundant trigger for the ultrasonic sensors with an output to the Pi for recording runtime data/determining when to send the next signal from the Pi)
 
 While setting up the code base for the microcontroller, we found that the interrupt for the ultrasonic sensors had no practical value. Also, we found that we could free a pin on the microcontroller if we eliminated a redundant second trigger for the ultrasonic sensors and had one trigger that activated both sensors at once. Our goal is to find out how we should repurpose these two pins on the microcontroller.
 
