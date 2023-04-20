@@ -24,7 +24,7 @@ class images:
         return
     def update_goal_position(self,goal,t0=None):
         global sigint
-        position_xy,image = self.camera_.getimage()
+        position_xy,image = self.camera_.getimage(goal)
         if position_xy is not None:
             region_index = map_to_block_index(position_xy,image.shape)
             goal_positions = [region_index]
@@ -72,8 +72,12 @@ class camera(images):
         self.cam = cv2.VideoCapture(self.index,cam_backends[int(platform=='linux')])
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
+        self.redLower = (140, 70, 70)
+        self.redUpper = (179, 255, 255)
         self.greenLower = (30, 86, 46)
         self.greenUpper = (100, 255, 255)
+        self.blueLower = (40, 50, 80)
+        self.blueUpper = (130, 255, 255)
         self.q = queue.Queue()
         super().__init__(self)
         writefile(self.logfile,"Done.\n")
@@ -159,16 +163,21 @@ class camera(images):
                 self.q.put(frame)
         return
     # NOTE: Old ball tracking (consistent, but OVERLY sensitive to non-ball objects with a similar color)
-    def old_balltrack(self,frame):        
+    def track(self,frame,goal):   
+        center = None
         blurred = cv2.GaussianBlur(frame, (11,11), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, self.greenLower, self.greenUpper)
+        if goal[:4]=='ball':
+            mask = cv2.inRange(hsv, self.greenLower, self.greenUpper)
+        elif goal=='user':
+            mask = cv2.inRange(hsv, self.redLower, self.redUpper)
+        elif goal=='waitpoint':
+            mask = cv2.inRange(hsv, self.blueLower, self.blueUpper)
         mask = cv2.erode(mask, None, iterations=2)
         mask = cv2.dilate(mask, None, iterations=2)
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,\
                                 cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
-        center = None
         if len(cnts) > 0:
             c = max(cnts, key=cv2.contourArea)
             ((x,y), radius) = cv2.minEnclosingCircle(c)
@@ -176,17 +185,19 @@ class camera(images):
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
             if radius > 3:
                 cv2.circle(frame, (int(x), int(y)), int(radius),\
-                           (0, 255, 255), 2)
+                        (0, 255, 255), 2)
                 cv2.circle(frame, center, 5, (0,0,255), -1)
         return center
     # NOTE: New ball tracking (inconsistent, but LESS sensitive to non-ball objects with similar color)
-    def new_balltrack(self,frame):
+    def new_track(self,frame,goal):
         blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        # construct a mask for the color "green", then perform
-        # a series of dilations and erosions to remove any small
-        # blobs left in the mask
-        mask = cv2.inRange(hsv, self.greenLower, self.greenUpper)
+        if goal[:4]=='ball':
+            mask = cv2.inRange(hsv, self.greenLower, self.greenUpper)
+        elif goal=='user':
+            mask = cv2.inRange(hsv, self.redLower, self.redUpper)
+        elif goal=='waitpoint':
+            mask = cv2.inRange(hsv, self.blueLower, self.blueUpper)
         mask = cv2.erode(mask, None, iterations=2)
         mask = cv2.dilate(mask, None, iterations=2)
         
@@ -219,14 +230,14 @@ class camera(images):
     # (main thread) Get an image from the camera thread by accessing a shared queue, and
     # use it to determine the (x,y) coordinates of the center of the goal. If the goal
     # isn't detected in the image, then center = None.
-    def getimage(self):
+    def getimage(self,goal):
         global sigint
         center = None
         image=None
         while sigint==False:
             if not self.q.empty():
                 image = self.q.get()
-                center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
+                center = self.track(image,goal) # NOTE: switch between 'track' and 'new_track' to see differences in results
                 break
         return center,image
     # Draw the lines showing the 6 regions of the image. If the goal is in a region,
