@@ -84,8 +84,3 @@ We need to have a user interface that makes it easier for us to test and debug o
 We've implemented all of the features described above, along with a means of manually generating the SIGUSR1 and SIGUSR2 signals to partially simulate an input to the Pi from the microcontroller. With this, we should be able to demonstrate full functionality of the fetching subsystem and collect data for validation, even if we are unable to successfully integrate the components of the design.
 
 NOTE: Regarding the partial SIGUSR1 and SIGUSR2 simulation. In the final design, the microcontroller can generate interrupts completely asynchronously. The simulation of these signals via manual input fails to account for this by only raising the signals when certain condition is met within the predefined context of the fetching subsystem's code. Therefore, extra measures may have to be taken to properly handle these signals in the finalized design.
-
-
-# Example of how to format images and links in *.md files
-![](insert_image_here.png)
-[insert-link-name-here](https://insert-link-here.com)
