@@ -155,6 +155,10 @@ def parse_args():
                 ### Unit test the WAIT state ###
                 # argv = [time]
                 args = [str(argv[0]),0,0,1,'WAIT']
+            elif len(argv[0])>1:
+                ### start in default mode at a given state (not START)
+                # argv = [<state>]
+                args = [None,1,1,0,argv[0]]
             else:
                 # argv = [demo]
                 args = [None,0,int(argv[0]),0,'WAIT']
