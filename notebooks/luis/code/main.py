@@ -158,7 +158,7 @@ def parse_args():
             elif len(argv[0])>1:
                 ### start in default mode at a given state (not START)
                 # argv = [<state>]
-                args = [None,1,1,0,argv[0]]
+                args = [None,0,1,0,argv[0]]
             else:
                 # argv = [demo]
                 args = [None,0,int(argv[0]),0,'WAIT']
