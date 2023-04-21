@@ -35,7 +35,7 @@ class control:
         # self.pins=[7,0,1,5,6,12,13,19, 16,26] # the default pins are all GPIO pins
         self.pins = [29,31,32,33,11,12,18,24,7,15]
         # self.pins = [9,8,78,77,76,4,72,13,16,50]
-        self.instruction={'CAMSWITCH':0,'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0,'CLEAR':0,'SIGUSR1':0,'SIGUSR2':0}
+        self.instruction=0#{'CAMSWITCH':0,'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0,'CLEAR':0,'SIGUSR1':0,'SIGUSR2':0}
         self.INT_start_time = 0
         self.proximity = 0
         self.DONE = False
@@ -119,34 +119,51 @@ class control:
         self.root.geometry("64x64")
         self.app = Frame(self.root)
         self.app.grid()
-        self.camswitch_db = Debouncer(self.camswitch,self.camswitch_)
-        self.root.bind('c',self.camswitch_db.pressed)
-        self.root.bind('<KeyRelease-c>',self.camswitch_db.released)
 
-        self.forward_db = Debouncer(self.forward,self.forward_)
-        self.root.bind('w',self.forward_db.pressed)
-        self.root.bind('<KeyRelease-w>',self.forward_db.released)
+        # self.camswitch_db = Debouncer(self.camswitch,self.camswitch_)
+        # self.root.bind('c',self.camswitch_db.pressed)
+        # self.root.bind('<KeyRelease-c>',self.camswitch_db.released)
 
-        self.left_db = Debouncer(self.left,self.left_)
-        self.root.bind('a',self.left_db.pressed)
-        self.root.bind('<KeyRelease-a>',self.left_db.released)
+        # self.forward_db = Debouncer(self.forward,self.forward_)
+        # self.root.bind('w',self.forward_db.pressed)
+        # self.root.bind('<KeyRelease-w>',self.forward_db.released)
 
-        self.back_db = Debouncer(self.back,self.back_)
-        self.root.bind('s',self.back_db.pressed)
-        self.root.bind('<KeyRelease-s>',self.back_db.released)
+        # self.left_db = Debouncer(self.left,self.left_)
+        # self.root.bind('a',self.left_db.pressed)
+        # self.root.bind('<KeyRelease-a>',self.left_db.released)
 
-        self.right_db = Debouncer(self.right,self.right_)
-        self.root.bind('d',self.right_db.pressed)
-        self.root.bind('<KeyRelease-d>',self.right_db.released)
+        # self.back_db = Debouncer(self.back,self.back_)
+        # self.root.bind('s',self.back_db.pressed)
+        # self.root.bind('<KeyRelease-s>',self.back_db.released)
 
-        self.open_db = Debouncer(self.pincers_open,self.pincers_off_open)
-        self.root.bind('q',self.open_db.pressed)
-        self.root.bind('<KeyRelease-q>',self.open_db.released)
+        # self.right_db = Debouncer(self.right,self.right_)
+        # self.root.bind('d',self.right_db.pressed)
+        # self.root.bind('<KeyRelease-d>',self.right_db.released)
 
-        self.close_db = Debouncer(self.pincers_close,self.pincers_off_close)
-        self.root.bind('e',self.close_db.pressed)
-        self.root.bind('<KeyRelease-e>',self.close_db.released)
+        # self.open_db = Debouncer(self.pincers_open,self.pincers_off_open)
+        # self.root.bind('q',self.open_db.pressed)
+        # self.root.bind('<KeyRelease-q>',self.open_db.released)
 
+        # self.close_db = Debouncer(self.pincers_close,self.pincers_off_close)
+        # self.root.bind('e',self.close_db.pressed)
+        # self.root.bind('<KeyRelease-e>',self.close_db.released)
+
+        # self.root.bind('c',self.camswitch)
+        # self.root.bind('<KeyRelease-c>',self.camswitch_)
+
+        self.root.bind('w',self.forward)
+        # self.root.bind('<KeyRelease-w>',self.forward_)
+        self.root.bind('a',self.left)
+        # self.root.bind('<KeyRelease-a>',self.left_)
+        self.root.bind('s',self.back)
+        # self.root.bind('<KeyRelease-s>',self.back_)
+        self.root.bind('d',self.right)
+        # self.root.bind('<KeyRelease-d>',self.right_)
+        self.root.bind('q',self.pincers_open)
+        # self.root.bind('<KeyRelease-q>',self.pincers_off_open)
+        self.root.bind('e',self.pincers_close)
+        # self.root.bind('<KeyRelease-e>',self.pincers_off_close)
+        self.root.bind('<space>',self.stop_all)
         self.root.bind('<Control-c>',self.exit_)
         self.root.bind('<l>',self.clear_terminal)
         if self.gettimes is not None:
@@ -156,27 +173,41 @@ class control:
             self.video_update()
         self.root.mainloop()
         return
+    def stop_all(self,event=None):
+        for i in range(7):
+            self.setpin(i,0)
+        self.setpin(7,1)
+        time.sleep(0.005)
+        self.setpin(7,0)
+        self.instruction=0
     # Prove the ability to record response time data for the microcontroller
     # If time data isn't being collected, then this just changes self.DONE 
     # to 'True' and then back to 'False', which does nothing without the FSM.
     def callback_SIGUSR1_helper(self,channel):
+        if self.instruction==1:
+            return
+        self.instruction=1
         self.clear_terminal()
         self.callback_SIGUSR1(channel)
         self.DONE=False
         return
     # Change the proximity attribute (something is within range of the ultrasonic sensors)
     def callback_SIGUSR2_helper(self,channel):
+        if self.instruction==1:
+            return
+        self.instruction=1
         self.clear_terminal()
         self.callback_SIGUSR2(channel)
     def camswitch(self,event=None):
-        if self.instruction['CAMSWITCH']==0:
-            self.cam.camera_.camswitch()
-        self.instruction['CAMSWITCH']=1
+        if self.instruction==1:
+            return
+        self.instruction=1
+        self.cam.camera_.camswitch()
     def camswitch_(self,event=None):
-        self.instruction['CAMSWITCH']=0
+        self.instruction=0
     # Make the car move forward
     def forward(self,event=None):
-        if self.instruction['FORWARD']==1:
+        if self.instruction==1:
             return
         self.clear_terminal()
         if self.cam.index==0:
@@ -187,240 +218,240 @@ class control:
             self.right_move(1)
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['FORWARD']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['FORWARD']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+"\n")
             print(self.read(7))
-        self.instruction['FORWARD'] = 1
+        self.instruction = 1
         #raise_signal(SIGUSR1)
         return
     # Stop if the car isn't moving left OR right
     def forward_(self,event=None):
         # self.clear_terminal()
         self.setpin(7,0)
-        self.instruction['FORWARD'] = 0
-        if not self.instruction['RIGHT']:
+        self.instruction = 0
+        if not self.instruction:
             self.left_stop()
-        if not self.instruction['LEFT']:
+        if not self.instruction:
             self.right_stop()
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['FORWARD']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['FORWARD']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         #raise_signal(SIGUSR1)
         return
     # Make the car turn right
     def right(self,event=None):
-        if self.instruction['RIGHT']==1:
+        if self.instruction==1:
             return
         self.clear_terminal()
         if self.cam.index==0:
-            if self.instruction['BACK'] and not self.instruction['LEFT']:
+            if self.instruction and not self.instruction:
                 self.right_stop()
                 self.left_move(1) # only move the left motors backward
             else:
                 self.left_move()
         else:
-            if self.instruction['BACK'] and not self.instruction['LEFT']:
+            if self.instruction and not self.instruction:
                 self.left_stop()
                 self.right_move() # only move the 'left' motors 'backward'
             else:
                 self.right_move(1)            
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['RIGHT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['RIGHT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        self.instruction['RIGHT'] = 1
+        self.instruction = 1
         #raise_signal(SIGUSR1)
         return
     # Stop moving the left motors if the car isn't moving forward OR backward
     def right_(self,event=None):
         # self.clear_terminal()
-        self.instruction['RIGHT'] = 0
-        if not self.instruction['FORWARD'] and not self.instruction['BACK']:
+        self.instruction = 0
+        if not self.instruction and not self.instruction:
             if self.cam.index==0:
                 self.left_stop()
             else:
                 self.right_stop()
             self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['RIGHT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['RIGHT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         #raise_signal(SIGUSR1)
         return
     # Make the car turn left
     def left(self,event=None):
-        if self.instruction['LEFT']==1:
+        if self.instruction==1:
             return
         self.clear_terminal()
         if self.cam.index==0:
-            if self.instruction['BACK'] and not self.instruction['RIGHT']:
+            if self.instruction and not self.instruction:
                 self.left_stop()
                 self.right_move(1) # only move the right motors backward
             else: 
                 self.right_move()
         else:
-            if self.instruction['BACK'] and not self.instruction['RIGHT']:
+            if self.instruction and not self.instruction:
                 self.right_stop()
                 self.left_move() # only move the 'right' motors 'backward'
             else: 
                 self.left_move(1)            
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['LEFT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['LEFT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        self.instruction['LEFT'] = 1
+        self.instruction = 1
         #raise_signal(SIGUSR1)
         return
     # Stop moving the right motors if the car isn't moving forward OR backward
     def left_(self,event=None):
         # self.clear_terminal()
-        self.instruction['LEFT'] = 0
-        if not self.instruction['FORWARD'] and not self.instruction['BACK']:
+        self.instruction = 0
+        if not self.instruction and not self.instruction:
             if self.cam.index==0:
                 self.right_stop()
             else:
                 self.left_stop()
             self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['LEFT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall() + " " + self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['LEFT']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         #raise_signal(SIGUSR1)
         return
     # Make the car move backwards
     def back(self,event=None):
-        if self.instruction['BACK']==1:
+        if self.instruction==1:
             return
         self.clear_terminal()
         if self.cam.index==0:
-            if self.instruction['LEFT'] and not self.instruction['RIGHT']:
+            if self.instruction and not self.instruction:
                 self.right_move(1) # reverse only the right motors
-            elif self.instruction['RIGHT'] and not self.instruction['LEFT']:
+            elif self.instruction and not self.instruction:
                 self.left_move(1) # reverse only the left motors
             else:
                 self.right_move(1)
                 self.left_move(1)
         else:
-            if self.instruction['LEFT'] and not self.instruction['RIGHT']:
+            if self.instruction and not self.instruction:
                 self.left_move() # 'reverse' only the 'right' motors
-            elif self.instruction['RIGHT'] and not self.instruction['LEFT']:
+            elif self.instruction and not self.instruction:
                 self.right_move() # 'reverse' only the 'left' motors
             else:
                 self.right_move()
                 self.left_move()            
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['BACK']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['BACK']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        self.instruction['BACK'] = 1
+        self.instruction = 1
         #raise_signal(SIGUSR1)
         return
     # Stop if the car isn't moving left OR right
     def back_(self,event=None):
         # self.clear_terminal()
         self.setpin(7,0)
-        self.instruction['BACK'] = 0
-        if not self.instruction['LEFT']:
+        self.instruction = 0
+        if not self.instruction:
             self.right_stop()
-        if not self.instruction['RIGHT']:
+        if not self.instruction:
             self.left_stop()
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['BACK']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['BACK']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         #raise_signal(SIGUSR1)
         return
     # Open the pincers
     def pincers_open(self,event=None):
-        if self.instruction['OPEN']==1:
+        if self.instruction==1:
             return
         self.clear_terminal()
-        if self.instruction['CLOSE']==0:
+        if self.instruction==0:
             self.pincers_move(0)
             self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['OPEN']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['OPEN']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        self.instruction['OPEN'] = 1
+        self.instruction = 1
         #raise_signal(SIGUSR1)
         return
     # Close the pincers
     def pincers_close(self,event=None):
-        if self.instruction['CLOSE']==1:
+        if self.instruction==1:
             return
         self.clear_terminal()
-        if self.instruction['OPEN']==0:
+        if self.instruction==0:
             self.pincers_move(1)
             self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction['CLOSE']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
         time.sleep(0.005)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction['CLOSE']==0:
+        if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        self.instruction['CLOSE'] = 1  
+        self.instruction = 1  
         #raise_signal(SIGUSR1)
         return
     # If the pincers are not being used, then set the control outputs to 0
     def pincers_off_open(self,event=None):
         # self.clear_terminal()
-        self.instruction['OPEN'] = 0
-        if self.instruction['CLOSE']==0:
+        self.instruction = 0
+        if self.instruction==0:
             self.setpin(4,0)
             self.setpin(5,0)
         self.INT_start_time = time.time()
@@ -437,8 +468,8 @@ class control:
         return
     def pincers_off_close(self,event=None):
         # self.clear_terminal()
-        self.instruction['CLOSE'] = 0
-        if self.instruction['OPEN']==0:
+        self.instruction = 0
+        if self.instruction==0:
             self.setpin(4,0)
             self.setpin(5,0)
         self.INT_start_time = time.time()
@@ -455,6 +486,7 @@ class control:
         return
     # If the user terminates manual control mode, return to auto control mode
     def exit_(self,event=None):
+        self.instruction=1
         self.manual = 0
         for i in range(len(self.pins)-2):
             self.setpin(i,0)

@@ -1,6 +1,6 @@
 import threading,cv2,imutils,traceback,queue
 from sys import platform
-import signal
+import signal,time
 
 from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler
 TL = 0 # Top-left region of camera view
@@ -123,8 +123,9 @@ class camera(images):
         return shape
     # Spawn a camera thread to constantly read the camera's input.
     def start_read(self):
-        self.capture_t = threading.Thread(target=self.camera_read)
-        self.capture_t.start()
+        # self.capture_t = threading.Thread(target=self.camera_read)
+        # self.capture_t.start()
+        pass
     # Tell the camera thread to end smoothly, and raise a KeyboardInterupt
     # that will be caught in the 'main_fetching' function in main.py
     def destroy(self):
@@ -235,8 +236,10 @@ class camera(images):
         center = None
         image=None
         while sigint==False:
-            if not self.q.empty():
-                image = self.q.get()
+            ret,image=self.cam.read()
+            if ret:
+            # if not self.q.empty():
+                # image = self.q.get()
                 center = self.track(image,goal) # NOTE: switch between 'track' and 'new_track' to see differences in results
                 break
         return center,image
@@ -279,10 +282,22 @@ class camera(images):
 
 
 
+# NOTE: UNTESTED MICROCONTROLLER COMMS CODE
+def microcontroller_signal_handler(signum,frame):
+    global ctrl 
+    if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
+        ctrl.DONE = True
+        print(ctrl.DONE,'\n')
+    elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
+        ctrl.proximity = int(not ctrl.proximity)
+        print(ctrl.proximity,'\n')
+    signal.signal(signum,microcontroller_signal_handler)
+    return
 
 # Special function for testing the image processing code directly
 def iproc_main():
     global sigint
+    global ctrl
     sigint=False
     import time
     from gpio import control
@@ -295,6 +310,9 @@ def iproc_main():
     try:
         cam = camera(                    noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
         ctrl = control(    gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
+        # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
+        signal.signal(signal.SIGUSR1, microcontroller_signal_handler)
+        signal.signal(signal.SIGUSR2, microcontroller_signal_handler)
         ctrl.init_manual_control(cam)
         # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
         # after which we will no longer be in manual control mode
