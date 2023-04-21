@@ -41,9 +41,9 @@ class images:
                 self.timers[i]=t0
             if i in goal_positions:
                 self.regions[i]+= 1
-                if not self.camera_.noprint:
-                    print('\033[F\033[K' * 1, end = "")
-                    print(f"{i}: {t0-self.timers[i]:.2f}")
+                # if not self.camera_.noprint:
+                #     print('\033[F\033[K' * 1, end = "")
+                #     print(f"{i}: {t0-self.timers[i]:.2f}")
             else:
                 self.regions[i]=0
                 self.timers[i] = t0
@@ -286,25 +286,27 @@ def iproc_main():
     sigint=False
     import time
     from gpio import control
-    cam = camera(                    noprint=0,demo=1,manual=0,init_time=0,logfile='cam-dot-py-logfile')
-    ctrl = control(    gettimes=None,noprint=0,demo=1,manual=0,init_time=0,logfile='cam-dot-py-logfile') 
-    # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
-    # after which we will no longer be in manual control mode
-    ctrl.manual=0
-    cam.manual=0
+
     from sys import argv
     if len(argv[1:]) == 0:
         args='ball'
     else:
         args=argv[1]
     try:
+        cam = camera(                    noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
+        ctrl = control(    gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
+        ctrl.init_manual_control(cam)
+        # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
+        # after which we will no longer be in manual control mode
+        ctrl.manual=0
+        cam.manual=0
         while sigint==False:
             t0 = time.perf_counter()
             cam.update_goal_position(args,time.time())
             cam.get_goal_regions()
-            # if sigint==False:
-            #     print('\033[F\033[K' * 1, end = "")
-            #     print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
+            if sigint==False:
+                print('\033[F\033[K' * 1, end = "")
+                print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
     except KeyboardInterrupt:
         writefile('cam-dot-py-logfile','Done.')
         print("\nDone.\nTerminated by user input.")

@@ -4,10 +4,15 @@ from helpers.helpers import writefile,platform,clear,time_data
 try: 
     # import RPi.GPIO as io
     import Jetson.GPIO as io
+    # from helpers.helpers import io
+    print("Imported acutal gpio library")
 except:
     from helpers.helpers import  io
-from signal import raise_signal,SIGUSR1, SIGUSR2
+    print("imported helpers")
+from signal import SIGUSR1, SIGUSR2
+from os import getpid, kill
 
+from helpers.debounce import Debouncer
 
 # Control pin mapping:
 # self.pins[0]: 1 to reverse the left motors, 0 else
@@ -27,7 +32,9 @@ class control:
         self.manual=manual
         self.init_time=init_time
         self.logfile = logfile
-        self.pins=[7,0,1,5,6,12,13,19, 16,26] # the default pins are all GPIO pins
+        # self.pins=[7,0,1,5,6,12,13,19, 16,26] # the default pins are all GPIO pins
+        self.pins = [29,31,32,33,11,12,18,24,7,15]
+        # self.pins = [9,8,78,77,76,4,72,13,16,50]
         self.instruction={'CAMSWITCH':0,'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0,'CLEAR':0,'SIGUSR1':0,'SIGUSR2':0}
         self.INT_start_time = 0
         self.proximity = 0
@@ -37,18 +44,21 @@ class control:
         time_data(gettimes,'',0)
         # io.setmode(io.BCM)
         io.setmode(io.BOARD) # *****
-        io.setwarnings(False)
-        for pin in self.pins:
+        # io.setwarnings(False)
+        for pin in self.pins[:8]:
             if pin == self.pins[6]:
                 io.setup(pin, io.OUT)
                 io.output(pin,int(manual!=0))
             else:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
+        self.setpin(7,1)
+        time.sleep(0.005)
+        self.setpin(7,0)
         # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-        io.setup(self.pins[8],io.IN,pull_up_down=io.PUD_DOWN)
+        io.setup(self.pins[8],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[8],io.RISING,callback=self.callback_SIGUSR1)
-        io.setup(self.pins[9],io.IN,pull_up_down=io.PUD_DOWN)
+        io.setup(self.pins[9],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2)
         return
     def init_manual_control(self,cam):
@@ -73,13 +83,15 @@ class control:
          In order to completely end the program, press CTRL+C in the\n\
          terminal or 'q' in the 'Camera' window.\n\n")
         self.cam = cam
-        self.cam.start_read()
+        # self.cam.start_read()
         self.manual_setup()
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE (needs to be fully implemented)
     def callback_SIGUSR1(self,channel): 
-        raise_signal(SIGUSR1)
+        # raise_signal(SIGUSR1)
+        kill(getpid(),SIGUSR1)
     def callback_SIGUSR2(self,channel):
-        raise_signal(SIGUSR2)
+        # raise_signal(SIGUSR2)
+        kill(getpid(),SIGUSR2)
         # Show the camera view in a window while in manual control mode.
     def video_update(self):
         try:
@@ -87,8 +99,11 @@ class control:
             self.root.after(25,self.video_update) # Call this function every 25ms
         except KeyboardInterrupt:
             self.manual = 0
-            for i in range(len(self.pins)):
+            for i in range(len(self.pins)-2):
                 self.setpin(i,0)
+            self.setpin(7,1)
+            time.sleep(0.005)
+            self.setpin(7,0)
             writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
             self.root.destroy()
             writefile(self.logfile,"\nManual control mode exited successfully!\n\n")
@@ -104,20 +119,34 @@ class control:
         self.root.geometry("64x64")
         self.app = Frame(self.root)
         self.app.grid()
-        self.root.bind('c',self.camswitch)
-        self.root.bind('<KeyRelease-c>',self.camswitch_)
-        self.root.bind('w',self.forward)
-        self.root.bind('<KeyRelease-w>',self.forward_)
-        self.root.bind('a',self.left)
-        self.root.bind('<KeyRelease-a>',self.left_)
-        self.root.bind('s',self.back)
-        self.root.bind('<KeyRelease-s>',self.back_)
-        self.root.bind('d',self.right)
-        self.root.bind('<KeyRelease-d>',self.right_)
-        self.root.bind('q',self.pincers_open)
-        self.root.bind('<KeyRelease-q>',self.pincers_off_open)
-        self.root.bind('e',self.pincers_close)
-        self.root.bind('<KeyRelease-e>',self.pincers_off_close)
+        self.camswitch_db = Debouncer(self.camswitch,self.camswitch_)
+        self.root.bind('c',self.camswitch_db.pressed)
+        self.root.bind('<KeyRelease-c>',self.camswitch_db.released)
+
+        self.forward_db = Debouncer(self.forward,self.forward_)
+        self.root.bind('w',self.forward_db.pressed)
+        self.root.bind('<KeyRelease-w>',self.forward_db.released)
+
+        self.left_db = Debouncer(self.left,self.left_)
+        self.root.bind('a',self.left_db.pressed)
+        self.root.bind('<KeyRelease-a>',self.left_db.released)
+
+        self.back_db = Debouncer(self.back,self.back_)
+        self.root.bind('s',self.back_db.pressed)
+        self.root.bind('<KeyRelease-s>',self.back_db.released)
+
+        self.right_db = Debouncer(self.right,self.right_)
+        self.root.bind('d',self.right_db.pressed)
+        self.root.bind('<KeyRelease-d>',self.right_db.released)
+
+        self.open_db = Debouncer(self.pincers_open,self.pincers_off_open)
+        self.root.bind('q',self.open_db.pressed)
+        self.root.bind('<KeyRelease-q>',self.open_db.released)
+
+        self.close_db = Debouncer(self.pincers_close,self.pincers_off_close)
+        self.root.bind('e',self.close_db.pressed)
+        self.root.bind('<KeyRelease-e>',self.close_db.released)
+
         self.root.bind('<Control-c>',self.exit_)
         self.root.bind('<l>',self.clear_terminal)
         if self.gettimes is not None:
@@ -159,9 +188,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['FORWARD']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['FORWARD']==0:
             # writefile(self.logfile,self.read(7)+"\n")
@@ -181,9 +210,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['FORWARD']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['FORWARD']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -210,9 +239,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['RIGHT']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['RIGHT']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -232,9 +261,9 @@ class control:
             self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['RIGHT']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['RIGHT']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -261,9 +290,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['LEFT']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['LEFT']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -283,9 +312,9 @@ class control:
             self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['LEFT']==0:
-            # writefile(self.logfile,self.readall()[:-3] + " " + self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall() + " " + self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['LEFT']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -316,9 +345,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['BACK']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['BACK']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -338,9 +367,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['BACK']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['BACK']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -357,9 +386,9 @@ class control:
             self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['OPEN']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['OPEN']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -377,9 +406,9 @@ class control:
             self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction['CLOSE']==0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction['CLOSE']==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -397,9 +426,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -415,9 +444,9 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0:
-            # writefile(self.logfile,self.readall()[:-3]+" "+self.read(7)+' ')
-            print(self.readall()[:-3]+" "+self.read(7),end=' ')
-        #time.sleep(0.005)
+            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
+            print(self.readall()+" "+self.read(7),end=' ')
+        time.sleep(0.005)
         self.setpin(7,0)
         if self.manual!=0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -427,8 +456,11 @@ class control:
     # If the user terminates manual control mode, return to auto control mode
     def exit_(self,event=None):
         self.manual = 0
-        for i in range(len(self.pins)):
+        for i in range(len(self.pins)-2):
             self.setpin(i,0)
+        self.setpin(7,1)
+        time.sleep(0.005)
+        self.setpin(7,0)
         writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
         print("Exiting manual controls.\nFinal output: "+self.readall())
         self.root.destroy()
@@ -442,7 +474,7 @@ class control:
         self.setpin(7,1)
         # NOTE: Wait 5 ms for the microcontroller to handle the interrupt.
         # This value may need to be adjusted later.
-        #time.sleep(0.005) 
+        time.sleep(0.005) 
         self.setpin(7,0)
     def left_move(self,reverse=0):
         self.setpin(0,reverse)
@@ -484,7 +516,7 @@ class control:
     # Read the values of all of the output pins
     def readall(self):
         outputs=''
-        for pin_idx in range(len(self.pins)):
+        for pin_idx in range(len(self.pins)-2):
             outputs+=self.read(pin_idx)
         return outputs
     def clear_terminal(self,event=None):
