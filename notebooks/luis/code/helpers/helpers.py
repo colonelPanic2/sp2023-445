@@ -13,6 +13,7 @@ class remote_gpio:
         self.pinout={}
         self.OUT = 'OUT'
         self.BCM = 'BCM'
+        self.BOARD = 'BOARD' # *****
         self.mode = None
         self.warnings=None
         # NOTE: UNTESTED MICROCONTROLLER COMMS CODE

@@ -2,7 +2,8 @@ import time
 from tkinter import *
 from helpers.helpers import writefile,platform,clear,time_data
 try: 
-    import RPi.GPIO as io
+    # import RPi.GPIO as io
+    import Jetson.GPIO as io
 except:
     from helpers.helpers import  io
 from signal import raise_signal,SIGUSR1, SIGUSR2
@@ -34,7 +35,8 @@ class control:
         # If gettimes=='time', then set up for runtime data collection
         # for each of the state function loops
         time_data(gettimes,'',0)
-        io.setmode(io.BCM)
+        # io.setmode(io.BCM)
+        io.setmode(io.BOARD) # *****
         io.setwarnings(False)
         for pin in self.pins:
             if pin == self.pins[6]:
