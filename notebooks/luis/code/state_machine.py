@@ -154,8 +154,8 @@ class StateLogic(object):
             if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['ball_C'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
-                self.control.pi_int()
                 self.control.INT_start_time=time.time()
+                self.control.pi_int()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_acquire()
@@ -166,8 +166,8 @@ class StateLogic(object):
         elif 5 in positions:
             self.control.right_move(1)
             self.control.left_stop()
-        self.control.pi_int()
         self.control.INT_start_time=time.time()
+        self.control.pi_int()
         return 0
     def acquire_commands(self,positions,timers):
         if 4 in positions:
@@ -175,15 +175,13 @@ class StateLogic(object):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pincers_move(1)
-                self.control.pi_int()
                 self.control.INT_start_time=time.time()
-                # NOTE: I don't know how we're going to confirm that the ball has
-                # been acquired successfully, so my temporary solution is to wait 
-                # for 2 seconds after telling the microcontroller to close the pincers,
-                # and then simply assume that it worked and move on. THIS WILL NEED
-                # TO BE ADDRESSED LATER.
+                self.control.pi_int()
                 #time.sleep(2) 
+                while not self.control.DONE:
+                    pass
                 self.control.pincers_stop()
+                self.control.INT_start_time=time.time()
                 self.control.pi_int()
                 if not self.noprint:
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
@@ -204,11 +202,13 @@ class StateLogic(object):
             # of the camera view, then return to chasing. 
             self.control.right_stop()
             self.control.left_stop()
+            self.control.INT_start_time=time.time()
             self.control.pi_int()
             if not self.noprint: 
                 writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
             self.transition_chase()
             return 2
+        self.control.INT_start_time=time.time()
         self.control.pi_int()
         return 0
     def fetch_commands(self,positions,timers):
@@ -266,9 +266,12 @@ class StateLogic(object):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pincers_move()
+                self.control.INT_start_time=time.time()
                 self.control.pi_int()
-                #time.sleep(2)
+                while not self.control.DONE:
+                    pass
                 self.control.pincers_stop()
+                self.control.INT_start_time=time.time()
                 self.control.pi_int()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
@@ -281,6 +284,7 @@ class StateLogic(object):
             self.control.left_move()
             # self.control.left_stop()   
             self.control.right_stop()
+        self.control.INT_start_time=time.time()
         self.control.pi_int()             
         return 0
     def return_commands(self,positions,timers):
@@ -338,6 +342,7 @@ class StateLogic(object):
                 print(timers)
                 self.control.right_stop()
                 self.control.left_stop()
+                self.control.INT_start_time=time.time()
                 self.control.pi_int()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
@@ -351,6 +356,7 @@ class StateLogic(object):
             self.control.left_move()
             # self.control.left_stop()  
             self.control.right_stop()
+        self.control.INT_start_time=time.time()
         self.control.pi_int()
         return 0
     def manual_off(self):
