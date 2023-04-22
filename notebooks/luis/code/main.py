@@ -20,7 +20,7 @@ def microcontroller_signal_handler(signum,frame):
     signal.signal(signum,signal.SIG_IGN)
     global ctrl 
     if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-        t1 = time.time
+        t1 = time.time()
         print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
         time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
         ctrl.DONE = True
