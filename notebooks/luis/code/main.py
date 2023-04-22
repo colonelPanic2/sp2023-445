@@ -20,7 +20,9 @@ def microcontroller_signal_handler(signum,frame):
     signal.signal(signum,signal.SIG_IGN)
     global ctrl 
     if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-        time_data([ctrl.gettimes,ctrl.INT_start_time,time.time()],'fsm.get_state()',4)
+        t1 = time.time
+        print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
+        time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
         ctrl.DONE = True
         # print(ctrl.DONE,'\n')
     elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
