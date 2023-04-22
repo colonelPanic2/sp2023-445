@@ -41,11 +41,11 @@ def main(gettimes,noprint,demo,manual,start_state):
     # Set up the signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     ctrl = control(     gettimes,noprint,demo,manual,0,logfile) 
-    if manual==1:
-        ctrl.init_manual_control(cam)
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
     signal.signal(signal.SIGUSR1, microcontroller_signal_handler)
     signal.signal(signal.SIGUSR2, microcontroller_signal_handler)
+    if manual==1:
+        ctrl.init_manual_control(cam)
     fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
 
 
