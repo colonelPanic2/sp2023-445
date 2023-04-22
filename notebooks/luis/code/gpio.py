@@ -41,8 +41,8 @@ class control:
         # If gettimes=='time', then set up for runtime data collection
         # for each of the state function loops
         time_data(gettimes,'',0)
-        # io.setmode(io.BCM)
-        io.setmode(io.BOARD) # *****
+        io.setmode(io.BCM)
+        # io.setmode(io.BOARD) # *****
         # io.setwarnings(False)
         for pin in self.pins[:8]:
             if pin == self.pins[6]:
