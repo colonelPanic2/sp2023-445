@@ -99,8 +99,8 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
     global T0_SET
     global T0
     global T1
-    global noprint
-    global logfile
+    global no_print
+    global log_file
     global time_data_dict
     global microcontroller_time_data_list
     if args=='time':
@@ -110,8 +110,8 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
             T1 = 0
             time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
             microcontroller_time_data_list=[]
-            noprint=noprint
-            logfile = logfile
+            no_print=noprint
+            log_file = logfile
         elif step==1:
             T0_SET = 0
         elif step==2:
@@ -141,9 +141,9 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
     elif args[0] is not None and step==4 and args[1]!=0:
         _, INT_start_time, INT_end_time = args
         microcontroller_time_data_list.append(round((INT_end_time-INT_start_time)*1000,2))
-        if not noprint and microcontroller_time_data_list[-1]>=100:
+        if not no_print and microcontroller_time_data_list[-1]>=100:
             # print(microcontroller_time_data_list[-1])
-            writefile(logfile,f"{microcontroller_time_data_list[-1]}\n")
+            writefile(log_file,f"{microcontroller_time_data_list[-1]}\n")
 
     return 0
 # If we were collecting time data for a complete run of the program
