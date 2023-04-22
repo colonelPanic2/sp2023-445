@@ -167,6 +167,8 @@ class StateLogic(object):
         elif 5 in positions:
             self.control.right_move(1)
             self.control.left_stop()
+        if not self.noprint:
+            writefile(self.logfile,f"Output: {self.control.readall()}  ")
         self.control.INT_start_time=time.time()
         #print(self.control.INT_start_time)
         self.control.pi_int()

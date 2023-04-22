@@ -95,10 +95,12 @@ def logdata():
     return (init_time,logfile,errfile)
 # Keep track of the runtime data for the fetching subsystem. 
 # (unusable with the current code)
-def time_data(args,state,step,t0=0):
+def time_data(args,state,step,t0=0,noprint=0,logfile=None):
     global T0_SET
     global T0
     global T1
+    global noprint
+    global logfile
     global time_data_dict
     global microcontroller_time_data_list
     if args=='time':
@@ -108,6 +110,8 @@ def time_data(args,state,step,t0=0):
             T1 = 0
             time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
             microcontroller_time_data_list=[]
+            noprint=noprint
+            logfile = logfile
         elif step==1:
             T0_SET = 0
         elif step==2:
@@ -134,11 +138,13 @@ def time_data(args,state,step,t0=0):
         elif step==5:
             return microcontroller_time_data_list
         # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-    elif step==4 and args[1]!=0:
+    elif args[0] is not None and step==4 and args[1]!=0:
         _, INT_start_time, INT_end_time = args
         microcontroller_time_data_list.append(round((INT_end_time-INT_start_time)*1000,2))
-        if microcontroller_time_data_list[-1]>10:
-            print(microcontroller_time_data_list[-1])
+        if not noprint and microcontroller_time_data_list[-1]>=100:
+            # print(microcontroller_time_data_list[-1])
+            writefile(logfile,f"{microcontroller_time_data_list[-1]}\n")
+
     return 0
 # If we were collecting time data for a complete run of the program
 # then write the data to the .csv file in the 'timedata' directory.

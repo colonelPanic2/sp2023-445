@@ -43,7 +43,7 @@ class control:
         time_data(gettimes,'',0)
         io.setmode(io.BCM)
         # io.setmode(io.BOARD) # *****
-        # io.setwarnings(False)
+        io.setwarnings(False) # NOTE: COMMENT THIS OUT WHEN DEBUGGING THE GPIO PINS
         for pin in self.pins[:8]:
             if pin == self.pins[6]:
                 io.setup(pin, io.OUT)
