@@ -120,7 +120,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
                 time_data_dict[state].append(round(1000*(T1-T0),2))
             T0=time.perf_counter()
             T0_SET = 1
-            if time.time()-t0>5:
+            if time.time()-t0>5*60:
                 # print(time.time()-t0)
                 return -13
         elif step==3:
