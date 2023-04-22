@@ -17,6 +17,7 @@ def signal_handler(signum,frame):
 # git rm -r --cached directory_name
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
 def microcontroller_signal_handler(signum,frame):
+    signal.signal(signum,signal.SIG_IGN)
     global ctrl 
     if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
         time_data([ctrl.gettimes,ctrl.INT_start_time,time.time()],'fsm.get_state()',4)
