@@ -51,16 +51,14 @@ class control:
             else:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
-                # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
+        self.setpin(7,1)
+        time.sleep(0.005)
+        self.setpin(7,0)
+        # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
         io.setup(self.pins[8],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[8],io.RISING,callback=self.callback_SIGUSR1)
         io.setup(self.pins[9],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2)
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        time.sleep(0.005)
-        self.setpin(7,0)
-
         return
     def init_manual_control(self,cam):
         print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
