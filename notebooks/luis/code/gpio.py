@@ -40,7 +40,7 @@ class control:
         self.DONE = False
         # If gettimes=='time', then set up for runtime data collection
         # for each of the state function loops
-        time_data(gettimes,'',0)
+        time_data(gettimes,'',0,noprint,logfile)
         io.setmode(io.BCM)
         # io.setmode(io.BOARD) # *****
         io.setwarnings(False) # NOTE: COMMENT THIS OUT WHEN DEBUGGING THE GPIO PINS
