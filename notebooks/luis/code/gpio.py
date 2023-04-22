@@ -143,9 +143,11 @@ class control:
         self.root.mainloop()
         return
     def stop_all(self,event=None):
+        if self.instruction==0:
+            return
         for i in range(7):
             self.setpin(i,0)
-        self.INT_start_time = time.time()
+        self.INT_start_time = 0
         self.setpin(7,1)
         time.sleep(0.005)
         self.setpin(7,0)

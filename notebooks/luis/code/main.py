@@ -7,9 +7,12 @@ from state_machine import FSM
 # camera and finish. Then raise a KeyboardInterrupt to exit
 # gracefully
 def signal_handler(signum,frame):
-    global cam
     signal.alarm(0)
-    cam.destroy()
+    signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+    signal.signal(signal.SIGUSR2, signal.SIG_IGN)
+    global fsm
+    fsm.img.camera_.destroy()
+    fsm.control.stop_all()
     # The program should never be able to reach this
     # call to 'exit(0)'. It is just a precaution.
     exit(0)
@@ -40,7 +43,7 @@ def main(gettimes,noprint,demo,manual,start_state):
     init_time,logfile,errfile = logdata()
     # Declare the global variables that will be used by our 
     # signal handlers for SIGINT, SIGUSR1, and SIGUSR2.
-    global cam
+    global fsm
     global ctrl
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
