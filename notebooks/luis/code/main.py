@@ -17,7 +17,7 @@ def signal_handler(signum,frame):
 # git rm -r --cached directory_name
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
 def microcontroller_signal_handler(signum,frame):
-    signal.signal(signum,signal.SIG_IGN)
+    # signal.signal(signum,signal.SIG_IGN)
     global ctrl 
     if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
         t1 = time.time()
@@ -28,7 +28,7 @@ def microcontroller_signal_handler(signum,frame):
     elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
         ctrl.proximity = int(not ctrl.proximity)
         print(ctrl.proximity,'\n')
-    signal.signal(signum,microcontroller_signal_handler)
+    # signal.signal(signum,microcontroller_signal_handler)
     return
 
 def main(gettimes,noprint,demo,manual,start_state):
