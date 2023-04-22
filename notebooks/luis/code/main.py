@@ -16,22 +16,23 @@ def signal_handler(signum,frame):
 # Use this for files/directories whose changes you want to ignore (after having added said files/directories to the .gitignore file in the main directory):
 # git rm -r --cached directory_name
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-def microcontroller_signal_handler(signum,frame):
-    signal.signal(signum,signal.SIG_IGN)
+def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
+    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     global ctrl 
-    if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-        if ctrl.gettimes is not None:
-            t1 = time.time()
-            print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
-            time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
-            ctrl.INT_start_time=0
-        ctrl.DONE = True
-        # print(ctrl.DONE,'\n')
-    elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
-        ctrl.proximity = int(not ctrl.proximity)
-        print(ctrl.proximity,'\n')
-    signal.signal(signum,microcontroller_signal_handler)
-    return
+    if ctrl.gettimes is not None:
+        t1 = time.time()
+        print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
+        time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
+        ctrl.INT_start_time=0
+    ctrl.DONE = True
+    # print(ctrl.DONE,'\n')
+    signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+def microcontroller_PROX_handler(signum,frame): # SIGUSR2
+    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    global ctrl
+    ctrl.proximity = int(not ctrl.proximity)
+    print(ctrl.proximity,'\n')
+    # signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
 
 def main(gettimes,noprint,demo,manual,start_state):
     global init_time
@@ -47,8 +48,8 @@ def main(gettimes,noprint,demo,manual,start_state):
     signal.signal(signal.SIGINT, signal_handler)
     ctrl = control(     gettimes,noprint,demo,manual,0,logfile) 
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-    signal.signal(signal.SIGUSR1, microcontroller_signal_handler)
-    signal.signal(signal.SIGUSR2, microcontroller_signal_handler)
+    signal.signal(signal.SIGUSR1, microcontroller_CTRL_ACK_handler)
+    signal.signal(signal.SIGUSR2, microcontroller_PROX_handler)
     if manual==1:
         ctrl.init_manual_control(cam)
     fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)

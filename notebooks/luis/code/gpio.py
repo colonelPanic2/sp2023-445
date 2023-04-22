@@ -100,6 +100,7 @@ class control:
             self.manual = 0
             for i in range(len(self.pins)-2):
                 self.setpin(i,0)
+            self.INT_start_time = time.time()
             self.setpin(7,1)
             time.sleep(0.005)
             self.setpin(7,0)
@@ -118,37 +119,6 @@ class control:
         self.root.geometry("64x64")
         self.app = Frame(self.root)
         self.app.grid()
-
-        # self.camswitch_db = Debouncer(self.camswitch,self.camswitch_)
-        # self.root.bind('c',self.camswitch_db.pressed)
-        # self.root.bind('<KeyRelease-c>',self.camswitch_db.released)
-
-        # self.forward_db = Debouncer(self.forward,self.forward_)
-        # self.root.bind('w',self.forward_db.pressed)
-        # self.root.bind('<KeyRelease-w>',self.forward_db.released)
-
-        # self.left_db = Debouncer(self.left,self.left_)
-        # self.root.bind('a',self.left_db.pressed)
-        # self.root.bind('<KeyRelease-a>',self.left_db.released)
-
-        # self.back_db = Debouncer(self.back,self.back_)
-        # self.root.bind('s',self.back_db.pressed)
-        # self.root.bind('<KeyRelease-s>',self.back_db.released)
-
-        # self.right_db = Debouncer(self.right,self.right_)
-        # self.root.bind('d',self.right_db.pressed)
-        # self.root.bind('<KeyRelease-d>',self.right_db.released)
-
-        # self.open_db = Debouncer(self.pincers_open,self.pincers_off_open)
-        # self.root.bind('q',self.open_db.pressed)
-        # self.root.bind('<KeyRelease-q>',self.open_db.released)
-
-        # self.close_db = Debouncer(self.pincers_close,self.pincers_off_close)
-        # self.root.bind('e',self.close_db.pressed)
-        # self.root.bind('<KeyRelease-e>',self.close_db.released)
-
-        # self.root.bind('c',self.camswitch)
-        # self.root.bind('<KeyRelease-c>',self.camswitch_)
 
         self.root.bind('w',self.forward)
         # self.root.bind('<KeyRelease-w>',self.forward_)
@@ -175,6 +145,7 @@ class control:
     def stop_all(self,event=None):
         for i in range(7):
             self.setpin(i,0)
+        self.INT_start_time = time.time()
         self.setpin(7,1)
         time.sleep(0.005)
         self.setpin(7,0)
