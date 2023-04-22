@@ -51,14 +51,16 @@ class control:
             else:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
-        self.setpin(7,1)
-        time.sleep(0.005)
-        self.setpin(7,0)
-        # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
+                # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
         io.setup(self.pins[8],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[8],io.RISING,callback=self.callback_SIGUSR1)
         io.setup(self.pins[9],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2)
+        self.INT_start_time = time.time()
+        self.setpin(7,1)
+        time.sleep(0.005)
+        self.setpin(7,0)
+
         return
     def init_manual_control(self,cam):
         print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
@@ -259,7 +261,7 @@ class control:
                 self.left_stop()
             else:
                 self.right_stop()
-            self.INT_start_time = time.time()
+        self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
@@ -310,7 +312,7 @@ class control:
                 self.right_stop()
             else:
                 self.left_stop()
-            self.INT_start_time = time.time()
+        self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall() + " " + self.read(7)+' ')
@@ -384,7 +386,7 @@ class control:
         self.clear_terminal()
         if self.instruction==0:
             self.pincers_move(0)
-            self.INT_start_time = time.time()
+        self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
@@ -404,7 +406,7 @@ class control:
         self.clear_terminal()
         if self.instruction==0:
             self.pincers_move(1)
-            self.INT_start_time = time.time()
+        self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
@@ -460,6 +462,7 @@ class control:
         self.manual = 0
         for i in range(len(self.pins)-2):
             self.setpin(i,0)
+        self.INT_start_time = time.time()
         self.setpin(7,1)
         time.sleep(0.005)
         self.setpin(7,0)
