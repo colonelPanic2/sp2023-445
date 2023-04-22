@@ -50,6 +50,9 @@ def teardown_timeout_handler(signum,frame):
     os.kill(os.getpid(), signal.SIGKILL)
 # Write the input string to the end of the file with the given name. 
 def writefile(fname,content):
+    dirs = ls()
+    if 'init-err.txt' not in dirs:
+        subprocess.run(shlex.split("touch init-err.txt"))
     with open(fname,'a') as f:
         f.write(content)
 # Calculate the index corresponding to the region of the image with the given dimensions
