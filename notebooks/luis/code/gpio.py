@@ -53,7 +53,7 @@ class control:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
         self.setpin(7,1)
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
         io.setup(self.pins[8],io.IN)#,pull_up_down=io.PUD_DOWN)
@@ -103,7 +103,7 @@ class control:
                 self.setpin(i,0)
             self.INT_start_time = time.time()
             self.setpin(7,1)
-            time.sleep(0.005)
+            time.sleep(0.05)
             self.setpin(7,0)
             writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
             self.root.destroy()
@@ -150,7 +150,7 @@ class control:
             self.setpin(i,0)
         self.INT_start_time = 0
         self.setpin(7,1)
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         self.instruction=0
     # Prove the ability to record response time data for the microcontroller
@@ -194,7 +194,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+"\n")
@@ -216,7 +216,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -245,7 +245,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -267,7 +267,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -296,7 +296,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -318,7 +318,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall() + " " + self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -351,7 +351,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -373,7 +373,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -392,7 +392,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -412,7 +412,7 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -432,7 +432,7 @@ class control:
         if self.manual!=0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -450,7 +450,7 @@ class control:
         if self.manual!=0:
             # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
             print(self.readall()+" "+self.read(7),end=' ')
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0:
             # writefile(self.logfile,self.read(7)+'\n')
@@ -465,7 +465,7 @@ class control:
             self.setpin(i,0)
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        time.sleep(0.005)
+        time.sleep(0.05)
         self.setpin(7,0)
         writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
         print("Exiting manual controls.\nFinal output: "+self.readall())
@@ -480,7 +480,7 @@ class control:
         self.setpin(7,1)
         # NOTE: Wait 5 ms for the microcontroller to handle the interrupt.
         # This value may need to be adjusted later.
-        time.sleep(0.005) 
+        time.sleep(0.05) 
         self.setpin(7,0)
     def left_move(self,reverse=0):
         self.setpin(0,reverse)
