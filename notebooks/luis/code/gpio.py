@@ -32,7 +32,7 @@ class control:
         # self.pins=[7,0,1,5,6,12,13,19, 16,26] # the default pins are all GPIO pins
         #New pi pins
         # self.pins=[17,27,22,23,24,25,5,6,16,26]
-        self.pins = [17,27,12,13,4,25,5,6,16,26]
+        self.pins = [17,27,12,13,4,25,5,6,16,26,18,24]
         #New jetson pins
         # self.pins = [29,31,32,33,11,12,18,24,7,15]
         self.instruction=0#{'CAMSWITCH':0,'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0,'CLEAR':0,'SIGUSR1':0,'SIGUSR2':0}
@@ -60,7 +60,21 @@ class control:
         io.add_event_detect(self.pins[8],io.RISING,callback=self.callback_SIGUSR1)
         io.setup(self.pins[9],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2)
+        io.setup(self.pins[10],io.OUT)
+        io.setup(self.pins[11],io.IN)
         return
+    def distance(self):
+        io.setpin(10,1)
+        time.sleep(0.00001)
+        t0 = time.time()
+        t1 = time.time()
+        while io.input(self.pins[11])==0:
+            t0=time.time()
+        while io.input(self.pins[11])==1:
+            t1=time.time()
+        dt = t1-t0
+        dist = (dt*34300)>>1
+        return dist
     def init_manual_control(self,cam):
         print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
          While in manual control mode, the fetching subsystem is inactive.\n\
