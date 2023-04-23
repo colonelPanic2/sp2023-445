@@ -115,6 +115,10 @@ def init_fetching(args):
         # If we were collecting time data for that run, then write
         # it to the .csv file in the 'timedata' directory.
         signal.alarm(0)
+        try:
+            fsm.control.stop_all()
+        except:
+            print("Couldn't stop the motors")
         timedata_files(gettimes,init_time)
         print("\nDone.\nTerminated by user input.")
     return 0

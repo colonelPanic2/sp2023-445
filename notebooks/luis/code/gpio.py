@@ -97,16 +97,13 @@ class control:
          In order to completely end the program, press CTRL+C in the\n\
          terminal or 'q' in the 'Camera' window.\n\n")
         self.cam = cam
-        # self.cam.start_read()
         self.manual_setup()
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE (needs to be fully implemented)
     def callback_SIGUSR1(self,channel): 
-        # raise_signal(SIGUSR1)
         kill(getpid(),SIGUSR1)
     def callback_SIGUSR2(self,channel):
-        # raise_signal(SIGUSR2)
         kill(getpid(),SIGUSR2)
-        # Show the camera view in a window while in manual control mode.
+    # Show the camera view in a window while in manual control mode.
     def video_update(self):
         try:
             self.cam.update_goal_position('ball',time.time())
@@ -125,9 +122,6 @@ class control:
     ### MANUAL MOTOR CONTROLS: uses functions from MOTOR CONTROLS
     # Sets up manual motor controls
     def manual_setup(self):
-        # TODO: MODIFY TO ALLOW THE 'SIGUSR1' AND 'SIGUSR2' SIGNALS TO BE GENERATED 
-        # MANUALLY BY THE USER TO SIMPLIFY DEBUGGING OF THE HANDLERS FOR THE 
-        # MICROCONTROLLER'S INPUT TO THE PI. 
         self.root = Tk()
         self.root.title("Motors GUI")
         self.root.geometry("64x64")
@@ -135,17 +129,11 @@ class control:
         self.app.grid()
 
         self.root.bind('w',self.forward)
-        # self.root.bind('<KeyRelease-w>',self.forward_)
         self.root.bind('a',self.left)
-        # self.root.bind('<KeyRelease-a>',self.left_)
         self.root.bind('s',self.back)
-        # self.root.bind('<KeyRelease-s>',self.back_)
         self.root.bind('d',self.right)
-        # self.root.bind('<KeyRelease-d>',self.right_)
         self.root.bind('q',self.pincers_open)
-        # self.root.bind('<KeyRelease-q>',self.pincers_off_open)
         self.root.bind('e',self.pincers_close)
-        # self.root.bind('<KeyRelease-e>',self.pincers_off_close)
         self.root.bind('c',self.camswitch)
         self.root.bind('<space>',self.stop_all)
         self.root.bind('<Control-c>',self.exit_)
