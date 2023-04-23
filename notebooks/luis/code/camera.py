@@ -69,7 +69,7 @@ class camera(images):
         self.logfile = logfile
         self.index = 0 # NOTE: Keep track of the camera being used (front=0, back=1)
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
-        self.cam = cv2.VideoCapture(self.index,cam_backends[int(platform=='linux')])
+        self.cam = cv2.VideoCapture(self.index*2,cam_backends[int(platform=='linux')])
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
         self.redLower = (140, 70, 70)
