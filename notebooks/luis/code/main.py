@@ -48,7 +48,6 @@ def main(gettimes,noprint,demo,manual,start_state):
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
     # Set up the signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
     ctrl = control(     gettimes,noprint,demo,manual,0,logfile) 
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
     signal.signal(signal.SIGUSR1, microcontroller_CTRL_ACK_handler)
@@ -56,6 +55,7 @@ def main(gettimes,noprint,demo,manual,start_state):
     if manual==1:
         ctrl.init_manual_control(cam)
     fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
+    signal.signal(signal.SIGINT, signal_handler)
 
 
     # Make a list of state functions in their intended order of 
