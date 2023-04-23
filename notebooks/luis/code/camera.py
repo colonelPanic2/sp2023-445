@@ -3,12 +3,12 @@ from sys import platform
 import signal,time
 
 from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler
-TL = 0 # Top-left region of camera view
-TM = 1 # Top-middle region of camera view
-TR = 2 # Top-right region of camera view
-BL = 3 # Bottom-left region of camera view
-BM = 4 # Bottom-middle region of camera view
-BR = 5 # Bottom-right region of camera view
+TLL,TLM,TLR = 0,  1, 2 # Top-left region of camera view
+TML,TMM,TMR = 3,  4, 5 # Top-middle region of camera view
+TRL,TRM,TRR = 6,  7, 8 # Top-right region of camera view
+BLL,BLM,BLR = 9, 10,11 # Bottom-left region of camera view
+BML,BMM,BMR = 12,13,14 # Bottom-middle region of camera view
+BRL,BRM,BRR = 15,16,17 # Bottome-right region of camera view
 class images:
     def __init__(self,cam):
         global sigint
@@ -16,10 +16,12 @@ class images:
         self.camera_ = cam
         # This array will keep track of where the ball is located in the 6 regions
         # Of the camera view. The ball can be in multiple regions at once.
-        self.regions= { TL:0, TM:0, TR:0, BL:0, BM:0, BR:0 }
+        self.regions,self.timers = {},{}
+        for r in range(18):
+            self.regions[r]=0
+            self.timers [r]=0
         self.last_regions = list(self.regions.values())
         self.goal_timelimits = {'ball_W':5,'ball_C':2,'ball_A':2,'user':3,'waitpoint':3} # I don't expect that we'll need time limits for the user or the waitpoint
-        self.timers = {TL:0, TM:0, TR:0, BL:0, BM:0, BR:0}
         self.camera_.start_read()
         return
     def update_goal_position(self,goal,t0=None):
@@ -29,14 +31,14 @@ class images:
             region_index = map_to_block_index(position_xy,image.shape)
             goal_positions = [region_index]
         else:
-            goal_positions = [6] # The goal is not in the image
+            goal_positions = [18] # The goal is not in the image
         if self.camera_.demo:
             self.camera_.show_tracking(image,position_xy)
         # Only update the last location of the goal if the goal 
         # is currently in the camera view
-        if not (all(pos==6 for pos in goal_positions)):# or all(pos>5 for pos in goal_positions)):
+        if not (all(pos==18 for pos in goal_positions)):
             self.last_regions = list(self.regions.values())
-        for i in range(6):
+        for i in range(18):
             if self.timers[i]==0:
                 self.timers[i]=t0
             if i in goal_positions:
@@ -47,14 +49,14 @@ class images:
             else:
                 self.regions[i]=0
                 self.timers[i] = t0
-        return [t0-self.timers[i] for i in range(6)]
+        return [t0-self.timers[i] for i in range(18)]
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):
         # If the goal is in the camera view, then find the region(s) where it is present
-        if not all(self.regions[i]==0 for i in range(6)):
-            return [i for i in range(6) if self.regions[i]>0]
+        if not all(self.regions[i]==0 for i in range(18)):
+            return [i for i in range(18) if self.regions[i]>0]
         # Otherwise, get the last known region(s) in which the goal was in the camera view
-        return [j for j in range(6) if self.last_regions[j]>0]
+        return [j for j in range(18) if self.last_regions[j]>0]
         
 class camera(images):
     def __init__(self,noprint,demo,manual,init_time,logfile):
@@ -70,7 +72,7 @@ class camera(images):
         self.index = 0 # NOTE: Keep track of the camera being used (front=0, back=1)
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
         self.cam = cv2.VideoCapture(self.index*2,cam_backends[int(platform=='linux')]) 
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1917)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
         self.redLower = (140, 70, 70)
         self.redUpper = (179, 255, 255)
@@ -94,7 +96,7 @@ class camera(images):
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
         # NOTE: multiply the self.index by 2 when on the Pi
         self.cam = cv2.VideoCapture(self.index*2,cam_backends[int(platform=='linux')])            
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1917) # Divides evenly by 9
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
         self.start_read()
     # NOTE: This function is still unused because I don't quite know how to use
@@ -133,25 +135,22 @@ class camera(images):
         print("\nHalting program...")
         writefile(self.logfile,"\nHalting program...  ")
         sigint = True
-        # TODO: FIGURE OUT THE CAUSE OF OCCASIONAL TIMEOUTS WHEN TRYING TO 
-        # RELEASE THE CAMERA OR JOIN THE THREADS
         if platform=='linux':
             signal.signal(signal.SIGALRM, teardown_timeout_handler)
             signal.alarm(2)
-        # self.cam.release()
         if self.demo:
             cv2.destroyAllWindows()
         # NOTE: This doesn't seem to be causing any problems, but it doesn't seem to 
         # help much, either. There is an occasional error added as a manual entry near 
         # the end of the err.txt log for 04-08.
-        print("Joining camera thread and main thread...",end='  ')
-        with threading.Lock():
-            if self.capture_t is not None and self.capture_t.is_alive():
-                self.capture_t.join()
+        # print("Joining camera thread and main thread...",end='  ')
+        # with threading.Lock():
+        #     if self.capture_t is not None and self.capture_t.is_alive():
+        #         self.capture_t.join()
         if platform=='linux':
             signal.alarm(0)
         self.cam.release()
-        print('thread join successful')
+        # print('thread join successful')
         writefile(self.logfile,'\nDone.\nRaising KeyboardInterrupt to end the process...\n')
         raise KeyboardInterrupt
     # (camera thread) Read an image from the camera and store it in 
@@ -250,17 +249,20 @@ class camera(images):
             # Draw lines to show the regions of the screen
             cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
             height, width = image.shape[:2]
-            cv2.line(image, (width//3, 0), (width//3, height), (0, 0, 255), 2)
-            cv2.line(image, (2*width//3, 0), (2*width//3, height), (0, 0, 255), 2)
+            for i in range(1,9):
+                cv2.line(image, (i*(width//9), 0), (i*(width//9), height), (0, 0, 255), 2)
             cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
             if position_xy is not None:
                 block_index = map_to_block_index(position_xy,image.shape)
-                if block_index>=0 and block_index<6:
-                    region_map = [        (0,0),        (width//3,0),        (2*width//3,0),\
-                                (0,height//2),(width//3,height//2),(2*width//3,height//2)]
-                    top_right = region_map[block_index]
-                    bottom_left = (top_right[0]+width//3,top_right[1]+height//2)
-                    cv2.rectangle(image,top_right,bottom_left,(0,255,0),2)
+                if block_index<18:
+                    # for y in range(2):
+                    region_map = {}
+                    for r in range(9):
+                        region_map[r]  = (r*(width//9),0)
+                        region_map[r+9]= (r*(width//9),height//2)
+                    top_left = region_map[block_index]
+                    bottom_right = (top_left[0]+width//9,top_left[1]+height//2)
+                    cv2.rectangle(image,top_left,bottom_right,(0,255,0),2)
                 else:
                     print(f"\nUnexpected position value: map_to_block_index({position_xy}) -> {block_index}\n")
             # show the frame to our screen
@@ -273,9 +275,8 @@ class camera(images):
                 elif self.demo==1:
                     if key == ord('c') :
                         self.camswitch()
-                    elif key == ord('2'):
-                        signal.raise_signal(signal.SIGUSR2)
-
+                    # elif key == ord('2'):
+                    #     signal.raise_signal(signal.SIGUSR2)
         return
     
 
@@ -283,16 +284,16 @@ class camera(images):
 
 
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-def microcontroller_signal_handler(signum,frame):
-    global ctrl 
-    if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-        ctrl.DONE = True
-        print(ctrl.DONE,'\n')
-    elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
-        ctrl.proximity = int(not ctrl.proximity)
-        print(ctrl.proximity,'\n')
-    signal.signal(signum,microcontroller_signal_handler)
-    return
+# def microcontroller_signal_handler(signum,frame):
+#     global ctrl 
+#     if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
+#         ctrl.DONE = True
+#         print(ctrl.DONE,'\n')
+#     elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
+#         ctrl.proximity = int(not ctrl.proximity)
+#         print(ctrl.proximity,'\n')
+#     signal.signal(signum,microcontroller_signal_handler)
+#     return
 
 # Special function for testing the image processing code directly
 def iproc_main():
@@ -300,7 +301,7 @@ def iproc_main():
     global ctrl
     sigint=False
     import time
-    from gpio import control
+    # from gpio import control
 
     from sys import argv
     if len(argv[1:]) == 0:
@@ -308,23 +309,23 @@ def iproc_main():
     else:
         args=argv[1]
     try:
-        cam = camera(                    noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
-        ctrl = control(    gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
+        cam = camera(                    noprint=0,demo=1,manual=0,init_time=0,logfile='cam-dot-py-logfile')
+        # ctrl = control(    gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
         # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-        signal.signal(signal.SIGUSR1, microcontroller_signal_handler)
-        signal.signal(signal.SIGUSR2, microcontroller_signal_handler)
-        ctrl.init_manual_control(cam)
+        # signal.signal(signal.SIGUSR1, microcontroller_signal_handler)
+        # signal.signal(signal.SIGUSR2, microcontroller_signal_handler)
+        # ctrl.init_manual_control(cam)
         # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
         # after which we will no longer be in manual control mode
-        ctrl.manual=0
+        # ctrl.manual=0
         cam.manual=0
         while sigint==False:
             t0 = time.perf_counter()
             cam.update_goal_position(args,time.time())
             cam.get_goal_regions()
-            if sigint==False:
-                print('\033[F\033[K' * 1, end = "")
-                print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
+            # if sigint==False:
+            #     # print('\033[F\033[K' * 1, end = "")
+            #     print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
     except KeyboardInterrupt:
         writefile('cam-dot-py-logfile','Done.')
         print("\nDone.\nTerminated by user input.")

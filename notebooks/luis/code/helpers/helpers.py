@@ -58,9 +58,9 @@ def writefile(fname,content):
 # Calculate the index corresponding to the region of the image with the given dimensions
 # in which the pixel with the given column and row is located.
 def map_to_block_index(col_row,dims=(1080,1920)):
-    col_blocks = dims[1]//3
+    col_blocks = dims[1]//9
     row_blocks = dims[0]//2
-    region_index = (col_row[0]//col_blocks) + 3*(col_row[1]>=row_blocks)
+    region_index = (col_row[0]//col_blocks) + 9*(col_row[1]>=row_blocks)
     return region_index
 # Get a list of all files/subdirectories in the passed in directory.
 # *** Doesn't seem to work with '..' directory.
