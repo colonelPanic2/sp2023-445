@@ -71,6 +71,7 @@ class StateLogic(object):
             # "fetch()" function. 
             next_state_index = self.acquire_commands(positions,timers)
             if next_state_index!=0:
+                self.img.last_regions = [0 for r in range(18)]
                 return next_state_index
         return -2
     # FETCH logic #
@@ -93,6 +94,7 @@ class StateLogic(object):
             # to the ACQUIRE state and tell the main loop to execute
             # the "acquire()" function.
             if self.fetch_commands(positions,timers)==5:
+                self.img.last_regions = [0 for r in range(18)]
                 return 5
         return -2
     # RETURN logic #
@@ -111,6 +113,7 @@ class StateLogic(object):
             # has been reached, then transition to the WAIT state
             # and tell the main loop to execute the "wait()" function.
             if self.return_commands(positions,timers)==1:
+                self.img.last_regions = [0 for r in range(18)]
                 return 1
         return -2
     # The following 3 functions define the fetching subsystem's output to
@@ -118,44 +121,53 @@ class StateLogic(object):
     # respectively. They also decide when to transition between states 
     # (given that the current state hasn't failed yet)
     def chase_commands(self,positions,timers):
-        # No ball was detected in the camera view
+        # Ball wasn't detected in the camera view
         if positions==[]: 
-            # The ball may have gone off the left side of the camera view
-            if not all(region==0 for region in self.img.last_regions[::3]):
+            last_regions = self.img.last_regions
+            # The ball may have gone off the left side of the camera view or was not detected by the image processing
+            if not all(region==0 for region in last_regions[0::9]+last_regions[1:9]+last_regions[2:9]):
                 self.control.right_move()
                 self.control.left_stop() 
-            # The ball may have gone off the right side of the camera view
-            elif not all(region==0 for region in self.img.last_regions[2::3]):
+            # The ball may have gone off the right side of the camera view or was not detected by the image 
+            elif not all(region==0 for region in last_regions[6::9]+last_regions[7::9]+last_regions[8::9]):
                 self.control.right_stop()
                 self.control.left_move()
-            # The ball may have gone behind the camera view, or it might be
-            # too far to be detected (this may need extra logic later).
-            else:
-                self.control.right_move(1)
+            # The ball may have gone above the top of the camera view or was not detected by the image processing
+            elif not all(region==0 for region in last_regions[3::9]+last_regions[4::9]+last_regions[5::9]):
+                self.control.right_move()
                 self.control.left_move()
+            #TODO: CHASE - establish logic for the case where there is no ball in the frame and there is 
+            # no prior ball position (should be impossible)
+            else:
+                writefile(self.logfile,"CHASE - 'IMPOSSIBLE' CASE REACHED\n")
+                self.control.right_stop()
+                self.control.left_stop()
         # top-left
-        elif 0 in positions:
+        elif not all(pos>2 for pos in positions):
             self.control.right_move()
             self.control.left_stop()
         # top-middle
-        elif 1 in positions:
+        elif not all(pos>5 for pos in positions):
             self.control.right_move()
             self.control.left_move()
         # top-right
-        elif 2 in positions:
+        elif not all(pos>8 for pos in positions):
             self.control.right_stop()
             self.control.left_move()
         # bottom-left
-        elif 3 in positions:
+        elif not all(pos>11 for pos in positions):
             self.control.right_stop()
             self.control.left_move(1)
-        # bottom-middle
-        elif 4 in positions:
+        # bottom-middle-left
+        elif 12 in positions:
+            self.control.right_move()
+            self.control.left_stop()
+        # bottom-middle-middle
+        elif 13 in positions:
+            #TODO: CHASE - Adjust the transition case based on field testing
             if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['ball_C'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
-                self.control.INT_start_time=time.time()
-                #print(self.control.INT_start_time)
                 self.control.pi_int()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
@@ -163,213 +175,231 @@ class StateLogic(object):
                 return 3
             else:
                 return 0
+        # bottom-middle-right
+        elif 14 in positions:
+            self.control.right_stop()
+            self.control.left_move()
         # bottom-right
-        elif 5 in positions:
+        else:
             self.control.right_move(1)
             self.control.left_stop()
         if not self.noprint:
             writefile(self.logfile,f"Output: {self.control.readall()}  ")
-        self.control.INT_start_time=time.time()
-        #print(self.control.INT_start_time)
         self.control.pi_int()
         return 0
     def acquire_commands(self,positions,timers):
-        if 4 in positions:
+        # Ball wasn't detected in the camera view
+        if positions==[]: 
+            last_regions = self.img.last_regions
+            # The ball may have gone off the left side of the camera view or was not detected by the image processing
+            if not all(region==0 for region in last_regions[0::9]+last_regions[1:9]+last_regions[2:9]):
+                self.control.right_move()
+                self.control.left_stop() 
+            # The ball may have gone off the right side of the camera view or was not detected by the image processing
+            elif not all(region==0 for region in last_regions[6::9]+last_regions[7::9]+last_regions[8::9]):
+                self.control.right_stop()
+                self.control.left_move()
+            # The ball may have gone above the camera view or was not detected by the image processing
+            elif not all(region==0 for region in last_regions[3::9]+last_regions[4::9]+last_regions[5::9]):
+                self.control.right_stop()
+                self.control.left_move()
+            #TODO: ACQUIRE - establish logic for the case where there is no ball in the frame and there is no prior
+            # ball position (should be impossible)
+            else:
+                writefile(self.logfile,"ACQUIRE - 'IMPOSSIBLE' CASE REACHED\n")
+                self.control.right_stop()
+                self.control.left_stop()
+        # top-left
+        elif not all(pos>2 for pos in positions):
+            self.control.right_move()
+            self.control.left_stop()
+        # top-middle
+        elif not all(pos>5 for pos in positions):
+            self.control.right_move()
+            self.control.left_move()
+        # top-right
+        elif not all(pos>8 for pos in positions):
+            self.control.right_stop()
+            self.control.left_move()
+        # bottom-left
+        elif not all(pos>11 for pos in positions):
+            self.control.right_stop()
+            self.control.left_move(1)
+        # bottom-middle-left
+        elif 12 in positions:
+            self.control.right_move()
+            self.control.left_stop()
+        # bottom-middle-middle
+        elif 13 in positions:
+            #TODO: ACQUIRE - Adjust the transition case based on field testing
             if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['ball_A'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
-                self.control.pincers_move(1)
-                self.control.INT_start_time=time.time()
-                #print(self.control.INT_start_time)
                 self.control.pi_int()
-                #time.sleep(2) 
+                self.control.pincers_move(1)
+                self.control.pi_int()
                 while not self.control.DONE:
                     pass
+                self.control.DONE = False
                 self.control.pincers_stop()
-                self.control.INT_start_time=time.time()
-                #print(self.control.INT_start_time)
                 self.control.pi_int()
                 if not self.noprint:
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_fetch()
                 return 4
-            else:
-                return 0
-        # bottom-left
-        elif 3 in positions:
+            return 0
+        # bottom-middle-left
+        elif 14 in positions:
             self.control.right_stop()
-            self.control.left_move(1)
+            self.control.left_move()
         # bottom-right
-        elif 5 in positions:
+        else:
             self.control.right_move(1)
             self.control.left_stop()
-        else:
-            # If the ball is no longer in the bottom half 
-            # of the camera view, then return to chasing. 
-            self.control.right_stop()
-            self.control.left_stop()
-            self.control.INT_start_time=time.time()
-            #print(self.control.INT_start_time)
-            self.control.pi_int()
-            if not self.noprint: 
-                writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
-            self.transition_chase()
-            return 2
-        self.control.INT_start_time=time.time()
-        #print(self.control.INT_start_time)
+        # else: # NOTE: had to remove the transition case for ACQUIRE back to CHASE for validation testing
+        #     # If the ball is no longer in the bottom half 
+        #     # of the camera view, then return to chasing. 
+        #     self.control.right_stop()
+        #     self.control.left_stop()
+        #     self.control.pi_int()
+        #     if not self.noprint: 
+        #         writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
+        #     self.transition_chase()
+        #     return 2
         self.control.pi_int()
         return 0
     def fetch_commands(self,positions,timers):
-        # NOTE: I don't know how we're planning on setting up the tag for the user,
-        # so I don't know how to set up the commands for the fetch protocol. For now,
-        # The fetch commands are basically just a copy-paste of the acquire commands.
         # User wasn't detected in the camera view
         if positions==[]: 
-            # The user may be off the left side of the camera view
-            if not all(region==0 for region in self.img.last_regions[::3]):
-                # self.control.right_move()
+            last_regions = self.img.last_regions
+            # The user may be off the left side of the camera view or was not detected by the image processing
+            if not all(region==0 for region in last_regions[0::9]+last_regions[1:9]+last_regions[2:9]):
                 self.control.left_move(1)
-                # self.control.left_stop()
                 self.control.right_stop()
-            # The user may be off the right side of the camera view
-            elif not all(region==0 for region in self.img.last_regions[2::3]):
-                # self.control.right_stop()
+            # The user may be off the right side of the camera view or was not detected by the image processing
+            elif not all(region==0 for region in last_regions[6::9]+last_regions[7::9]+last_regions[8::9]):
                 self.control.left_stop()
-                # self.control.left_move()
                 self.control.right_move(1)
-            # The user may be behind the camera view, or they might be
-            # too far to be detected (NOTE: this may need extra logic later).
+            # The user may be above the camera view or was not detected by the image processing
+            # NOTE: IDEA - add a proximity condition to avoid crashes due to blind driving and 
+            # still allow the fetching subsystem to account for error in the image processing code
+            elif not all(region==0 for region in last_regions[3::9]+last_regions[4::9]+last_regions[5::9]): 
+                self.control.right_move(1)
+                self.control.left_move(1)
+            #TODO: FETCH - establish logic for the case where there is no user in the frame and there is
+            # no prior user position
             else:
-                # self.control.right_move(1)
                 self.control.left_move()
-                # self.control.left_move()
                 self.control.right_move(1)
         # top-left
-        elif 0 in positions:
-            # self.control.right_move()
+        elif not all(pos>2 for pos in positions):
             self.control.left_move(1)
-            # self.control.left_stop()
             self.control.right_stop()
         # top-middle
-        elif 1 in positions:
-            # self.control.right_move()
+        elif not all(pos>5 for pos in positions):
             self.control.left_move(1)
-            # self.control.left_move()
             self.control.right_move(1)
         # top-right
-        elif 2 in positions:
-            # self.control.right_stop()
+        elif not all(pos>8 for pos in positions):
             self.control.left_stop()
-            # self.control.left_move()
             self.control.right_move(1)
         # bottom-left
-        elif 3 in positions:
-            # self.control.right_stop()
+        elif not all(pos>11 for pos in positions):
             self.control.left_stop()
-            # self.control.left_move(1)
             self.control.right_move()
-        # bottom-middle
-        elif 4 in positions:
+        # bottom-middle-left
+        elif 12 in positions:
+            self.control.left_move(1)
+            self.control.right_stop()
+        # bottom-middle-middle
+        elif 13 in positions:
+            #TODO: FETCH - Adjust the transition case based on field testing
             if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['user'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
+                self.control.pi_int()
                 self.control.pincers_move()
-                self.control.INT_start_time=time.time()
-                #print(self.control.INT_start_time)
                 self.control.pi_int()
                 while not self.control.DONE:
                     pass
+                self.control.DONE = False
                 self.control.pincers_stop()
-                self.control.INT_start_time=time.time()
-                #print(self.control.INT_start_time)
                 self.control.pi_int()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_return()
                 return 5
             return 0
+        # bottom-middle-right
+        elif 14 in positions:
+            self.control.left_stop()
+            self.control.right_move(1)
         # bottom-right
-        elif 5 in positions:
-            # self.control.right_move(1)
-            self.control.left_move()
-            # self.control.left_stop()   
-            self.control.right_stop()
-        self.control.INT_start_time=time.time()
-        #print(self.control.INT_start_time)
+        else:
+            self.control.left_stop()
+            self.control.right_move(1)
         self.control.pi_int()             
         return 0
     def return_commands(self,positions,timers):
-        # NOTE: Since the waiting point flag will be at about the same height as the 
-        # ball, it makes sense that the return commands should look similar to the 
-        # acquire commands in the final version of the code. 
-        # The waiting point wasn't detected in the camera view
         if positions==[]: 
-            # The waiting point may be off the left side of the camera view
-            if not all(region==0 for region in self.img.last_regions[::3]):
-                # self.control.right_move()
+            last_regions = self.img.last_regions
+            # The waitpoint may be off the left side of the camera view or was not detected by the image processing
+            if not all(region==0 for region in last_regions[0::9]+last_regions[1:9]+last_regions[2:9]):
                 self.control.left_move(1)
-                # self.control.left_stop()
                 self.control.right_stop()
-            # The waiting point may be off the right side of the camera view
-            elif not all(region==0 for region in self.img.last_regions[2::3]):
-                # self.control.right_stop()
+            # The waitpoint may be off the right side of the camera view or was not detected by the image processing
+            elif not all(region==0 for region in last_regions[6::9]+last_regions[7::9]+last_regions[8::9]):
                 self.control.left_stop()
-                # self.control.left_move()
                 self.control.right_move(1)
-            # The waiting point may be behind the camera view, or it may be
-            # too far to be detected (NOTE: this may need extra logic later).
+            # The waitpoint may be above the camera view or was not detected by the image processing
+            elif not all(region==0 for region in last_regions[3::9]+last_regions[4::9]+last_regions[5::9]):
+                self.control.left_move(1)
+                self.control.right_move(1)
+            #TODO: RETURN - establish logic for the case where there is no waitpoint in the frame and there is
+            # no prior waitpoint position
             else:
-                # self.control.right_move(1)
                 self.control.left_move()
-                # self.control.left_move()
                 self.control.right_move(1)
         # top-left
-        elif 0 in positions:
-            # self.control.right_move()
+        elif not all(pos>2 for pos in positions):
             self.control.left_move(1)
-            # self.control.left_stop()
             self.control.right_stop()
         # top-middle
-        elif 1 in positions:
-            # self.control.right_move()
+        elif not all(pos>5 for pos in positions):
             self.control.left_move(1)
-            # self.control.left_move()
             self.control.right_move(1)
         # top-right
-        elif 2 in positions:
-            # self.control.right_stop()
+        elif not all(pos>8 for pos in positions):
             self.control.left_stop()
-            # self.control.left_move()
             self.control.right_move(1)
         # bottom-left
-        elif 3 in positions:
-            # self.control.right_stop()
+        elif not all(pos>11 for pos in positions):
             self.control.left_move()
-            # self.control.left_move(1)
             self.control.right_move()
-        # bottom-middle
-        elif 4 in positions:
+        # bottom-middle-left
+        elif 12 in positions:
+            self.control.left_move(1)
+            self.control.right_stop()
+        # bottom-middle-middle
+        elif 13 in positions:
+            #TODO: RETURN - Adjust the transition case based on field testing
             if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['waitpoint'] for dt in timers):
-                print(timers)
                 self.control.right_stop()
                 self.control.left_stop()
-                self.control.INT_start_time=time.time()
-                #print(self.control.INT_start_time)
                 self.control.pi_int()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_wait()
                 return 1
-            else:
-                return 0
+            return 0
+        # bottom-middle-right
+        elif 14 in positions:
+            self.control.left_stop()
+            self.control.right_move(1)
         # bottom-right
-        elif 5 in positions:
-            # self.control.right_move(1)
-            self.control.left_move()
-            # self.control.left_stop()  
-            self.control.right_stop()
-        self.control.INT_start_time=time.time()
-        #print(self.control.INT_start_time)
+        else:
+            self.control.left_stop()
+            self.control.right_move(1)
         self.control.pi_int()
         return 0
     def manual_off(self):
@@ -380,7 +410,7 @@ class StateLogic(object):
 
 # RETURN if...
 # -  CHASE   for 60 seconds
-# -  ACQUIRE for 30 seconds
+# -  ACQUIRE for 45 seconds
 # -  FETCH   successful
 @acts_as_state_machine
 class FSM(StateLogic):
@@ -401,10 +431,10 @@ class FSM(StateLogic):
         self.init_time = init_time
         self.logfile = logfile
         self.start_state = start_state
-        if start_state=='WAIT':
-            self.img.goal_timelimits['ball'] = 5
-        else:
-            self.img.goal_timelimits['ball'] = 0.005
+        # if start_state=='WAIT':
+        #     self.img.goal_timelimits['ball'] = 5
+        # else:
+        #     self.img.goal_timelimits['ball'] = 0.005
         self.manual_off() # This object is can only be initialized in auto control mode.
         self.control.INT_start_time = 0
         self.control.proximity = 0
@@ -423,39 +453,39 @@ class FSM(StateLogic):
     def transition_wait(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        self.control.proximity = 0
+        # self.control.proximity = 0
         self.control.DONE = False
         return 0
-    @event(from_states=(START,WAIT,ACQUIRE), to_state=(CHASE))
+    @event(from_states=(START,WAIT), to_state=(CHASE))
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        self.control.proximity = 0
+        # self.control.proximity = 0
         self.control.DONE = False
-        signal.alarm(5) # NOTE: Remember to change back to 60!
+        signal.alarm(60) # NOTE: Remember to change back to 60!
         # *Other pre-processing logic before changing to next state* # 
         return 0
     @event(from_states=(START,CHASE), to_state=(ACQUIRE))
     def transition_acquire(self,some_variables=None):
         # If we stay in the ACQUIRE state for 30 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        self.control.proximity = 0
+        # self.control.proximity = 0
         self.control.DONE = False
         signal.signal(signal.SIGALRM,self.signal_handler)
-        signal.alarm(5) # NOTE: Remember to change back to 30!
+        signal.alarm(45) # NOTE: Remember to change back to 30!
         # *Other pre-processing logic before changing to next state* # 
         return 0
     @event(from_states=(START,ACQUIRE), to_state=(FETCH))
     def transition_fetch(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        self.control.proximity = 0
+        # self.control.proximity = 0
         self.control.DONE = False
         return 0
     @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        self.control.proximity = 0
+        # self.control.proximity = 0
         self.control.DONE = False
         return 0

@@ -2,7 +2,7 @@ import threading,cv2,imutils,traceback,queue
 from sys import platform
 import signal,time
 
-from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler
+from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler,time_data
 TLL,TLM,TLR = 0,  1, 2 # Top-left region of camera view
 TML,TMM,TMR = 3,  4, 5 # Top-middle region of camera view
 TRL,TRM,TRR = 6,  7, 8 # Top-right region of camera view
@@ -53,10 +53,10 @@ class images:
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):
         # If the goal is in the camera view, then find the region(s) where it is present
-        if not all(self.regions[i]==0 for i in range(18)):
-            return [i for i in range(18) if self.regions[i]>0]
+        # if not all(self.regions[i]==0 for i in range(18)):
+        return [i for i in range(18) if self.regions[i]>0]
         # Otherwise, get the last known region(s) in which the goal was in the camera view
-        return [j for j in range(18) if self.last_regions[j]>0]
+        # return [j for j in range(18) if self.last_regions[j]>0]
         
 class camera(images):
     def __init__(self,noprint,demo,manual,init_time,logfile):
@@ -70,8 +70,9 @@ class camera(images):
         self.init_time = init_time
         self.logfile = logfile
         self.index = 0 # NOTE: Keep track of the camera being used (front=0, back=1)
+        self.index_factor = [1,2][int(platform=='linux')]
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
-        self.cam = cv2.VideoCapture(self.index*2,cam_backends[int(platform=='linux')]) 
+        self.cam = cv2.VideoCapture(self.index*self.index_factor,cam_backends[int(platform=='linux')]) 
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1917)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
         self.redLower = (140, 70, 70)
@@ -95,7 +96,7 @@ class camera(images):
         self.index = int(not self.index)
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
         # NOTE: multiply the self.index by 2 when on the Pi
-        self.cam = cv2.VideoCapture(self.index*2,cam_backends[int(platform=='linux')])            
+        self.cam = cv2.VideoCapture(self.index*self.index_factor,cam_backends[int(platform=='linux')])            
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1917) # Divides evenly by 9
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
         self.start_read()
@@ -242,7 +243,7 @@ class camera(images):
                 center = self.track(image,goal) # NOTE: switch between 'track' and 'new_track' to see differences in results
                 break
         return center,image
-    # Draw the lines showing the 6 regions of the image. If the goal is in a region,
+    # Draw the lines showing the 18 regions of the image. If the goal is in a region,
     # then outline the region in green. Otherwise, outline it in red.
     def show_tracking(self,image,position_xy):
         if image is not None:
@@ -275,25 +276,33 @@ class camera(images):
                 elif self.demo==1:
                     if key == ord('c') :
                         self.camswitch()
-                    # elif key == ord('2'):
-                    #     signal.raise_signal(signal.SIGUSR2)
+                    elif key == ord('2') and platform=='linux':
+                        signal.raise_signal(signal.SIGUSR2)
         return
     
 
 
 
-
-# NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-# def microcontroller_signal_handler(signum,frame):
-#     global ctrl 
-#     if signum==10: # SIGUSR1 (I think): record response time of the microcontroller
-#         ctrl.DONE = True
-#         print(ctrl.DONE,'\n')
-#     elif signum==12: # SIGUSR2 (I think): Update the proximity parameter for the fetching subsystem
-#         ctrl.proximity = int(not ctrl.proximity)
-#         print(ctrl.proximity,'\n')
-#     signal.signal(signum,microcontroller_signal_handler)
-#     return
+try:
+    def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
+        signal.signal(signal.SIGUSR1,signal.SIG_IGN)
+        global ctrl 
+        if ctrl.gettimes is not None:
+            t1 = time.time()
+            # print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
+            time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
+            ctrl.INT_start_time=0
+        ctrl.DONE = True
+        # print(ctrl.DONE,'\n')
+        signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+    def microcontroller_PROX_handler(signum,frame): # SIGUSR2
+        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+        global ctrl
+        ctrl.proximity = int(not ctrl.proximity)
+        print(ctrl.proximity,'\n')
+        signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
+except:
+    pass
 
 # Special function for testing the image processing code directly
 def iproc_main():
@@ -301,36 +310,45 @@ def iproc_main():
     global ctrl
     sigint=False
     import time
-    # from gpio import control
-
+    try:
+        from gpio import control
+    except:
+        pass
     from sys import argv
     if len(argv[1:]) == 0:
         args='ball'
     else:
         args=argv[1]
     try:
-        cam = camera(                    noprint=0,demo=1,manual=0,init_time=0,logfile='cam-dot-py-logfile')
-        # ctrl = control(    gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
-        # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-        # signal.signal(signal.SIGUSR1, microcontroller_signal_handler)
-        # signal.signal(signal.SIGUSR2, microcontroller_signal_handler)
-        # ctrl.init_manual_control(cam)
-        # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
-        # after which we will no longer be in manual control mode
-        # ctrl.manual=0
+        cam = camera(                        noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile')
+        try:
+            ctrl = control(    gettimes=None,noprint=0,demo=1,manual=1,init_time=0,logfile='cam-dot-py-logfile') 
+            signal.signal(signal.SIGUSR1, microcontroller_CTRL_ACK_handler)
+            signal.signal(signal.SIGUSR2, microcontroller_PROX_handler)
+            ctrl.init_manual_control(cam)
+            # 'ctrl' will be in the main loop of the manual control mode until it is escaped with CTRL+C,
+            # after which we will no longer be in manual control mode
+            ctrl.manual=0
+        except:
+            print("You're not on Linux, or an unexpected exception occurred in iproc_main() while initializing 'control'")
         cam.manual=0
         while sigint==False:
             t0 = time.perf_counter()
             cam.update_goal_position(args,time.time())
             cam.get_goal_regions()
-            # if sigint==False:
-            #     # print('\033[F\033[K' * 1, end = "")
-            #     print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
+            if sigint==False and platform=='linux':
+                print('\033[F\033[K' * 1, end = "")
+                print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
     except KeyboardInterrupt:
         writefile('cam-dot-py-logfile','Done.')
         print("\nDone.\nTerminated by user input.")
     except Exception as e:
         cam.destroy() # Free the threads
+        try:
+            ctrl.stop_all()
+        except Exception as e2:
+            print("COULDN'T DESTROY CONTROL INTERFACE")
+            print(e2,'\n')
         writefile('errfile',f"ERROR: {e}\n\n")
         backtrace = traceback.format_exc()
         writefile('errfile',backtrace + '\n')

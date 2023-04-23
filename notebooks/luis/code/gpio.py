@@ -115,7 +115,6 @@ class control:
         # MANUALLY BY THE USER TO SIMPLIFY DEBUGGING OF THE HANDLERS FOR THE 
         # MICROCONTROLLER'S INPUT TO THE PI. 
         self.root = Tk()
-        self.setpin(6,1)
         self.root.title("Motors GUI")
         self.root.geometry("64x64")
         self.app = Frame(self.root)
@@ -142,18 +141,24 @@ class control:
         self.root.bind('<Key-2>',self.callback_SIGUSR2_helper)
         if self.demo:
             self.video_update()
+        self.setpin(6,1)
         self.root.mainloop()
         return
     def stop_all(self,event=None):
-        if self.instruction==0:
+        if self.manual==1 and self.instruction==0:
             return
         for i in range(6):
             self.setpin(i,0)
-        self.INT_start_time = 0
-        self.setpin(7,1)
-        time.sleep(0.05)
-        self.setpin(7,0)
-        self.instruction=0
+        if self.manual==0:
+            self.pi_int()
+        else:
+            self.INT_start_time = time.time()
+            self.setpin(7,1)
+            print(self.readall()+" "+self.read(7),end=' ')
+            time.sleep(0.05)
+            self.setpin(7,0)
+            print(self.read(7))
+            self.instruction=0
     # Prove the ability to record response time data for the microcontroller
     # If time data isn't being collected, then this just changes self.DONE 
     # to 'True' and then back to 'False', which does nothing without the FSM.
@@ -230,17 +235,9 @@ class control:
             return
         self.clear_terminal()
         if self.cam.index==0:
-            if self.instruction and not self.instruction:
-                self.right_stop()
-                self.left_move(1) # only move the left motors backward
-            else:
-                self.left_move()
+            self.left_move()
         else:
-            if self.instruction and not self.instruction:
-                self.left_stop()
-                self.right_move() # only move the 'left' motors 'backward'
-            else:
-                self.right_move(1)            
+            self.right_move(1)            
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
@@ -252,11 +249,9 @@ class control:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         self.instruction = 1
-        #raise_signal(SIGUSR1)
         return
     # Stop moving the left motors if the car isn't moving forward OR backward
     def right_(self,event=None):
-        # self.clear_terminal()
         self.instruction = 0
         if not self.instruction and not self.instruction:
             if self.cam.index==0:
@@ -273,7 +268,6 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        #raise_signal(SIGUSR1)
         return
     # Make the car turn left
     def left(self,event=None):
@@ -281,17 +275,9 @@ class control:
             return
         self.clear_terminal()
         if self.cam.index==0:
-            if self.instruction and not self.instruction:
-                self.left_stop()
-                self.right_move(1) # only move the right motors backward
-            else: 
-                self.right_move()
+            self.right_move()
         else:
-            if self.instruction and not self.instruction:
-                self.right_stop()
-                self.left_move() # only move the 'right' motors 'backward'
-            else: 
-                self.left_move(1)            
+            self.left_move(1)            
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
@@ -303,11 +289,9 @@ class control:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         self.instruction = 1
-        #raise_signal(SIGUSR1)
         return
     # Stop moving the right motors if the car isn't moving forward OR backward
     def left_(self,event=None):
-        # self.clear_terminal()
         self.instruction = 0
         if not self.instruction and not self.instruction:
             if self.cam.index==0:
@@ -324,7 +308,6 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        #raise_signal(SIGUSR1)
         return
     # Make the car move backwards
     def back(self,event=None):
@@ -332,21 +315,11 @@ class control:
             return
         self.clear_terminal()
         if self.cam.index==0:
-            if self.instruction and not self.instruction:
-                self.right_move(1) # reverse only the right motors
-            elif self.instruction and not self.instruction:
-                self.left_move(1) # reverse only the left motors
-            else:
-                self.right_move(1)
-                self.left_move(1)
+            self.right_move(1)
+            self.left_move(1)
         else:
-            if self.instruction and not self.instruction:
-                self.left_move() # 'reverse' only the 'right' motors
-            elif self.instruction and not self.instruction:
-                self.right_move() # 'reverse' only the 'left' motors
-            else:
-                self.right_move()
-                self.left_move()            
+            self.right_move()
+            self.left_move()            
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
@@ -358,7 +331,6 @@ class control:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         self.instruction = 1
-        #raise_signal(SIGUSR1)
         return
     # Stop if the car isn't moving left OR right
     def back_(self,event=None):
@@ -379,7 +351,6 @@ class control:
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
-        #raise_signal(SIGUSR1)
         return
     # Open the pincers
     def pincers_open(self,event=None):
@@ -399,7 +370,6 @@ class control:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         self.instruction = 1
-        #raise_signal(SIGUSR1)
         return
     # Close the pincers
     def pincers_close(self,event=None):
@@ -419,7 +389,6 @@ class control:
             # writefile(self.logfile,self.read(7)+'\n')
             print(self.read(7))
         self.instruction = 1  
-        #raise_signal(SIGUSR1)
         return
     # If the pincers are not being used, then set the control outputs to 0
     def pincers_off_open(self,event=None):
@@ -465,13 +434,11 @@ class control:
         self.manual = 0
         for i in range(len(self.pins)-2):
             self.setpin(i,0)
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        time.sleep(0.05)
-        self.setpin(7,0)
+        self.pi_int()
         writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
         print("Exiting manual controls.\nFinal output: "+self.readall())
         self.root.destroy()
+        self.instruction=0
         writefile(self.logfile,"Manual control mode exited successfully!\n\n")
         print("Manual control mode exited successfully!\n\n")
         
@@ -480,11 +447,14 @@ class control:
     def pi_int(self):
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        # NOTE: Wait 5 ms for the microcontroller to handle the interrupt.
+        # NOTE: Wait 50 ms for the microcontroller to handle the interrupt.
         # This value may need to be adjusted later.
         time.sleep(0.05) 
         self.setpin(7,0)
     def left_move(self,reverse=0):
+        if self.manual==0 and (int(self.read(0)) ^ reverse):
+            self.left_stop()
+            self.pi_int()
         self.setpin(0,reverse)
         self.setpin(1,1)
     # Make the left motors stop
@@ -493,6 +463,9 @@ class control:
         self.setpin(1,0)
     # Make the right motors move forward (reverse=0) or backward (reverse=1).
     def right_move(self,reverse=0):
+        if self.manual==0 and (int(self.read(2)) ^ reverse):
+            self.right_stop()
+            self.pi_int()
         self.setpin(2,reverse)
         self.setpin(3,1)
     # Make the right motors stop

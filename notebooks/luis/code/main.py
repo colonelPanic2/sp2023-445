@@ -31,11 +31,11 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
     # print(ctrl.DONE,'\n')
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
 def microcontroller_PROX_handler(signum,frame): # SIGUSR2
-    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     global ctrl
     ctrl.proximity = int(not ctrl.proximity)
     print(ctrl.proximity,'\n')
-    # signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
+    signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
 
 def main(gettimes,noprint,demo,manual,start_state):
     global init_time
