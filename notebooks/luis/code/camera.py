@@ -249,7 +249,7 @@ class camera(images):
         if image is not None:
             # Draw lines to show the regions of the screen
             cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
-            height, width = image.shape
+            height, width = image.shape[:2]
             for i in range(1,9):
                 cv2.line(image, (i*(width//9), 0), (i*(width//9), height), (0, 0, 255), 2)
             cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
