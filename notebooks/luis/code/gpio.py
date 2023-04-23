@@ -1,6 +1,6 @@
 import time
 from tkinter import *
-from helpers.helpers import writefile,platform,clear,time_data
+from helpers.helpers import writefile,platform,clear,time_data,decode_signal
 try: 
     import RPi.GPIO as io
     print("Imported gpio library")
@@ -168,7 +168,7 @@ class control:
         else:
             self.INT_start_time = time.time()
             self.setpin(7,1)
-            print(self.readall()+" "+self.read(7),end=' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
             time.sleep(0.05)
             self.setpin(7,0)
             print(self.read(7))
@@ -212,8 +212,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -234,8 +234,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -255,8 +255,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -275,8 +275,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -295,8 +295,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -316,7 +316,7 @@ class control:
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
             # writefile(self.logfile,self.readall() + " " + self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -337,8 +337,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -358,8 +358,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -376,8 +376,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -395,8 +395,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0 and self.instruction==0:
@@ -414,8 +414,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0:
@@ -432,8 +432,8 @@ class control:
         self.INT_start_time = time.time()
         self.setpin(7,1)
         if self.manual!=0:
-            # writefile(self.logfile,self.readall()+" "+self.read(7)+' ')
-            print(self.readall()+" "+self.read(7),end=' ')
+            # writefile(self.logfile,self.readall()+self.read(7)+' ')
+            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
         if self.manual!=0:

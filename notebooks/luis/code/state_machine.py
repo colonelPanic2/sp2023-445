@@ -1,9 +1,10 @@
 import signal,time
 from helpers.pystatemachine import *
-from helpers.helpers import writefile,time_data
+from helpers.helpers import writefile,time_data,decode_signal
 
 class StateLogic(object):
     def __init__(self):
+
         super().__init__()
         return
     def function_call(self,function,args=None):
@@ -29,7 +30,7 @@ class StateLogic(object):
             timers = self.img.update_goal_position('ball_W',time.time())
             if not all(dt<self.img.goal_timelimits['ball_W'] for dt in timers): # NOTE: software simulation/testing change2 in self.img.regions.values():
                 if not self.noprint: 
-                    writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))
+                    writefile(self.logfile,"\n{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))
                 for region in range(6):
                     self.img.timers[region]=0
                 self.transition_chase()
@@ -184,7 +185,7 @@ class StateLogic(object):
             self.control.right_move(1)
             self.control.left_stop()
         if not self.noprint:
-            writefile(self.logfile,f"Output: {self.control.readall()}  ")
+            writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
         self.control.pi_int()
         return 0
     def acquire_commands(self,positions,timers):
