@@ -24,7 +24,7 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
     global ctrl 
     if ctrl.gettimes is not None:
         t1 = time.time()
-        print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
+        # print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
         time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
         ctrl.INT_start_time=0
     ctrl.DONE = True
