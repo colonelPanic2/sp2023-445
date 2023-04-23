@@ -466,9 +466,9 @@ class control:
         time.sleep(0.05) 
         self.setpin(7,0)
     def left_move(self,reverse=0):
-        if self.manual==0 and (int(self.read(0)) ^ reverse):
-            self.left_stop()
-            self.pi_int()
+        # if self.manual==0 and (int(self.read(0)) ^ reverse):
+        #     self.left_stop()
+        #     self.pi_int()
         self.setpin(0,reverse)
         self.setpin(1,1)
     # Make the left motors stop
@@ -477,9 +477,9 @@ class control:
         self.setpin(1,0)
     # Make the right motors move forward (reverse=0) or backward (reverse=1).
     def right_move(self,reverse=0):
-        if self.manual==0 and (int(self.read(2)) ^ reverse):
-            self.right_stop()
-            self.pi_int()
+        # if self.manual==0 and (int(self.read(2)) ^ reverse):
+        #     self.right_stop()
+        #     self.pi_int()
         self.setpin(2,reverse)
         self.setpin(3,1)
     # Make the right motors stop
