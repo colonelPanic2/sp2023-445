@@ -21,7 +21,7 @@ class images:
             self.regions[r]=0
             self.timers [r]=0
         self.last_regions = list(self.regions.values())
-        self.goal_timelimits = {'ball_W':5,'ball_C':2,'ball_A':2,'user':3,'waitpoint':3} # I don't expect that we'll need time limits for the user or the waitpoint
+        self.goal_timelimits = {'ball_W':5,'ball_C':0,'ball_A':2,'user':1,'waitpoint':1} # I don't expect that we'll need time limits for the user or the waitpoint
         self.camera_.start_read()
         return
     def update_goal_position(self,goal,t0=None):
