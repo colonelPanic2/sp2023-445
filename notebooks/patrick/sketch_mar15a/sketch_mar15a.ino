@@ -22,13 +22,16 @@ Servo servo2;
 #define PINCER_OUT1  PIN_PC5 // PC5
 // PC6 is reset - used only for programming the mega
 #define RMOTORS_IN0  PIN_PD0 // PD0
-#define RMOTORS_IN1  PIN_PD1 // PD1
+// #define RMOTORS_IN1  PIN_PD1 // PD1
+#define RMOTORS_IN1  PIN_PD7
+
 #define PI_INT       PIN_PD2 // PD2
 #define CTRL_ACK     PIN_PD3 // PD3
 #define CTRL         PIN_PD4 // PD4
 #define PINCER_ON    PIN_PD5 // PD5
 #define PINCER_DIR   PIN_PD6 // PD6
-#define Prox_Data    PIN_PD7 // PD7
+// #define Prox_Data    PIN_PD7 // PD7
+#define Prox_Data    PIN_PD1
 
 //variables for random functions
 long duration;
@@ -71,13 +74,23 @@ void read_pi() {
   pi_input[6] = digitalRead(CTRL       );
   if(pi_input[6]==0){
     check_left();
-    delay(100);
+    // delay(100);
     check_right();
   }
-  
-  digitalWrite(CTRL_ACK, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(CTRL_ACK, 0);
+  // if(pi_input[2] == 1){
+  //   digitalWrite(Prox_Data, HIGH);
+  // }
+  // else{
+  //   digitalWrite(Prox_Data, 0);
+  // }
+  // if(pi_input[3] == 1){
+  //   digitalWrite(CTRL_ACK, HIGH);
+  // }
+  // else{
+  //   digitalWrite(CTRL_ACK, 0);
+  // }
+  // delayMicroseconds(5);
+  // digitalWrite(CTRL_ACK, 0);
 }
 
 //function used to see how left wheel should move
@@ -215,10 +228,10 @@ void loop() {
         digitalWrite(LMOTORS_OUT1, HIGH);
         digitalWrite(RMOTORS_OUT0, HIGH);
         digitalWrite(RMOTORS_OUT1, HIGH);
-        servo1.detach();
-        servo2.detach();
-        pi_input[4] = 0;
-        pi_input[5] = 0;
+        // servo1.detach();
+        // servo2.detach();
+        // pi_input[4] = 0;
+        // pi_input[5] = 0;
       }
       //if we want to close the pincers, keep driving till ball is within range to catch
       // else{
@@ -238,7 +251,7 @@ void loop() {
 
   /* Manual control mode. The sensor input isn't used, and the microcontroller interprets the
      pi input as instructions to be interpreted and relayed to the control subsystem. */
-  else if (pi_input[6] == 1) {
+  else{
     // if (pi_input[3]==1) {
     //   check_right();
     // } else {
@@ -293,6 +306,15 @@ void loop() {
     // //     servo1.detach();
     // //     servo2.detach();
     // // }
+
+
+    if (pi_input[3]==1) {
+      digitalWrite(RMOTORS_OUT0,!pi_input[2]);
+      digitalWrite(RMOTORS_OUT1,pi_input[2]);
+    } else {
+      digitalWrite(RMOTORS_OUT0,LOW);
+      digitalWrite(RMOTORS_OUT1,LOW);
+    }
     if (pi_input[1]==1) {
       digitalWrite(LMOTORS_OUT0,!pi_input[0]);
       digitalWrite(LMOTORS_OUT1, pi_input[0]);
@@ -301,13 +323,6 @@ void loop() {
       digitalWrite(LMOTORS_OUT1,LOW);
     }
     // Right motors control translation
-    if (pi_input[3]==1) {
-      digitalWrite(RMOTORS_OUT0,!pi_input[2]);
-      digitalWrite(RMOTORS_OUT1, pi_input[2]);
-    } else {
-      digitalWrite(RMOTORS_OUT0,LOW);
-      digitalWrite(RMOTORS_OUT1,LOW);
-    }
     // Pincer motors control translation
     // NOTE: The direction for the pincer motors might be reversed
     // if (pi_input[4]==1) {
