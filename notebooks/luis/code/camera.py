@@ -256,7 +256,7 @@ class camera(images):
 
             # Resize the image with the calculated scale factor
             resized_img = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
-            height,width = resized_img.shape
+            height,width = resized_img.shape[:2]
             for i in range(1,9):
                 cv2.line(resized_img, (i*(width//9), 0), (i*(width//9), height), (0, 0, 255), 2)
             cv2.line(resized_img, (0, height//2), (width, height//2), (0, 0, 255), 2)
