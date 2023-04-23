@@ -249,19 +249,12 @@ class camera(images):
         if image is not None:
             # Draw lines to show the regions of the screen
             cv2.namedWindow("Camera",cv2.WINDOW_FREERATIO)
-            height, width, channels = image.shape
-
-            # Calculate the scale factor to fit the image inside the window
-            scale_factor = min(1, 800 / width, 600 / height)  # 800x600 is the size of the window
-
-            # Resize the image with the calculated scale factor
-            resized_img = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
-            height,width = resized_img.shape
+            height, width = image.shape
             for i in range(1,9):
-                cv2.line(resized_img, (i*(width//9), 0), (i*(width//9), height), (0, 0, 255), 2)
-            cv2.line(resized_img, (0, height//2), (width, height//2), (0, 0, 255), 2)
+                cv2.line(image, (i*(width//9), 0), (i*(width//9), height), (0, 0, 255), 2)
+            cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
             if position_xy is not None:
-                block_index = map_to_block_index(position_xy,resized_img.shape)
+                block_index = map_to_block_index(position_xy,image.shape)
                 if block_index<18:
                     # for y in range(2):
                     region_map = {}
@@ -270,11 +263,11 @@ class camera(images):
                         region_map[r+9]= (r*(width//9),height//2)
                     top_left = region_map[block_index]
                     bottom_right = (top_left[0]+width//9,top_left[1]+height//2)
-                    cv2.rectangle(resized_img,top_left,bottom_right,(0,255,0),2)
+                    cv2.rectangle(image,top_left,bottom_right,(0,255,0),2)
                 else:
                     print(f"\nUnexpected position value: map_to_block_index({position_xy}) -> {block_index}\n")
             # show the frame to our screen
-            cv2.imshow("Camera", resized_img)
+            cv2.imshow("Camera", image)
             key = cv2.waitKey(1) & 0xFF
             # if the 'q' key is pressed, stop the loop
             if self.manual==0:
