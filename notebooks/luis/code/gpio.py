@@ -133,6 +133,7 @@ class control:
         # self.root.bind('<KeyRelease-q>',self.pincers_off_open)
         self.root.bind('e',self.pincers_close)
         # self.root.bind('<KeyRelease-e>',self.pincers_off_close)
+        self.root.bind('c',self.camswitch)
         self.root.bind('<space>',self.stop_all)
         self.root.bind('<Control-c>',self.exit_)
         self.root.bind('<l>',self.clear_terminal)
