@@ -11,8 +11,8 @@ def signal_handler(signum,frame):
     signal.signal(signal.SIGUSR1, signal.SIG_IGN)
     signal.signal(signal.SIGUSR2, signal.SIG_IGN)
     global fsm
-    fsm.img.camera_.destroy()
     fsm.control.stop_all()
+    fsm.img.camera_.destroy()
     # The program should never be able to reach this
     # call to 'exit(0)'. It is just a precaution.
     exit(0)
@@ -102,6 +102,7 @@ def main(gettimes,noprint,demo,manual,start_state):
         
 
 def init_fetching(args):
+    global fsm
     gettimes,noprint,demo,manual,start_state=args[:5]
     # Run main with the processed command line arguments as well as the time
     # of initialization and the log file.
@@ -114,6 +115,7 @@ def init_fetching(args):
         # If we were collecting time data for that run, then write
         # it to the .csv file in the 'timedata' directory.
         signal.alarm(0)
+        t
         timedata_files(gettimes,init_time)
         print("\nDone.\nTerminated by user input.")
     return 0
