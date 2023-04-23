@@ -59,7 +59,7 @@ class control:
         io.setup(self.pins[8],io.IN)#,pull_up_down=io.PUD_DOWN)
         io.add_event_detect(self.pins[8],io.RISING,callback=self.callback_SIGUSR1)
         io.setup(self.pins[9],io.IN)#,pull_up_down=io.PUD_DOWN)
-        io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2)
+        io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2,bouncetime=2)
         io.setup(self.pins[10],io.OUT)
         io.setup(self.pins[11],io.IN)
         return
