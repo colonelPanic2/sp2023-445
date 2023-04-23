@@ -196,8 +196,6 @@ class control:
             return
         self.instruction=1
         self.cam.camera_.camswitch()
-    def camswitch_(self,event=None):
-        self.instruction=0
     # Make the car move forward
     def forward(self,event=None):
         if self.instruction==1:
@@ -211,37 +209,11 @@ class control:
             self.right_move(1)
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
+        print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+"\n")
-            print(self.read(7))
+        print(self.read(7))
         self.instruction = 1
-        #raise_signal(SIGUSR1)
-        return
-    # Stop if the car isn't moving left OR right
-    def forward_(self,event=None):
-        # self.clear_terminal()
-        self.setpin(7,0)
-        self.instruction = 0
-        if not self.instruction:
-            self.left_stop()
-        if not self.instruction:
-            self.right_stop()
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
-        time.sleep(0.05)
-        self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
-        #raise_signal(SIGUSR1)
         return
     # Make the car turn right
     def right(self,event=None):
@@ -254,34 +226,11 @@ class control:
             self.right_move(1)            
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
+        print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
+        print(self.read(7))
         self.instruction = 1
-        return
-    # Stop moving the left motors if the car isn't moving forward OR backward
-    def right_(self,event=None):
-        self.instruction = 0
-        if not self.instruction and not self.instruction:
-            if self.cam.index==0:
-                self.left_stop()
-            else:
-                self.right_stop()
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
-        time.sleep(0.05)
-        self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
         return
     # Make the car turn left
     def left(self,event=None):
@@ -294,34 +243,11 @@ class control:
             self.left_move(1)            
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
+        print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
+        print(self.read(7))
         self.instruction = 1
-        return
-    # Stop moving the right motors if the car isn't moving forward OR backward
-    def left_(self,event=None):
-        self.instruction = 0
-        if not self.instruction and not self.instruction:
-            if self.cam.index==0:
-                self.right_stop()
-            else:
-                self.left_stop()
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall() + " " + self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
-        time.sleep(0.05)
-        self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
         return
     # Make the car move backwards
     def back(self,event=None):
@@ -336,35 +262,11 @@ class control:
             self.left_move()            
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
+        print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
+        print(self.read(7))
         self.instruction = 1
-        return
-    # Stop if the car isn't moving left OR right
-    def back_(self,event=None):
-        # self.clear_terminal()
-        self.setpin(7,0)
-        self.instruction = 0
-        if not self.instruction:
-            self.right_stop()
-        if not self.instruction:
-            self.left_stop()
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
-        time.sleep(0.05)
-        self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
         return
     # Open the pincers
     def pincers_open(self,event=None):
@@ -375,14 +277,10 @@ class control:
             self.pincers_move(0)
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
+        print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
+        print(self.read(7))
         self.instruction = 1
         return
     # Close the pincers
@@ -394,52 +292,11 @@ class control:
             self.pincers_move(1)
         self.INT_start_time = time.time()
         self.setpin(7,1)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
+        print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
         time.sleep(0.05)
         self.setpin(7,0)
-        if self.manual!=0 and self.instruction==0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
+        print(self.read(7))
         self.instruction = 1  
-        return
-    # If the pincers are not being used, then set the control outputs to 0
-    def pincers_off_open(self,event=None):
-        # self.clear_terminal()
-        self.instruction = 0
-        if self.instruction==0:
-            self.setpin(4,0)
-            self.setpin(5,0)
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        if self.manual!=0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
-        time.sleep(0.05)
-        self.setpin(7,0)
-        if self.manual!=0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
-        #raise_signal(SIGUSR1)
-        return
-    def pincers_off_close(self,event=None):
-        # self.clear_terminal()
-        self.instruction = 0
-        if self.instruction==0:
-            self.setpin(4,0)
-            self.setpin(5,0)
-        self.INT_start_time = time.time()
-        self.setpin(7,1)
-        if self.manual!=0:
-            # writefile(self.logfile,self.readall()+self.read(7)+' ')
-            print(decode_signal(self.readall())+self.read(6)+self.read(7),end=' ')
-        time.sleep(0.05)
-        self.setpin(7,0)
-        if self.manual!=0:
-            # writefile(self.logfile,self.read(7)+'\n')
-            print(self.read(7))
-        #raise_signal(SIGUSR1)
         return
     # If the user terminates manual control mode, return to auto control mode
     def exit_(self,event=None):
