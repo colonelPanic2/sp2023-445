@@ -93,7 +93,7 @@ class camera(images):
         self.index = int(not self.index)
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
         # NOTE: multiply the self.index by 2 when on the Pi
-        self.cam = cv2.VideoCapture(self.index,cam_backends[int(platform=='linux')])            
+        self.cam = cv2.VideoCapture(self.index*2,cam_backends[int(platform=='linux')])            
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
         self.start_read()
