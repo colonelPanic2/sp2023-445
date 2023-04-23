@@ -113,7 +113,7 @@ class control:
             self.root.after(25,self.video_update) # Call this function every 25ms
         except KeyboardInterrupt:
             self.manual = 0
-            for i in range(len(self.pins)-2):
+            for i in range(len(self.pins[:8])):
                 self.setpin(i,0)
             self.INT_start_time = time.time()
             self.setpin(7,1)
@@ -446,7 +446,7 @@ class control:
         signal(SIGINT,SIG_IGN)
         self.instruction=1
         self.manual = 0
-        for i in range(len(self.pins)-2):
+        for i in range(len(self.pins[:8])):
             self.setpin(i,0)
         self.pi_int()
         writefile(self.logfile,"Exiting manual controls.\nFinal output: "+self.readall()+'\n')
@@ -511,7 +511,7 @@ class control:
     # Read the values of all of the output pins
     def readall(self):
         outputs=''
-        for pin_idx in range(len(self.pins)-2):
+        for pin_idx in range(len(self.pins[:8])):
             outputs+=self.read(pin_idx)
         return outputs
     def clear_terminal(self,event=None):
