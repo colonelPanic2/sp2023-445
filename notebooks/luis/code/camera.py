@@ -14,14 +14,12 @@ class images:
         global sigint
         sigint = False
         self.camera_ = cam
-        # This array will keep track of where the ball is located in the 6 regions
-        # Of the camera view. The ball can be in multiple regions at once.
         self.regions,self.timers = {},{}
         for r in range(18):
             self.regions[r]=0
             self.timers [r]=0
         self.last_regions = list(self.regions.values())
-        self.goal_timelimits = {'ball_W':2,'ball_C':0,'ball_A':2,'user':2,'waitpoint':2} # I don't expect that we'll need time limits for the user or the waitpoint
+        self.goal_timelimits = {'ball_W':2,'ball_C':0,'ball_A':2,'user':2,'waitpoint':2} 
         self.camera_.start_read()
         return
     def update_goal_position(self,goal,t0=None):
@@ -52,11 +50,7 @@ class images:
         return [t0-self.timers[i] for i in range(18)]
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):
-        # If the goal is in the camera view, then find the region(s) where it is present
-        # if not all(self.regions[i]==0 for i in range(18)):
         return [i for i in range(18) if self.regions[i]>0]
-        # Otherwise, get the last known region(s) in which the goal was in the camera view
-        # return [j for j in range(18) if self.last_regions[j]>0]
         
 class camera(images):
     def __init__(self,noprint,demo,manual,init_time,logfile):
@@ -86,13 +80,6 @@ class camera(images):
         writefile(self.logfile,"Done.\n")
     def camswitch(self):
         global sigint
-        # if self.capture_t!=None:
-        #     sigint=True
-        #     self.capture_t.join()
-        #     sigint=False
-        #     self.cam.release()
-        #     while not self.q.empty():
-        #         _ = self.q.get()
         self.index = int(not self.index)
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
         # NOTE: multiply the self.index by 2 when on the Pi
@@ -124,11 +111,6 @@ class camera(images):
             (x, y, w, h) = cv2.boundingRect(approx)
             shape = "circle"
         return shape
-    # Spawn a camera thread to constantly read the camera's input.
-    def start_read(self):
-        # self.capture_t = threading.Thread(target=self.camera_read)
-        # self.capture_t.start()
-        pass
     # Tell the camera thread to end smoothly, and raise a KeyboardInterupt
     # that will be caught in the 'main_fetching' function in main.py
     def destroy(self):
@@ -141,29 +123,11 @@ class camera(images):
             signal.alarm(2)
         if self.demo:
             cv2.destroyAllWindows()
-        # NOTE: This doesn't seem to be causing any problems, but it doesn't seem to 
-        # help much, either. There is an occasional error added as a manual entry near 
-        # the end of the err.txt log for 04-08.
-        # print("Joining camera thread and main thread...",end='  ')
-        # with threading.Lock():
-        #     if self.capture_t is not None and self.capture_t.is_alive():
-        #         self.capture_t.join()
         if platform=='linux':
             signal.alarm(0)
         self.cam.release()
-        # print('thread join successful')
         writefile(self.logfile,'\nDone.\nRaising KeyboardInterrupt to end the process...\n')
         raise KeyboardInterrupt
-    # (camera thread) Read an image from the camera and store it in 
-    # a queue to be accessed by the main thread in the 'getimage' function.
-    def camera_read(self):
-        global sigint
-        while sigint==False:
-            ret,frame = self.cam.read()
-            if self.q.empty() and ret:
-                self.q.put(frame)
-        return
-    # NOTE: Old ball tracking (consistent, but OVERLY sensitive to non-ball objects with a similar color)
     def track(self,frame,goal):   
         center = None
         blurred = cv2.GaussianBlur(frame, (11,11), 0)
@@ -189,48 +153,6 @@ class camera(images):
                         (0, 255, 255), 2)
                 cv2.circle(frame, center, 5, (0,0,255), -1)
         return center
-    # NOTE: New ball tracking (inconsistent, but LESS sensitive to non-ball objects with similar color)
-    def new_track(self,frame,goal):
-        blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        if goal[:4]=='ball':
-            mask = cv2.inRange(hsv, self.greenLower, self.greenUpper)
-        elif goal=='user':
-            mask = cv2.inRange(hsv, self.redLower, self.redUpper)
-        elif goal=='waitpoint':
-            mask = cv2.inRange(hsv, self.blueLower, self.blueUpper)
-        mask = cv2.erode(mask, None, iterations=2)
-        mask = cv2.dilate(mask, None, iterations=2)
-        
-        # find contours in the mask and initialize the current
-        # (x, y) center of the ball
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_SIMPLE)
-        cnts = imutils.grab_contours(cnts)
-        center = None
-        # only proceed if at least one contour was found
-        if len(cnts) > 0:
-            # find the largest contour in the mask, then use
-            # it to compute the minimum enclosing circle and
-            # centroid
-            for c in cnts:
-                shape = self.detect_shape(c)
-                if shape == "circle" :
-                    ((x, y), radius) = cv2.minEnclosingCircle(c)
-                    M = cv2.moments(c)
-                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                    # only proceed if the radius meets a minimum size
-                    #original size as 10
-                    if radius > 3:
-                        # draw the circle and centroid on the frame,
-                        # then update the list of tracked points
-                        cv2.circle(frame, (int(x), int(y)), int(radius),
-                            (0, 255, 255), 2)
-                        cv2.circle(frame, center, 5, (0, 0, 255), -1)
-        return center
-    # (main thread) Get an image from the camera thread by accessing a shared queue, and
-    # use it to determine the (x,y) coordinates of the center of the goal. If the goal
-    # isn't detected in the image, then center = None.
     def getimage(self,goal):
         global sigint
         center = None
@@ -238,9 +160,7 @@ class camera(images):
         while sigint==False:
             ret,image=self.cam.read()
             if ret:
-            # if not self.q.empty():
-                # image = self.q.get()
-                center = self.track(image,goal) # NOTE: switch between 'track' and 'new_track' to see differences in results
+                center = self.track(image,goal)
                 break
         return center,image
     # Draw the lines showing the 18 regions of the image. If the goal is in a region,
@@ -256,7 +176,6 @@ class camera(images):
             if position_xy is not None:
                 block_index = map_to_block_index(position_xy,image.shape)
                 if block_index<18:
-                    # for y in range(2):
                     region_map = {}
                     for r in range(9):
                         region_map[r]  = (r*(width//9),0)
@@ -289,11 +208,9 @@ try:
         global ctrl 
         if ctrl.gettimes is not None:
             t1 = time.time()
-            # print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
             time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
             ctrl.INT_start_time=0
         ctrl.DONE = True
-        # print(ctrl.DONE,'\n')
         signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
     def microcontroller_PROX_handler(signum,frame): # SIGUSR2
         signal.signal(signal.SIGUSR2,signal.SIG_IGN)

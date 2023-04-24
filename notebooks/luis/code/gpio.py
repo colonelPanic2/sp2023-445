@@ -28,14 +28,8 @@ class control:
         self.manual=manual
         self.init_time=init_time
         self.logfile = logfile
-        #Old pi pins
-        # self.pins=[7,0,1,5,6,12,13,19, 16,26] # the default pins are all GPIO pins
-        #New pi pins
-        # self.pins=[17,27,22,23,24,25,5,6,16,26]
         self.pins = [17,27,12,13,4,25,5,6,16,26,18,24]
-        #New jetson pins
-        # self.pins = [29,31,32,33,11,12,18,24,7,15]
-        self.instruction=0#{'CAMSWITCH':0,'FORWARD':0,'LEFT':0,'BACK':0,'RIGHT':0,'CLOSE':0,'OPEN':0,'CLEAR':0,'SIGUSR1':0,'SIGUSR2':0}
+        self.instruction=0
         self.INT_start_time = 0
         self.proximity = 0
         self.DONE = False
@@ -43,7 +37,6 @@ class control:
         # for each of the state function loops
         time_data(gettimes,'',0,noprint,logfile)
         io.setmode(io.BCM)
-        # io.setmode(io.BOARD) # *****
         io.setwarnings(False) # NOTE: COMMENT THIS OUT WHEN DEBUGGING THE GPIO PINS
         for pin in self.pins[:8]:
             if pin == self.pins[6]:
@@ -55,10 +48,9 @@ class control:
         self.setpin(7,1)
         time.sleep(0.05)
         self.setpin(7,0)
-        # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-        io.setup(self.pins[8],io.IN)#,pull_up_down=io.PUD_DOWN)
+        io.setup(self.pins[8],io.IN)
         io.add_event_detect(self.pins[8],io.RISING,callback=self.callback_SIGUSR1)
-        io.setup(self.pins[9],io.IN)#,pull_up_down=io.PUD_DOWN)
+        io.setup(self.pins[9],io.IN)
         io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2,bouncetime=2)
         io.setup(self.pins[10],io.OUT)
         io.setup(self.pins[11],io.IN)
@@ -103,7 +95,7 @@ class control:
         kill(getpid(),SIGUSR1)
     def callback_SIGUSR2(self,channel):
         kill(getpid(),SIGUSR2)
-    # Show the camera view in a window while in manual control mode.
+        # Show the camera view in a window while in manual control mode.
     def video_update(self):
         try:
             self.cam.update_goal_position('ball',time.time())

@@ -3,14 +3,13 @@ from helpers.helpers import writefile,logdata,time_data,timedata_files
 from camera import camera
 from gpio import control
 from state_machine import FSM
-# In case of a SIGINT, allow the camera thread to release the 
-# camera and finish. Then raise a KeyboardInterrupt to exit
-# gracefully
 def signal_handler(signum,frame):
     signal.alarm(0)
     signal.signal(signal.SIGUSR1, signal.SIG_IGN)
     signal.signal(signal.SIGUSR2, signal.SIG_IGN)
     global fsm
+    fsm.control.pincers_move(1)
+    fsm.control.pi_int()
     fsm.control.stop_all()
     fsm.img.camera_.destroy()
     # The program should never be able to reach this
@@ -116,6 +115,8 @@ def init_fetching(args):
         # it to the .csv file in the 'timedata' directory.
         signal.alarm(0)
         try:
+            fsm.control.pincers_move(1)
+            fsm.control.pi_int()
             fsm.control.stop_all()
         except:
             print("Couldn't stop the motors")

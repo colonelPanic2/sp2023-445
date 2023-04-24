@@ -432,14 +432,13 @@ class FSM(StateLogic):
         self.init_time = init_time
         self.logfile = logfile
         self.start_state = start_state
-        # if start_state=='WAIT':
-        #     self.img.goal_timelimits['ball'] = 5
-        # else:
-        #     self.img.goal_timelimits['ball'] = 0.005
         self.manual_off() # This object is can only be initialized in auto control mode.
         self.control.INT_start_time = 0
         self.control.proximity = 0
         self.control.DONE = False
+        self.control.pincers_move(0)
+        self.control.pi_int()
+        self.control.stop_all()
         super().__init__()
     # Get the name of the current state of the FSM as a string
     def get_state(self):
