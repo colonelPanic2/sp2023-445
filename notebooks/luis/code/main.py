@@ -7,8 +7,7 @@ def control_switch_handler(signum,frame):
     signal.alarm(0)
     global fsm
     fsm.control_switch()
-# Use this for files/directories whose changes you want to ignore (after having added said files/directories to the .gitignore file in the main directory):
-# git rm -r --cached directory_name
+
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
     signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     global ctrl 
@@ -18,10 +17,13 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
         ctrl.INT_start_time=0
     ctrl.DONE = True
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+
 def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     global ctrl
     ctrl.proximity = int(not ctrl.proximity)
+    # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
+    # ctrl.communication_stop() 
     print("PROXIMITY: ",ctrl.proximity,'\n')
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
 

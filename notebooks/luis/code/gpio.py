@@ -29,7 +29,7 @@ class control:
         self.manual=manual
         self.init_time=init_time
         self.logfile = logfile
-        self.pins = [17,27,12,13,4,25,5,6,16,26,18,24]
+        self.pins = [17,27,12,13,4,25,5,6,16,26,18,24, 20,21]
         self.instruction=0
         self.INT_start_time = 0
         self.proximity = 0

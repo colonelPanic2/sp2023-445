@@ -467,19 +467,19 @@ class FSM(StateLogic):
     # General state transition functions
     @event(from_states=(START, RETURN), to_state=(WAIT))
     def transition_wait(self,some_variables=None):
-        # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
         if self.img.camera_.index != 0:
             self.img.camera_.camswitch()
         self.control.DONE = False
+        self.control.proximity=0
         return 0
     @event(from_states=(START,WAIT), to_state=(CHASE))
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
         self.control.DONE = False
-        signal.alarm(60) # NOTE: Remember to change back to 60!
-        # *Other pre-processing logic before changing to next state* # 
+        self.control.proximity=0
+        signal.alarm(60)
         return 0
     @event(from_states=(START,CHASE), to_state=(ACQUIRE))
     def transition_acquire(self,some_variables=None):
@@ -487,20 +487,20 @@ class FSM(StateLogic):
         signal.alarm(0)
         self.control.DONE = False
         signal.signal(signal.SIGALRM,self.signal_handler)
-        signal.alarm(45) # NOTE: Remember to change back to 30!
-        # *Other pre-processing logic before changing to next state* # 
+        # self.control.communication_start()
+        signal.alarm(45)
         return 0
     @event(from_states=(START,ACQUIRE), to_state=(FETCH))
     def transition_fetch(self,some_variables=None):
-        # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
         if self.img.camera_.index != 1:
             self.img.camera_.camswitch()
         self.control.DONE = False
+        self.control.proximity = 0
         return 0
     @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
-        # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
         self.control.DONE = False
+        self.control.proximity=0
         return 0
