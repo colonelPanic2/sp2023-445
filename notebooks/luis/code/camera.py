@@ -20,7 +20,6 @@ class images:
             self.timers [r]=0
         self.last_regions = list(self.regions.values())
         self.goal_timelimits = {'ball_W':2,'ball_C':0,'ball_A':2,'user':2,'waitpoint':2} 
-        self.camera_.start_read()
         return
     def update_goal_position(self,goal,t0=None):
         global sigint
@@ -86,7 +85,6 @@ class camera(images):
         self.cam = cv2.VideoCapture(self.index*self.index_factor,cam_backends[int(platform=='linux')])            
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1917) # Divides evenly by 9
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
-        self.start_read()
     # NOTE: This function is still unused because I don't quite know how to use
     # it. I'll have to ask yinhuo for help with integrating this into the design.
     def detect_shape(self,c):
