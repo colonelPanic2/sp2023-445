@@ -247,6 +247,7 @@ class StateLogic(object):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pi_int()
+                time.sleep(0.5)
                 self.control.pincers_stop()
                 self.control.pi_int()
                 if not self.noprint:
@@ -286,8 +287,15 @@ class StateLogic(object):
             #TODO: FETCH - establish logic for the case where there is no user in the frame and there is
             # no prior user position
             else:
+                # Protocol to look for the user
                 self.control.left_move()
-                self.control.right_move(1)
+                # self.control.right_move(1)
+                self.control.right_stop()
+                self.control.pi_int()
+                time.sleep(0.5)
+                self.control.left_stop()
+                self.control.pi_int()
+                return 0
         # top-left
         elif not all(pos>2 for pos in positions):
             self.control.left_move(1)
@@ -320,6 +328,7 @@ class StateLogic(object):
                 # while not self.control.DONE:
                 #     pass
                 # self.control.DONE = False
+                time.sleep(0.5)
                 self.control.pincers_stop()
                 self.control.pi_int()
                 if not self.noprint: 
@@ -360,8 +369,15 @@ class StateLogic(object):
             #TODO: RETURN - establish logic for the case where there is no waitpoint in the frame and there is
             # no prior waitpoint position
             else:
-                self.control.left_move()
-                self.control.right_move(1)
+                # Protocol to look for the waiting point
+                self.control.left_stop()
+                # self.control.right_move(1)
+                self.control.right_move()
+                self.control.pi_int()
+                time.sleep(0.5)
+                self.control.right_stop()
+                self.control.pi_int()
+                return 0
         # top-left
         elif not all(pos>2 for pos in positions):
             self.control.left_move(1)

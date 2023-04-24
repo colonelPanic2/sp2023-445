@@ -55,6 +55,8 @@ class control:
         io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2,bouncetime=2)
         io.setup(self.pins[10],io.OUT)
         io.setup(self.pins[11],io.IN)
+        io.setup(self.pins[12],io.OUT)
+        io.setup(self.pins[13],io.IN)
         return
     def distance_front(self):
         io.setpin(10,1)
@@ -80,28 +82,28 @@ class control:
         dt = t1-t0
         dist = (dt*34300)>>1
         return dist
-    def communication_stop(self):
-        # CS0 = 10
-        io.setpin(0,1)
-        io.setpin(1,0)
-        # CS1 = 10
-        io.setpin(2,1)
-        io.setpin(3,0)
-        # CS2 = 01 (stop sending interrupts to the pi)
-        io.setpin(4,0)
-        io.setpin(5,1)
-        self.pi_int()
-    def communication_start(self):
-        # CS0 = 10
-        io.setpin(0,1)
-        io.setpin(1,0)
-        # CS1 = 10
-        io.setpin(2,1)
-        io.setpin(3,0)
-        # CS2 = 00 (start sending interrupts to the pi)
-        io.setpin(4,0) 
-        io.setpin(5,0)
-        self.pi_int()
+    # def communication_stop(self):
+    #     # CS0 = 10
+    #     io.setpin(0,1)
+    #     io.setpin(1,0)
+    #     # CS1 = 10
+    #     io.setpin(2,1)
+    #     io.setpin(3,0)
+    #     # CS2 = 01 (stop sending interrupts to the pi)
+    #     io.setpin(4,0)
+    #     io.setpin(5,1)
+    #     self.pi_int()
+    # def communication_start(self):
+    #     # CS0 = 10
+    #     io.setpin(0,1)
+    #     io.setpin(1,0)
+    #     # CS1 = 10
+    #     io.setpin(2,1)
+    #     io.setpin(3,0)
+    #     # CS2 = 00 (start sending interrupts to the pi)
+    #     io.setpin(4,0) 
+    #     io.setpin(5,0)
+    #     self.pi_int()
     def init_manual_control(self,cam):
         print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
          While in manual control mode, the fetching subsystem is inactive.\n\
@@ -129,7 +131,7 @@ class control:
         kill(getpid(),SIGUSR1)
     def callback_SIGUSR2(self,channel):
         kill(getpid(),SIGUSR2)
-        # Show the camera view in a window while in manual control mode.
+    # Show the camera view in a window while in manual control mode.
     def video_update(self):
         try:
             self.cam.update_goal_position('ball',time.time())
