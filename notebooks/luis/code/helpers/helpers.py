@@ -49,9 +49,9 @@ def teardown_timeout_handler(signum,frame):
     current_time = time.strftime("%Y-%m-%d_%H.%M.%S", current_time)[11:]
     # backtrace = traceback.format_exc()
     err_message = "ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE\nTHE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.\n\nAttempting processicide..."
-    output = f"\n\n{current_time}\n{err_message}"#\n\n{backtrace}\n"
+    output = f"\n\n{current_time}\n{err_message}"
     writefile(f'logs/{current_date}/err.txt',output)
-    print(f'{err_message}')#\n\n{backtrace}')
+    print(f'{err_message}')
     os.kill(os.getpid(), signal.SIGKILL)
 # Write the input string to the end of the file with the given name. 
 def writefile(fname,content):

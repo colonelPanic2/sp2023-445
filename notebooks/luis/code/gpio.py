@@ -22,6 +22,7 @@ from os import getpid, kill
 class control:
     # Initialize the object with a set of GPIO pin #s for the Pi
     def __init__(self,gettimes,noprint,demo,manual,init_time,logfile):
+        self.cam=None
         self.gettimes=gettimes
         self.noprint=noprint
         self.demo=demo
@@ -373,7 +374,20 @@ class control:
          mode, but only when the FSM is in the 'WAIT' state.\n\n\
          In order to completely end the program, press CTRL+C in the\n\
          terminal or 'q' in the 'Camera' window.\n\n")
-
-
-    
+    def control_switch(self):
+        self.manual = int(not self.manual)
+        if self.cam is not None:
+            self.cam.manual = self.manual
+        if self.manual==0:
+            self.init_manual_control(self.cam)
+            self.manual = 0
+            if self.cam is not None:
+                self.cam.manual = 0
+        else:
+            self.exit_()
+        print("Returning to 'auto control mode'...")
+        self.manual=0
+        if self.cam is not None:
+            self.cam.manual=0
+        return 0
 

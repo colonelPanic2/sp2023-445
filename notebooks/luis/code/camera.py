@@ -1,7 +1,7 @@
 import threading,cv2,imutils,traceback,queue
 from sys import platform
 import signal,time
-
+from os import kill,getpid
 from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler,time_data
 TLL,TLM,TLR = 0,  1, 2 # Top-left region of camera view
 TML,TMM,TMR = 3,  4, 5 # Top-middle region of camera view
@@ -191,10 +191,12 @@ class camera(images):
                 if key == ord("q"):
                     self.destroy()
                 elif self.demo==1:
-                    if key == ord('c') :
+                    if key == ord('M'):
+                        kill(getpid(),signal.SIGTERM)
+                    elif key == ord('c') :
                         self.camswitch()
-                    elif key == ord('2') and platform=='linux':
-                        signal.raise_signal(signal.SIGUSR2)
+                    # elif key == ord('2') and platform=='linux':
+                    #     signal.raise_signal(signal.SIGUSR2)
         return
     
 
@@ -218,7 +220,13 @@ try:
         signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
 except:
     pass
-
+def control_switch_handler(signum,frame):
+    signal.alarm(0)
+    # signal.signal(signal.SIGTERM,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR1,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    global ctrl
+    ctrl.control_switch()
 # Special function for testing the image processing code directly
 def iproc_main():
     global sigint

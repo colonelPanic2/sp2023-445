@@ -3,18 +3,25 @@ from helpers.helpers import writefile,logdata,time_data,timedata_files
 from camera import camera
 from gpio import control
 from state_machine import FSM
-def signal_handler(signum,frame):
+# def signal_handler(signum,frame):
+#     signal.alarm(0)
+#     signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+#     signal.signal(signal.SIGUSR2, signal.SIG_IGN)
+#     global fsm
+#     fsm.control.pincers_move(1)
+#     fsm.control.pi_int()
+#     fsm.control.stop_all()
+#     fsm.img.camera_.destroy()
+#     # The program should never be able to reach this
+#     # call to 'exit(0)'. It is just a precaution.
+#     exit(0)
+def control_switch_handler(signum,frame):
     signal.alarm(0)
-    signal.signal(signal.SIGUSR1, signal.SIG_IGN)
-    signal.signal(signal.SIGUSR2, signal.SIG_IGN)
+    # signal.signal(signal.SIGTERM,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR1,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     global fsm
-    fsm.control.pincers_move(1)
-    fsm.control.pi_int()
-    fsm.control.stop_all()
-    fsm.img.camera_.destroy()
-    # The program should never be able to reach this
-    # call to 'exit(0)'. It is just a precaution.
-    exit(0)
+    fsm.control_switch()
 # Use this for files/directories whose changes you want to ignore (after having added said files/directories to the .gitignore file in the main directory):
 # git rm -r --cached directory_name
 # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
@@ -46,15 +53,17 @@ def main(gettimes,noprint,demo,manual,start_state):
     global ctrl
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
-    # Set up the signal handlers
     ctrl = control(     gettimes,noprint,demo,manual,0,logfile) 
-    # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
+    # Set up the signal handlers
     signal.signal(signal.SIGUSR1, microcontroller_CTRL_ACK_handler)
     signal.signal(signal.SIGUSR2, microcontroller_PROX_handler)
+    # If we were told to start the program in manual mode, then 
+    # do it. Note that the FSM object won't be initialized until 
+    # manual mode is exited.
     if manual==1:
         ctrl.init_manual_control(cam)
     fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, control_switch_handler)
 
 
     # Make a list of state functions in their intended order of 

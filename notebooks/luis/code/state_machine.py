@@ -174,8 +174,8 @@ class StateLogic(object):
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_acquire()
                 return 3
-            else:
-                return 0
+            self.control.right_move()
+            self.control.left_move()
         # bottom-middle-right
         elif 14 in positions:
             self.control.right_stop()
@@ -248,7 +248,8 @@ class StateLogic(object):
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_fetch()
                 return 4
-            return 0
+            self.control.right_move()
+            self.control.left_move()
         # bottom-middle-left
         elif 14 in positions:
             self.control.right_stop()
@@ -330,7 +331,8 @@ class StateLogic(object):
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_return()
                 return 5
-            return 0
+            self.control.right_move(1)
+            self.control.left_move(1)
         # bottom-middle-right
         elif 14 in positions:
             self.control.left_stop()
@@ -392,7 +394,8 @@ class StateLogic(object):
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_wait()
                 return 1
-            return 0
+            self.control.right_move(1)
+            self.control.left_move(1)
         # bottom-middle-right
         elif 14 in positions:
             self.control.left_stop()
@@ -403,11 +406,20 @@ class StateLogic(object):
             self.control.right_move(1)
         self.control.pi_int()
         return 0
-    def manual_off(self):
-        self.control.manual=0
-        self.img.manual=0
-        self.img.camera_.manual=0
-        self.manual=0
+    def set_manual(self,mode_num):
+        self.control.manual=mode_num
+        self.img.manual=mode_num
+        self.img.camera_.manual=mode_num
+        self.manual=mode_num
+    def control_switch(self):
+        self.set_manual(int(not self.manual))
+        if self.manual==1:
+            self.control.init_manual_control(self.img)
+            self.set_manual(0)
+        else:
+            self.control.exit_()
+        print("\nRe-entering auto control mode...\n")
+        return 0
 
 # RETURN if...
 # -  CHASE   for 60 seconds
@@ -432,7 +444,7 @@ class FSM(StateLogic):
         self.init_time = init_time
         self.logfile = logfile
         self.start_state = start_state
-        self.manual_off() # This object is can only be initialized in auto control mode.
+        self.set_manual(0) # This object can only be initialized in auto control mode.
         self.control.INT_start_time = 0
         self.control.proximity = 0
         self.control.DONE = False
