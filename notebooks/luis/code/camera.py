@@ -11,18 +11,15 @@ BML,BMM,BMR = 12,13,14 # Bottom-middle region of camera view
 BRL,BRM,BRR = 15,16,17 # Bottome-right region of camera view
 class images:
     def __init__(self,cam):
-        global sigint
-        sigint = False
         self.camera_ = cam
         self.regions,self.timers = {},{}
         for r in range(18):
             self.regions[r]=0
             self.timers [r]=0
         self.last_regions = list(self.regions.values())
-        self.goal_timelimits = {'ball_W':2,'ball_C':0,'ball_A':2,'user':2,'waitpoint':2} 
+        self.goal_timelimits = {'ball_W':2,'ball_C':0,'ball_A':0.5,'user':0,'waitpoint':0} 
         return
     def update_goal_position(self,goal,t0=None):
-        global sigint
         position_xy,image = self.camera_.getimage(goal)
         if position_xy is not None:
             region_index = map_to_block_index(position_xy,image.shape)
@@ -44,8 +41,10 @@ class images:
                 #     print('\033[F\033[K' * 1, end = "")
                 #     print(f"{i}: {t0-self.timers[i]:.2f}")
             else:
-                self.regions[i]=0
-                self.timers[i] = t0
+                if not ((13<=i+1<=14 and i+1 in goal_positions)\
+                    or  (12<=i-1<=13 and i-1 in goal_positions)):
+                    self.timers[i] = t0
+                    self.regions[i]=0
         return [t0-self.timers[i] for i in range(18)]
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):
@@ -54,9 +53,7 @@ class images:
 class camera(images):
     def __init__(self,noprint,demo,manual,init_time,logfile):
         writefile(logfile,"Initializing camera...  ")
-        global sigint
         self.capture_t = None
-        sigint = False
         self.noprint=noprint
         self.demo=demo
         self.manual=manual
@@ -78,7 +75,6 @@ class camera(images):
         super().__init__(self)
         writefile(self.logfile,"Done.\n")
     def camswitch(self):
-        global sigint
         self.index = int(not self.index)
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
         # NOTE: multiply the self.index by 2 when on the Pi
@@ -112,18 +108,16 @@ class camera(images):
     # Tell the camera thread to end smoothly, and raise a KeyboardInterupt
     # that will be caught in the 'main_fetching' function in main.py
     def destroy(self):
-        global sigint
         print("\nHalting program...")
         writefile(self.logfile,"\nHalting program...  ")
-        sigint = True
         if platform=='linux':
             signal.signal(signal.SIGALRM, teardown_timeout_handler)
             signal.alarm(2)
+        self.cam.release()
         if self.demo:
             cv2.destroyAllWindows()
         if platform=='linux':
             signal.alarm(0)
-        self.cam.release()
         writefile(self.logfile,'\nDone.\nRaising KeyboardInterrupt to end the process...\n')
         raise KeyboardInterrupt
     def track(self,frame,goal):   
@@ -152,10 +146,9 @@ class camera(images):
                 cv2.circle(frame, center, 5, (0,0,255), -1)
         return center
     def getimage(self,goal):
-        global sigint
         center = None
         image=None
-        while sigint==False:
+        while True:
             ret,image=self.cam.read()
             if ret:
                 center = self.track(image,goal)
@@ -191,8 +184,8 @@ class camera(images):
                 if key == ord("q"):
                     self.destroy()
                 elif self.demo==1:
-                    if key == ord('M'):
-                        kill(getpid(),signal.SIGTERM)
+                    if key == ord('m'):
+                        kill(getpid(),signal.SIGQUIT)
                     elif key == ord('c') :
                         self.camswitch()
                     # elif key == ord('2') and platform=='linux':
@@ -222,16 +215,11 @@ except:
     pass
 def control_switch_handler(signum,frame):
     signal.alarm(0)
-    # signal.signal(signal.SIGTERM,signal.SIG_IGN)
-    # signal.signal(signal.SIGUSR1,signal.SIG_IGN)
-    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     global ctrl
     ctrl.control_switch()
 # Special function for testing the image processing code directly
 def iproc_main():
-    global sigint
     global ctrl
-    sigint=False
     import time
     try:
         from gpio import control
@@ -255,11 +243,11 @@ def iproc_main():
         except:
             print("You're not on Linux, or an unexpected exception occurred in iproc_main() while initializing 'control'")
         cam.manual=0
-        while sigint==False:
+        while True:
             t0 = time.perf_counter()
             cam.update_goal_position(args,time.time())
             cam.get_goal_regions()
-            if sigint==False and platform=='linux':
+            if platform=='linux':
                 print('\033[F\033[K' * 1, end = "")
                 print(f"FPS: {1/(time.perf_counter()-t0):.2f}")
     except KeyboardInterrupt:

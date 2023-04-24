@@ -47,11 +47,12 @@ class StateLogic(object):
                 return -13
             timers = self.img.update_goal_position('ball_C',time.time())
             positions = self.img.get_goal_regions()
+            dist = self.control.distance_front()
             # Tell the microcontroller the position of the ball
             # relative to the camera view. If the ball has been 
             # reached, then transition to the ACQUIRE state and 
             # tell the main loop to execute the "acquire()" function.
-            if self.chase_commands(positions,timers)==3:
+            if self.chase_commands(positions,timers,dist)==3:
                 return 3
         return -2
     # ACQUIRE logic #
@@ -65,12 +66,13 @@ class StateLogic(object):
                 return -13
             timers = self.img.update_goal_position('ball_A',time.time())
             positions = self.img.get_goal_regions()
+            dist = self.control.distance_front()
             # Tell the microcontroller when the ball is inside of 
             # the pincers and wait for the pincers to close. If 
             # the ball has been acquired, then transition to the 
             # FETCH state and tell the main loop to execute the
             # "fetch()" function. 
-            next_state_index = self.acquire_commands(positions,timers)
+            next_state_index = self.acquire_commands(positions,timers,dist)
             if next_state_index!=0:
                 self.img.last_regions = [0 for r in range(18)]
                 return next_state_index
@@ -86,6 +88,7 @@ class StateLogic(object):
                 return -13
             timers = self.img.update_goal_position('user',time.time())
             positions = self.img.get_goal_regions()
+            dist = self.control.distance_back()
             # Tell the microcontroller the position of the user
             # relative to the camera view. If the user has been 
             # given the acquired ball, then transition to the 
@@ -94,7 +97,7 @@ class StateLogic(object):
             # outside of the range of the sensors, then transition
             # to the ACQUIRE state and tell the main loop to execute
             # the "acquire()" function.
-            if self.fetch_commands(positions,timers)==5:
+            if self.fetch_commands(positions,timers,dist)==5:
                 self.img.last_regions = [0 for r in range(18)]
                 return 5
         return -2
@@ -109,19 +112,20 @@ class StateLogic(object):
                 return -13
             timers = self.img.update_goal_position('waitpoint',time.time())
             positions = self.img.get_goal_regions()
+            dist = self.control.distance_back()
             # Tell the microcontroller the position of the waiting
             # point relative to the camera view. If the waiting point
             # has been reached, then transition to the WAIT state
             # and tell the main loop to execute the "wait()" function.
-            if self.return_commands(positions,timers)==1:
+            if self.return_commands(positions,timers,dist)==1:
                 self.img.last_regions = [0 for r in range(18)]
                 return 1
         return -2
-    # The following 3 functions define the fetching subsystem's output to
-    # the control subsytem for the CHASE, ACQUIRE, FETCH, and RETURN states, 
+    # The following 4 functions define the fetching subsystem's output to
+    # the control subsystem for the CHASE, ACQUIRE, FETCH, and RETURN states, 
     # respectively. They also decide when to transition between states 
     # (given that the current state hasn't failed yet)
-    def chase_commands(self,positions,timers):
+    def chase_commands(self,positions,timers,dist):
         # Ball wasn't detected in the camera view
         if positions==[]: 
             last_regions = self.img.last_regions
@@ -166,7 +170,7 @@ class StateLogic(object):
         # bottom-middle-middle
         elif 13 in positions:
             #TODO: CHASE - Adjust the transition case based on field testing
-            if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['ball_C'] for dt in timers):
+            if not all(dt<self.img.goal_timelimits['ball_C'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pi_int()
@@ -174,8 +178,12 @@ class StateLogic(object):
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_acquire()
                 return 3
-            self.control.right_move()
-            self.control.left_move()
+            elif dist>self.dist_threshold:
+                self.control.right_move()
+                self.control.left_move()
+            else:
+                self.control.right_move(1)
+                self.control.left_move(1)
         # bottom-middle-right
         elif 14 in positions:
             self.control.right_stop()
@@ -184,11 +192,11 @@ class StateLogic(object):
         else:
             self.control.right_move(1)
             self.control.left_stop()
-        if not self.noprint:
-            writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
+        # if not self.noprint:
+        #     writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
         self.control.pi_int()
         return 0
-    def acquire_commands(self,positions,timers):
+    def acquire_commands(self,positions,timers,dist):
         # Ball wasn't detected in the camera view
         if positions==[]: 
             last_regions = self.img.last_regions
@@ -234,14 +242,11 @@ class StateLogic(object):
         elif 13 in positions:
             #TODO: ACQUIRE - Adjust the transition case based on field testing
             if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['ball_A'] for dt in timers):
+                self.control.pincers_move(1)
+                self.control.pi_int()
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pi_int()
-                self.control.pincers_move(1)
-                self.control.pi_int()
-                while not self.control.DONE:
-                    pass
-                self.control.DONE = False
                 self.control.pincers_stop()
                 self.control.pi_int()
                 if not self.noprint:
@@ -258,19 +263,9 @@ class StateLogic(object):
         else:
             self.control.right_move(1)
             self.control.left_stop()
-        # else: # NOTE: had to remove the transition case for ACQUIRE back to CHASE for validation testing
-        #     # If the ball is no longer in the bottom half 
-        #     # of the camera view, then return to chasing. 
-        #     self.control.right_stop()
-        #     self.control.left_stop()
-        #     self.control.pi_int()
-        #     if not self.noprint: 
-        #         writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
-        #     self.transition_chase()
-        #     return 2
         self.control.pi_int()
         return 0
-    def fetch_commands(self,positions,timers):
+    def fetch_commands(self,positions,timers,dist):
         # User wasn't detected in the camera view
         if positions==[]: 
             last_regions = self.img.last_regions
@@ -316,23 +311,27 @@ class StateLogic(object):
         # bottom-middle-middle
         elif 13 in positions:
             #TODO: FETCH - Adjust the transition case based on field testing
-            if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['user'] for dt in timers):
+            if dist<self.dist_threshold and not all(dt<self.img.goal_timelimits['user'] for dt in timers):
+                self.control.pincers_move()
+                self.control.pi_int()
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pi_int()
-                self.control.pincers_move()
-                self.control.pi_int()
-                while not self.control.DONE:
-                    pass
-                self.control.DONE = False
+                # while not self.control.DONE:
+                #     pass
+                # self.control.DONE = False
                 self.control.pincers_stop()
                 self.control.pi_int()
                 if not self.noprint: 
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_return()
                 return 5
-            self.control.right_move(1)
-            self.control.left_move(1)
+            elif dist>self.dist_threshold:
+                self.control.right_move(1)
+                self.control.left_move(1)
+            else:
+                self.control.right_move()
+                self.control.left_move()
         # bottom-middle-right
         elif 14 in positions:
             self.control.left_stop()
@@ -343,7 +342,7 @@ class StateLogic(object):
             self.control.right_move(1)
         self.control.pi_int()             
         return 0
-    def return_commands(self,positions,timers):
+    def return_commands(self,positions,timers,dist):
         if positions==[]: 
             last_regions = self.img.last_regions
             # The waitpoint may be off the left side of the camera view or was not detected by the image processing
@@ -386,7 +385,7 @@ class StateLogic(object):
         # bottom-middle-middle
         elif 13 in positions:
             #TODO: RETURN - Adjust the transition case based on field testing
-            if self.control.proximity==1 and not all(dt<self.img.goal_timelimits['waitpoint'] for dt in timers):
+            if dist<self.dist_threshold and not all(dt<self.img.goal_timelimits['waitpoint'] for dt in timers):
                 self.control.right_stop()
                 self.control.left_stop()
                 self.control.pi_int()
@@ -394,8 +393,12 @@ class StateLogic(object):
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_wait()
                 return 1
-            self.control.right_move(1)
-            self.control.left_move(1)
+            elif dist>self.dist_threshold:
+                self.control.right_move(1)
+                self.control.left_move(1)
+            else:
+                self.control.right_move()
+                self.control.left_move()
         # bottom-middle-right
         elif 14 in positions:
             self.control.left_stop()
@@ -447,6 +450,7 @@ class FSM(StateLogic):
         self.set_manual(0) # This object can only be initialized in auto control mode.
         self.control.INT_start_time = 0
         self.control.proximity = 0
+        self.dist_threshold = 50
         self.control.DONE = False
         self.control.pincers_move(0)
         self.control.pi_int()
@@ -465,14 +469,14 @@ class FSM(StateLogic):
     def transition_wait(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        # self.control.proximity = 0
+        if self.img.camera_.index != 0:
+            self.img.camera_.camswitch()
         self.control.DONE = False
         return 0
     @event(from_states=(START,WAIT), to_state=(CHASE))
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        # self.control.proximity = 0
         self.control.DONE = False
         signal.alarm(60) # NOTE: Remember to change back to 60!
         # *Other pre-processing logic before changing to next state* # 
@@ -481,7 +485,6 @@ class FSM(StateLogic):
     def transition_acquire(self,some_variables=None):
         # If we stay in the ACQUIRE state for 30 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        # self.control.proximity = 0
         self.control.DONE = False
         signal.signal(signal.SIGALRM,self.signal_handler)
         signal.alarm(45) # NOTE: Remember to change back to 30!
@@ -491,13 +494,13 @@ class FSM(StateLogic):
     def transition_fetch(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        # self.control.proximity = 0
+        if self.img.camera_.index != 1:
+            self.img.camera_.camswitch()
         self.control.DONE = False
         return 0
     @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         # *Other pre-processing logic before changing to next state* # 
         signal.alarm(0)
-        # self.control.proximity = 0
         self.control.DONE = False
         return 0

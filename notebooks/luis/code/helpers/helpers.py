@@ -39,9 +39,9 @@ class remote_gpio:
         return
 io = remote_gpio()
 def decode_signal(signal):
-    signal_map={'L':{'00':'LS','01':'LF','11':'LB'},\
-                'R':{'00':'RS','01':'RF','11':'RB'},\
-                'P':{'00':'PS','10':'PO','11':'PC'}}
+    signal_map={'L':{'00':'LS','01':'LF','11':'LB',  '10':'CS0'},\
+                'R':{'00':'RS','01':'RF','11':'RB',  '10':'CS1'},\
+                'P':{'00':'PS','10':'PO','11':'PC',  '01':'CS2'}}
     return f"{signal_map['L'][signal[0:2]]}-{signal_map['R'][signal[2:4]]}-{signal_map['P'][signal[4:6]]} "
 def teardown_timeout_handler(signum,frame):
     current_time = time.localtime()

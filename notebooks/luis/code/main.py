@@ -3,38 +3,20 @@ from helpers.helpers import writefile,logdata,time_data,timedata_files
 from camera import camera
 from gpio import control
 from state_machine import FSM
-# def signal_handler(signum,frame):
-#     signal.alarm(0)
-#     signal.signal(signal.SIGUSR1, signal.SIG_IGN)
-#     signal.signal(signal.SIGUSR2, signal.SIG_IGN)
-#     global fsm
-#     fsm.control.pincers_move(1)
-#     fsm.control.pi_int()
-#     fsm.control.stop_all()
-#     fsm.img.camera_.destroy()
-#     # The program should never be able to reach this
-#     # call to 'exit(0)'. It is just a precaution.
-#     exit(0)
 def control_switch_handler(signum,frame):
     signal.alarm(0)
-    # signal.signal(signal.SIGTERM,signal.SIG_IGN)
-    # signal.signal(signal.SIGUSR1,signal.SIG_IGN)
-    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     global fsm
     fsm.control_switch()
 # Use this for files/directories whose changes you want to ignore (after having added said files/directories to the .gitignore file in the main directory):
 # git rm -r --cached directory_name
-# NOTE: UNTESTED MICROCONTROLLER COMMS CODE
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
     signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     global ctrl 
     if ctrl.gettimes is not None:
         t1 = time.time()
-        # print(f"{t1} - {ctrl.INT_start_time} = {t1 - ctrl.INT_start_time}")
         time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
         ctrl.INT_start_time=0
     ctrl.DONE = True
-    # print(ctrl.DONE,'\n')
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
 def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     signal.signal(signal.SIGUSR2,signal.SIG_IGN)
@@ -63,7 +45,7 @@ def main(gettimes,noprint,demo,manual,start_state):
     if manual==1:
         ctrl.init_manual_control(cam)
     fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
-    signal.signal(signal.SIGTERM, control_switch_handler)
+    signal.signal(signal.SIGQUIT, control_switch_handler)
 
 
     # Make a list of state functions in their intended order of 
