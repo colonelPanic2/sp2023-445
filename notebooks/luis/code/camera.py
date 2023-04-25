@@ -46,6 +46,7 @@ class images:
                     or  (12<=i-1<=13 and i-1 in goal_positions)):
                     self.timers[i] = t0
                     self.regions[i]=0
+        print("Returning from getting image")
         return [t0-self.timers[i] for i in range(18)]
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):

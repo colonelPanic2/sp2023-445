@@ -47,8 +47,11 @@ class StateLogic(object):
             if time_data(args,'CHASE',2,self.init_time)==-13:
                 return -13
             timers = self.img.update_goal_position('ball_C',time.time())
+            print(timers)
             positions = self.img.get_goal_regions()
+            print(positions)
             dist = self.control.distance_front()
+            print(dist)
             # Tell the microcontroller the position of the ball
             # relative to the camera view. If the ball has been 
             # reached, then transition to the ACQUIRE state and 
@@ -65,6 +68,7 @@ class StateLogic(object):
         while self.get_state()=='ACQUIRE':
             if time_data(args,'ACQUIRE',2,self.init_time)==-13:
                 return -13
+            print("in ACQUIRE")
             timers = self.img.update_goal_position('ball_A',time.time())
             positions = self.img.get_goal_regions()
             dist = self.control.distance_front()
@@ -195,7 +199,7 @@ class StateLogic(object):
             self.control.left_stop()
         # if not self.noprint:
         #     writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
-
+        print("CHASE commands")
         print(f'{self.get_state()}: {decode_signal(self.control.readall())}')
         self.control.pi_int()
         time.sleep(1)
@@ -274,9 +278,9 @@ class StateLogic(object):
         else:
             self.control.right_move(1)
             self.control.left_stop()
+        print("ACQUIRE commands")
         print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
-        time.sleep(1)
         time.sleep(1)
         return 0
     def fetch_commands(self,positions,timers,dist):
@@ -362,6 +366,7 @@ class StateLogic(object):
         else:
             self.control.left_stop()
             self.control.right_move(1)
+        print("FETCH commands")
         print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()             
         time.sleep(1)
@@ -438,6 +443,7 @@ class StateLogic(object):
         else:
             self.control.left_stop()
             self.control.right_move(1)
+        print("RETURN commands")
         print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
         time.sleep(1)
@@ -520,7 +526,7 @@ class FSM(StateLogic):
         self.control.DONE = False
         self.control.proximity=0
         print("Changing states to 'CHASE'")
-        signal.alarm(60)
+        signal.alarm(3) # Change back to 60
         return 0
     @event(from_states=(START,CHASE), to_state=(ACQUIRE))
     def transition_acquire(self,some_variables=None):
@@ -529,7 +535,7 @@ class FSM(StateLogic):
         self.control.DONE = False
         signal.signal(signal.SIGALRM,self.signal_handler)
         # self.control.communication_start()
-        signal.alarm(45)
+        signal.alarm(3) # Change back to 45
         return 0
     @event(from_states=(START,ACQUIRE), to_state=(FETCH))
     def transition_fetch(self,some_variables=None):

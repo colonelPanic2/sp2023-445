@@ -58,28 +58,30 @@ class control:
         io.setup(self.pins[13],io.IN)
         return
     def distance_front(self):
-        self.setpin(10,1)
-        time.sleep(0.00001)
-        t0 = time.time()
-        t1 = time.time()
-        while io.input(self.pins[11])==0:
-            t0=time.time()
-        while io.input(self.pins[11])==1:
-            t1=time.time()
-        dt = t1-t0
-        dist = (dt*34300)>>1
+        # self.setpin(10,1)
+        # time.sleep(0.00001)
+        # t0 = time.time()
+        # t1 = time.time()
+        # while io.input(self.pins[11])==0:
+        #     t0=time.time()
+        # while io.input(self.pins[11])==1:
+        #     t1=time.time()
+        # dt = t1-t0
+        # dist = (dt*34300)>>1
+        dist=0
         return dist
     def distance_back(self):
-        self.setpin(12,1)
-        time.sleep(0.00001)
-        t0=time.time()
-        t1=time.time()
-        while io.input(self.pins[13])==0:
-            t0=time.time()
-        while io.input(self.pins[13])==1:
-            t1=time.time()
-        dt = t1-t0
-        dist = (dt*34300)>>1
+        # self.setpin(12,1)
+        # time.sleep(0.00001)
+        # t0=time.time()
+        # t1=time.time()
+        # while io.input(self.pins[13])==0:
+        #     t0=time.time()
+        # while io.input(self.pins[13])==1:
+        #     t1=time.time()
+        # dt = t1-t0
+        # dist = (dt*34300)>>1
+        dist=0
         return dist
     def send_flag(self):
         self.setpin(4,0)
