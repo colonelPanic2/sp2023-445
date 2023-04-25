@@ -179,9 +179,9 @@ class camera(images):
             # show the frame to our screen
             cv2.imshow("Camera", image)
             key = cv2.waitKey(1) & 0xFF
-            # if the 'q' key is pressed, stop the loop
+            # if the 'x' key is pressed, stop the loop
             if self.manual==0:
-                if key == ord("q"):
+                if key == ord("x"):
                     self.destroy()
                 elif self.demo==1:
                     if key == ord('m'):
