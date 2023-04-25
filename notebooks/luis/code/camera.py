@@ -20,7 +20,6 @@ class images:
         self.goal_timelimits = {'ball_W':2,'ball_C':0,'ball_A':0.5,'user':0,'waitpoint':0} 
         return
     def update_goal_position(self,goal,t0=None):
-        print("getting image")
         position_xy,image = self.camera_.getimage(goal)
         if position_xy is not None:
             region_index = map_to_block_index(position_xy,image.shape)
@@ -46,7 +45,6 @@ class images:
                     or  (12<=i-1<=13 and i-1 in goal_positions)):
                     self.timers[i] = t0
                     self.regions[i]=0
-        print("Returning from getting image")
         return [t0-self.timers[i] for i in range(18)]
     # Get the relevant positional data for the goal.
     def get_goal_regions(self):
@@ -151,12 +149,10 @@ class camera(images):
         center = None
         image=None
         while True:
-            print("in getImage")
             ret,image=self.cam.read()
             if ret:
                 center = self.track(image,goal)
                 break
-        print("\n\nIMAGE GOT\n\n")
         return center,image
     # Draw the lines showing the 18 regions of the image. If the goal is in a region,
     # then outline the region in green. Otherwise, outline it in red.

@@ -196,7 +196,7 @@ class StateLogic(object):
         #     writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
         # print(f'{self.get_state()}: {decode_signal(self.control.readall())}')
         self.control.pi_int()
-        time.sleep(1)
+        #time.sleep(1)
         return 0
     def acquire_commands(self,positions,timers,dist):
         # Ball wasn't detected in the camera view
@@ -274,7 +274,7 @@ class StateLogic(object):
             self.control.left_stop()
         # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
-        time.sleep(1)
+        #time.sleep(1)
         return 0
     def fetch_commands(self,positions,timers,dist):
         # User wasn't detected in the camera view
@@ -361,7 +361,7 @@ class StateLogic(object):
             self.control.right_move(1)
         # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()             
-        time.sleep(1)
+        #time.sleep(1)
         return 0
     def return_commands(self,positions,timers,dist):
         if positions==[]: 
@@ -437,7 +437,7 @@ class StateLogic(object):
             self.control.right_move(1)
         # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
-        time.sleep(1)
+        #time.sleep(1)
         return 0
     def set_manual(self,mode_num):
         self.control.manual=mode_num
