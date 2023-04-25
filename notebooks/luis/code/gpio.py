@@ -61,7 +61,7 @@ class control:
         io.output(2,1)
         return
     def distance_front(self):
-        io.setpin(10,1)
+        self.setpin(10,1)
         time.sleep(0.00001)
         t0 = time.time()
         t1 = time.time()
@@ -73,7 +73,7 @@ class control:
         dist = (dt*34300)>>1
         return dist
     def distance_back(self):
-        io.setpin(12,1)
+        self.setpin(12,1)
         time.sleep(0.00001)
         t0=time.time()
         t1=time.time()
@@ -86,25 +86,25 @@ class control:
         return dist
     # def communication_stop(self):
     #     # CS0 = 10
-    #     io.setpin(0,1)
-    #     io.setpin(1,0)
+    #     self.setpin(0,1)
+    #     self.setpin(1,0)
     #     # CS1 = 10
-    #     io.setpin(2,1)
-    #     io.setpin(3,0)
+    #     self.setpin(2,1)
+    #     self.setpin(3,0)
     #     # CS2 = 01 (stop sending interrupts to the pi)
-    #     io.setpin(4,0)
-    #     io.setpin(5,1)
+    #     self.setpin(4,0)
+    #     self.setpin(5,1)
     #     self.pi_int()
     # def communication_start(self):
     #     # CS0 = 10
-    #     io.setpin(0,1)
-    #     io.setpin(1,0)
+    #     self.setpin(0,1)
+    #     self.setpin(1,0)
     #     # CS1 = 10
-    #     io.setpin(2,1)
-    #     io.setpin(3,0)
+    #     self.setpin(2,1)
+    #     self.setpin(3,0)
     #     # CS2 = 00 (start sending interrupts to the pi)
-    #     io.setpin(4,0) 
-    #     io.setpin(5,0)
+    #     self.setpin(4,0) 
+    #     self.setpin(5,0)
     #     self.pi_int()
     def init_manual_control(self,cam):
         print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
