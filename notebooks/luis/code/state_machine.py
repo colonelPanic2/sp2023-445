@@ -431,6 +431,7 @@ class StateLogic(object):
         self.img.camera_.manual=mode_num
         self.manual=mode_num
     def control_switch(self):
+        self.control.stop_all()
         self.set_manual(int(not self.manual))
         if self.manual==1:
             self.control.init_manual_control(self.img)

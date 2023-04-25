@@ -1,1 +1,0 @@
-sudo lsof /dev/video0
