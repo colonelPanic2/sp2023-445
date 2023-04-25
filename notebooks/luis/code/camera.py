@@ -32,7 +32,7 @@ class images:
         # is currently in the camera view
         if not (all(pos==6 for pos in goal_positions)):
             self.last_regions = list(self.regions.values())
-        for i in range(18):
+        for i in range(6):
             if self.timers[i]==0:
                 self.timers[i]=t0
             if i in goal_positions:
@@ -164,7 +164,7 @@ class camera(images):
             cv2.line(image, (0, height//2), (width, height//2), (0, 0, 255), 2)
             if position_xy is not None:
                 block_index = map_to_block_index(position_xy,image.shape)
-                if block_index<18:
+                if block_index<6:
                     region_map = {}
                     for r in range(3):
                         region_map[r]  = (r*(width//3),0)
