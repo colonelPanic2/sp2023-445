@@ -13,7 +13,7 @@ class StateLogic(object):
         except TimeoutError:
             signal.alarm(0)
             if not self.noprint: 
-                writefile(self.logfile,"{} timed out. Return to waiting point\n".format(self.get_state()))
+                writefile(self.logfile,"\n{} timed out. Return to waiting point\n\n".format(self.get_state()))
             return -1
     # WAIT logic #
     def wait(self,args=None):
@@ -253,7 +253,7 @@ class StateLogic(object):
                 self.control.pincers_stop()
                 self.control.pi_int()
                 if not self.noprint:
-                    writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
+                    writefile(self.logfile,"\n{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_fetch()
                 return 4
             if not self.control.flag_sent:
@@ -338,7 +338,7 @@ class StateLogic(object):
                 self.control.pincers_stop()
                 self.control.pi_int()
                 if not self.noprint: 
-                    writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
+                    writefile(self.logfile,"\n{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_return()
                 return 5
             elif dist>self.dist_threshold:
@@ -412,7 +412,7 @@ class StateLogic(object):
                 self.control.left_stop()
                 self.control.pi_int()
                 if not self.noprint: 
-                    writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
+                    writefile(self.logfile,"\n{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_wait()
                 return 1
             elif dist>self.dist_threshold:

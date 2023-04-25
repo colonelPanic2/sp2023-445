@@ -321,7 +321,6 @@ class control:
         return
     # If the user terminates manual control mode, return to auto control mode
     def exit_(self,event=None):
-        signal(SIGINT,SIG_IGN)
         self.instruction=1
         self.manual = 0
         for i in range(len(self.pins[:8])):
