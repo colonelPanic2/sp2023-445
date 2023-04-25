@@ -34,6 +34,7 @@ class control:
         self.INT_start_time = 0
         self.proximity = 0
         self.DONE = False
+        self.flag_sent = 1
         # If gettimes=='time', then set up for runtime data collection
         # for each of the state function loops
         time_data(gettimes,'',0,noprint,logfile)
@@ -82,6 +83,10 @@ class control:
         dt = t1-t0
         dist = (dt*34300)>>1
         return dist
+    def send_flag(self):
+        self.setpin(4,0)
+        self.setpin(5,1)
+        self.pi_int()
     # def communication_stop(self):
     #     # CS0 = 10
     #     self.setpin(0,1)

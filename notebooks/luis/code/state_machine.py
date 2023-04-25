@@ -236,6 +236,8 @@ class StateLogic(object):
             self.control.left_move(1)
         # bottom-middle-left
         elif 12 in positions:
+            if not self.control.flag_sent:
+                self.control.send_flag()
             self.control.right_move()
             self.control.left_stop()
         # bottom-middle-middle
@@ -254,10 +256,14 @@ class StateLogic(object):
                     writefile(self.logfile,"{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
                 self.transition_fetch()
                 return 4
+            if not self.control.flag_sent:
+                self.control.send_flag()
             self.control.right_move()
             self.control.left_move()
         # bottom-middle-left
         elif 14 in positions:
+            if not self.control.flag_sent:
+                self.control.send_flag()
             self.control.right_stop()
             self.control.left_move()
         # bottom-right
