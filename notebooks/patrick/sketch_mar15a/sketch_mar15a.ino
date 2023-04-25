@@ -42,17 +42,26 @@ Servo servo2;
 int counter = 0;
 int openCnt = 0;
 int proxCounter = 0;
+int lCount = 0;
+int hCount = 0;
 
 unsigned int dist_vector[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+// unsigned int dist_vector[10] = {0,0,0,0,0,0,0,0,0,0};
 int vec_index = 0;
 unsigned int mini = 2000;
 unsigned int maxi = 0;
+int secCode = 0;
+int left0 = 0;
+int left1 = 0;
+int right0 = 0;
+int right1 = 0;
 
 /* The input from the pi formatted as follows:
        0           1            2            3            4           5         6
  (LMOTORS_IN0)(LMOTORS_IN1)(RMOTORS_IN0)(RMOTORS_IN1)(PINCERS_ON)(PINCERS_DIR)(CTRL)
 */
 uint8_t pi_input[7] = {0,0,0,0,0,0,0};
+uint8_t checkCode[2] = {0,0};
 
 unsigned int sensor_distances[2] = {65535,65535}; 
 
@@ -74,6 +83,13 @@ void sensor_data() {
 
 //read Pi inputs
 void read_pi() {
+  // checkCode[0] = digitalRead(PINCER_ON  );
+  // checkCode[1] = digitalRead(PINCER_DIR );
+  // if((checkCode[0] == 0) && (checkCode[1] == 1)){
+  //   secCode = 1;
+  //   return;
+  // }
+  
   pi_input[0] = digitalRead(LMOTORS_IN0);
   pi_input[1] = digitalRead(LMOTORS_IN1); // 00: stop, 01: forward, 10: stop, 11: back
   pi_input[2] = digitalRead(RMOTORS_IN0);
@@ -82,11 +98,31 @@ void read_pi() {
   pi_input[5] = digitalRead(PINCER_DIR ); // 00: stop, 01: stop,    10: open, 11: close
   pi_input[6] = digitalRead(CTRL       );
 
-  digitalWrite(CTRL_ACK, 0);
-  delayMicroseconds(2);
-  digitalWrite(CTRL_ACK, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(CTRL_ACK, 0);
+  if(pi_input[1] == 1){
+    if(pi_input[0] == 1){
+      left0 = 0;
+      left1 = 170;
+    }
+    else{
+      left0 = 170;
+      left1 = 0;
+    }
+  }
+  if(pi_input[3] == 1){
+    if(pi_input[2] == 1){
+      right0 = 0;
+      right1 = 170;
+    }
+    else{
+      right0 = 170;
+      right1 = 0;
+    }
+  }
+  // digitalWrite(CTRL_ACK, 0);
+  // delayMicroseconds(2);
+  // digitalWrite(CTRL_ACK, HIGH);
+  // delayMicroseconds(10);
+  // digitalWrite(CTRL_ACK, 0);
 }
 
 void setup() {
@@ -118,39 +154,71 @@ void setup() {
 
   Serial.begin(9600); // Starts the serial communication
 }
-
+// void loop(){
+//   analogWrite(RMOTORS_OUT0, 0);
+//   analogWrite(RMOTORS_OUT1, 170);
+//   analogWrite(LMOTORS_OUT0, 0);
+//   analogWrite(LMOTORS_OUT1, 170);
+//   delay(3000);
+//   analogWrite(RMOTORS_OUT0, 0);
+//   analogWrite(RMOTORS_OUT1, 0);
+//   analogWrite(LMOTORS_OUT0, 0);
+//   analogWrite(LMOTORS_OUT1, 0);
+//   delay(3000);
+//   analogWrite(RMOTORS_OUT0, 170);
+//   analogWrite(RMOTORS_OUT1, 0);
+//   analogWrite(LMOTORS_OUT0, 170);
+//   analogWrite(LMOTORS_OUT1, 0);
+//   delay(3000);
+//   analogWrite(RMOTORS_OUT0, 0);
+//   analogWrite(RMOTORS_OUT1, 0);
+//   analogWrite(LMOTORS_OUT0, 0);
+//   analogWrite(LMOTORS_OUT1, 0);
+//   exit(0);
+// }
 //MICROCONTROLLER LOOP
 void loop() {
   //possible code for detection with ultra sensors
   sensor_data();
-  if(vec_index == 20){
-    mini = 2000;
-    maxi = 0;
-    for(int i = 0; i<20; i++){
-      if(dist_vector[i] < mini){
-        mini = dist_vector[i];
-      }
-      if(dist_vector[i] > maxi){
-        maxi = dist_vector[i];
-      }
-    }
-    vec_index = 0;
-  }
-  if((mini<10)&&(maxi>200)){
-    // digitalWrite(Prox_Data, HIGH);
-    proxCounter++;
-  }
+  digitalWrite(Prox_Data, 0);
+  // if(vec_index == 10){
+  //   mini = 10;
+  //   maxi = 2000;
+  //   lCount = 0;
+  //   hCount = 0;
+  //   for(int i = 0; i<10; i++){
+  //     if(dist_vector[i] < mini){
+  //       // mini = dist_vector[i];
+  //       lCount++;
+  //     }
+  //     if(dist_vector[i] > maxi){
+  //       // maxi = dist_vector[i];
+  //       hCount++;
+  //     }
+  //   }
+  //   vec_index = 0;
+  // }
+  // if((mini<10)&&(maxi>200)){
+  //   // digitalWrite(Prox_Data, HIGH);
+  //   proxCounter++;
+  // }
   // else{
   //   digitalWrite(Prox_Data, 0);
   // }
-  if(proxCounter>5){
-    digitalWrite(Prox_Data, HIGH);
-  }
-  else{
-    digitalWrite(Prox_Data, 0);
-  }
-  dist_vector[vec_index] = sensor_distances[0];
-  vec_index++;
+  // if(proxCounter>5){
+  //   digitalWrite(Prox_Data, HIGH);
+  // }
+  // else{
+  //   digitalWrite(Prox_Data, 0);
+  // }
+  // if((secCode == 1) && ((lCount>=8) || (hCount>=8))){
+  //   digitalWrite(Prox_Data, HIGH);
+  // }
+  // else{
+  //   digitalWrite(Prox_Data, 0);
+  // }
+  // dist_vector[vec_index] = sensor_distances[0];
+  // vec_index++;
 
   /* Auto control mode. The inputs from the pi and the sensors are data (not instructions)
      used by the microcontroller to decide how to control the motors. */
@@ -169,7 +237,9 @@ void loop() {
           servo1.write(145);
           servo2.write(35);
           delay(100);
-          proxCounter = 0;
+          // proxCounter = 0;
+          secCode = 0;
+          // digitalWrite(Prox_Data, 0);
         }
       }
       //acquiring ball so close pincers
@@ -178,10 +248,10 @@ void loop() {
         servo2.write(10);
         delay(100);
         //make all the wheels brake
-        digitalWrite(LMOTORS_OUT0, HIGH);
-        digitalWrite(LMOTORS_OUT1, HIGH);
-        digitalWrite(RMOTORS_OUT0, HIGH);
-        digitalWrite(RMOTORS_OUT1, HIGH);
+        analogWrite(LMOTORS_OUT0, 170);
+        analogWrite(LMOTORS_OUT1, 170);
+        analogWrite(RMOTORS_OUT0, 170);
+        analogWrite(RMOTORS_OUT1, 170);
         servo1.detach();
         servo2.detach();
         pi_input[4] = 0;
@@ -198,19 +268,19 @@ void loop() {
     }
     //right motor control
     if (pi_input[3]==1) {
-      digitalWrite(RMOTORS_OUT0,!pi_input[2]);
-      digitalWrite(RMOTORS_OUT1,pi_input[2]);
+      analogWrite(RMOTORS_OUT0,right0);
+      analogWrite(RMOTORS_OUT1,right1);
     } else {
-      digitalWrite(RMOTORS_OUT0,LOW);
-      digitalWrite(RMOTORS_OUT1,LOW);
+      analogWrite(RMOTORS_OUT0,0);
+      analogWrite(RMOTORS_OUT1,0);
     }
     //left motor control
     if (pi_input[1]==1) {
-      digitalWrite(LMOTORS_OUT0,!pi_input[0]);
-      digitalWrite(LMOTORS_OUT1, pi_input[0]);
+      analogWrite(LMOTORS_OUT0,left0);
+      analogWrite(LMOTORS_OUT1,left1);
     } else {
-      digitalWrite(LMOTORS_OUT0,LOW);
-      digitalWrite(LMOTORS_OUT1,LOW);
+      analogWrite(LMOTORS_OUT0,0);
+      analogWrite(LMOTORS_OUT1,0);
     }
   }
 
@@ -231,7 +301,9 @@ void loop() {
           servo1.write(145);
           servo2.write(35);
           delay(100);
-          proxCounter = 0;
+          // proxCounter = 0;
+          secCode = 0;
+          // digitalWrite(Prox_Data, 0);
         }
       }
       //caught ball so close pincers
@@ -240,10 +312,10 @@ void loop() {
         servo2.write(10);
         delay(100);
         //make all the wheels brake
-        digitalWrite(LMOTORS_OUT0, HIGH);
-        digitalWrite(LMOTORS_OUT1, HIGH);
-        digitalWrite(RMOTORS_OUT0, HIGH);
-        digitalWrite(RMOTORS_OUT1, HIGH);
+        analogWrite(LMOTORS_OUT0, 170);
+        analogWrite(LMOTORS_OUT1, 170);
+        analogWrite(RMOTORS_OUT0, 170);
+        analogWrite(RMOTORS_OUT1, 170);
         servo1.detach();
         servo2.detach();
         pi_input[4] = 0;
@@ -253,19 +325,19 @@ void loop() {
     }
     //right motor control
     if (pi_input[3]==1) {
-      digitalWrite(RMOTORS_OUT0,!pi_input[2]);
-      digitalWrite(RMOTORS_OUT1,pi_input[2]);
+      analogWrite(RMOTORS_OUT0,right0);
+      analogWrite(RMOTORS_OUT1,right1);
     } else {
-      digitalWrite(RMOTORS_OUT0,LOW);
-      digitalWrite(RMOTORS_OUT1,LOW);
+      analogWrite(RMOTORS_OUT0,0);
+      analogWrite(RMOTORS_OUT1,0);
     }
     //left motor control
     if (pi_input[1]==1) {
-      digitalWrite(LMOTORS_OUT0,!pi_input[0]);
-      digitalWrite(LMOTORS_OUT1, pi_input[0]);
+      analogWrite(LMOTORS_OUT0,left0);
+      analogWrite(LMOTORS_OUT1,left1);
     } else {
-      digitalWrite(LMOTORS_OUT0,LOW);
-      digitalWrite(LMOTORS_OUT1,LOW);
+      analogWrite(LMOTORS_OUT0,0);
+      analogWrite(LMOTORS_OUT1,0);
     }
 
   }
