@@ -169,7 +169,7 @@ class control:
         self.root.bind('e',self.pincers_close)
         self.root.bind('c',self.camswitch)
         self.root.bind('<space>',self.stop_all)
-        self.root.bind('<Control-c>',self.exit_)
+        self.root.bind('x',self.exit_)
         self.root.bind('<l>',self.clear_terminal)
         if self.gettimes is not None:
             self.root.bind('<Key-1>',self.callback_SIGUSR1_helper)

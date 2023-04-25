@@ -22,6 +22,7 @@ class StateLogic(object):
             return 2
         time_data(self.gettimes,'WAIT',1)
         while self.get_state()=='WAIT': 
+            print("in WAIT")
             if time_data(self.gettimes,'WAIT',2,self.init_time)==-13:
                 return -13
             # If the ball has been in the same region(s) of the camera view
@@ -479,6 +480,11 @@ class FSM(StateLogic):
         self.control.pi_int()
         self.control.stop_all()
         super().__init__()
+    def set_manual(self,mode_num):
+        self.control.manual=mode_num
+        self.img.manual=mode_num
+        self.img.camera_.manual=mode_num
+        self.manual=mode_num
     # Get the name of the current state of the FSM as a string
     def get_state(self):
         return StateInfo.get_current_state(self).name
