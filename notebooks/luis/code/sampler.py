@@ -16,7 +16,14 @@ if len(argv[1:])>0 and argv[1]=='!CLEAR':
                 run(split(f'rm timedata/{dir}')) 
 else:
     # *** IGNORE THE NUMPY WARNINGS IN THE OUTPUTS ***
+    if len(argv[1:])>0:
+        try:
+            num_samples = int(argv[1])
+        except:
+            num_samples = 20
+    else:
+        num_samples = 20
     for state in ['WAIT','CHASE','ACQUIRE','FETCH','RETURN']:
-        output = check_output(split(f"python3 main.py time 1 0 0 {state} 20")) # The last argument is the number of samples
+        output = check_output(split(f"python3 main.py time 1 0 0 {state} {num_samples}")) # The last argument is the number of samples
         print(f"\n'{state}' : RUNTIME TEST COMPLETE")
     process_data()

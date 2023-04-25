@@ -37,7 +37,7 @@ class control:
         self.flag_sent = 1
         # If gettimes=='time', then set up for runtime data collection
         # for each of the state function loops
-        time_data(gettimes,'',0,noprint,logfile,num_samples)
+        time_data(gettimes,'',0,noprint,logfile=logfile,num_samples=num_samples)
         io.setmode(io.BCM)
         io.setwarnings(False) # NOTE: COMMENT THIS OUT WHEN DEBUGGING THE GPIO PINS
         for pin in self.pins[:8]:

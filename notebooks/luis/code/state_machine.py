@@ -185,7 +185,7 @@ class StateLogic(object):
             self.control.left_stop()
         # if not self.noprint:
         #     writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
-        print(f'{self.get_state()}: {decode_signal(self.control.readall())}')
+        # print(f'{self.get_state()}: {decode_signal(self.control.readall())}')
         self.control.pi_int()
         #time.sleep(1)
         return 0
@@ -252,7 +252,7 @@ class StateLogic(object):
         else:
             self.control.right_move(1)
             self.control.left_stop()
-        print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
+        # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
         #time.sleep(1)
         return 0
@@ -282,7 +282,7 @@ class StateLogic(object):
                 # self.control.right_move(1)
                 self.control.right_stop()
                 self.control.pi_int()
-                time.sleep(0.5)
+                time.sleep(0.2)
                 self.control.left_stop()
                 self.control.pi_int()
                 return 0
@@ -328,7 +328,7 @@ class StateLogic(object):
         else:
             self.control.left_stop()
             self.control.right_move(1)
-        print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
+        # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()             
         #time.sleep(1)
         return 0
@@ -355,7 +355,7 @@ class StateLogic(object):
                 # self.control.right_move(1)
                 self.control.right_move()
                 self.control.pi_int()
-                time.sleep(0.5)
+                time.sleep(0.2)
                 self.control.right_stop()
                 self.control.pi_int()
                 return 0
@@ -396,7 +396,7 @@ class StateLogic(object):
         else:
             self.control.left_stop()
             self.control.right_move(1)
-        print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
+        # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
         #time.sleep(1)
         return 0

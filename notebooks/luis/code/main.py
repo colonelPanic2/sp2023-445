@@ -119,7 +119,7 @@ def parse_args():
             # argv = []
             args = [None,0,1,1,'WAIT']
         elif len(argv)==6:
-            args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4])]
+            args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4]),int(argv[5])]
         elif len(argv)==5:
             ### Unit test the state specified in the 5th argument ###
             # argv = [time noprint demo manual start_state]
