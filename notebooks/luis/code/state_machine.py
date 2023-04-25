@@ -22,7 +22,6 @@ class StateLogic(object):
             return 2
         time_data(self.gettimes,'WAIT',1)
         while self.get_state()=='WAIT': 
-            print("in WAIT")
             if time_data(self.gettimes,'WAIT',2,self.init_time)==-13:
                 return -13
             # If the ball has been in the same region(s) of the camera view
@@ -277,6 +276,7 @@ class StateLogic(object):
             self.control.left_stop()
         print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
+        time.sleep(1)
         time.sleep(1)
         return 0
     def fetch_commands(self,positions,timers,dist):
@@ -542,6 +542,8 @@ class FSM(StateLogic):
     @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         signal.alarm(0)
+        if self.img.camera_.index != 1:
+            self.img.camera_.camswitch()
         self.control.DONE = False
         self.control.proximity=0
         return 0
