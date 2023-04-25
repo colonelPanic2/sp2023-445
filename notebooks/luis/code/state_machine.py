@@ -503,6 +503,7 @@ class FSM(StateLogic):
         signal.alarm(0)
         if self.img.camera_.index != 0:
             self.img.camera_.camswitch()
+        print("Switching to camera0 (if not already using it)")
         self.control.DONE = False
         self.control.proximity=0
         return 0
@@ -512,6 +513,7 @@ class FSM(StateLogic):
         signal.alarm(0)
         self.control.DONE = False
         self.control.proximity=0
+        print("Changing states to 'CHASE'")
         signal.alarm(60)
         return 0
     @event(from_states=(START,CHASE), to_state=(ACQUIRE))
