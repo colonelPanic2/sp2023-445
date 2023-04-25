@@ -24,7 +24,7 @@ def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     ctrl.proximity = int(not ctrl.proximity)
     # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
     # ctrl.communication_stop() 
-    print("PROXIMITY: ",ctrl.proximity,'\n')
+    print("PROXIMITY: ",ctrl.proximity,'\n') # NOTe: REmove print statements in interrupt handlers
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
 
 def main(gettimes,noprint,demo,manual,start_state):
@@ -46,6 +46,7 @@ def main(gettimes,noprint,demo,manual,start_state):
     # manual mode is exited.
     if manual==1:
         ctrl.init_manual_control(cam)
+    print("Moving on")
     fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state)
     signal.signal(signal.SIGQUIT, control_switch_handler)
 
