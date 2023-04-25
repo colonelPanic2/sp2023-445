@@ -139,7 +139,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
                 time_data_dict[state].append(round(1000*(T1-T0),2))
             T0=time.perf_counter()
             T0_SET = 1
-            if n_samples is not None and len(time_data_dict[state])>=n_samples:
+            if n_samples is not None and len(time_data_dict[state])>n_samples:
                 return -13
         elif step==3:
             for state,runtimes in list(time_data_dict.items()):

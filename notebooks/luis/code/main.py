@@ -39,8 +39,8 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
     cam  = camera(               noprint,demo,manual,0,logfile)
     ctrl = control(     gettimes,noprint,demo,manual,0,logfile,num_samples) 
     # Set up the signal handlers
-    signal.signal(signal.SIGUSR1, signal.SIG_IGN)#microcontroller_CTRL_ACK_handler)
-    signal.signal(signal.SIGUSR2, signal.SIG_IGN)#microcontroller_PROX_handler)
+    signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+    signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     # If we were told to start the program in manual mode, then 
     # do it. Note that the FSM object won't be initialized until 
     # manual mode is exited.
@@ -99,6 +99,7 @@ def init_fetching(args):
     n_samples=None
     if len(args)==6:
         n_samples=args[5]
+    print(n_samples)
     # Run main with the processed command line arguments as well as the time
     # of initialization and the log file.
     try:
@@ -141,7 +142,7 @@ def parse_args():
             # argv = []
             args = [None,0,1,1,'WAIT']
         elif len(argv)==6:
-            args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4])]
+            args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4]),int(argv[5])]
         elif len(argv)==5:
             ### Unit test the state specified in the 5th argument ###
             # argv = [time noprint demo manual start_state]
