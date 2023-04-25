@@ -43,16 +43,12 @@ class StateLogic(object):
             return 3
         time_data(args,'CHASE',1)
         while self.get_state()=='CHASE':
-            print("in CHASE")
             if time_data(args,'CHASE',2,self.init_time)==-13:
                 return -13
             timers = self.img.update_goal_position('ball_C',time.time())
-            print(timers)
             positions = self.img.get_goal_regions()
-            print(positions)
             dist = self.control.distance_front()
-            print(dist)
-            # Tell the microcontroller the position of the ball
+            # sTell the microcontroller the position of the ball
             # relative to the camera view. If the ball has been 
             # reached, then transition to the ACQUIRE state and 
             # tell the main loop to execute the "acquire()" function.
@@ -68,7 +64,6 @@ class StateLogic(object):
         while self.get_state()=='ACQUIRE':
             if time_data(args,'ACQUIRE',2,self.init_time)==-13:
                 return -13
-            print("in ACQUIRE")
             timers = self.img.update_goal_position('ball_A',time.time())
             positions = self.img.get_goal_regions()
             dist = self.control.distance_front()
@@ -199,8 +194,7 @@ class StateLogic(object):
             self.control.left_stop()
         # if not self.noprint:
         #     writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
-        print("CHASE commands")
-        print(f'{self.get_state()}: {decode_signal(self.control.readall())}')
+        # print(f'{self.get_state()}: {decode_signal(self.control.readall())}')
         self.control.pi_int()
         time.sleep(1)
         return 0
@@ -278,8 +272,7 @@ class StateLogic(object):
         else:
             self.control.right_move(1)
             self.control.left_stop()
-        print("ACQUIRE commands")
-        print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
+        # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
         time.sleep(1)
         return 0
@@ -366,8 +359,7 @@ class StateLogic(object):
         else:
             self.control.left_stop()
             self.control.right_move(1)
-        print("FETCH commands")
-        print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
+        # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()             
         time.sleep(1)
         return 0
@@ -443,8 +435,7 @@ class StateLogic(object):
         else:
             self.control.left_stop()
             self.control.right_move(1)
-        print("RETURN commands")
-        print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
+        # print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
         time.sleep(1)
         return 0
@@ -515,7 +506,6 @@ class FSM(StateLogic):
         signal.alarm(0)
         if self.img.camera_.index != 0:
             self.img.camera_.camswitch()
-        print("Switching to camera0 (if not already using it)")
         self.control.DONE = False
         self.control.proximity=0
         return 0
@@ -525,7 +515,6 @@ class FSM(StateLogic):
         signal.alarm(0)
         self.control.DONE = False
         self.control.proximity=0
-        print("Changing states to 'CHASE'")
         signal.alarm(3) # Change back to 60
         return 0
     @event(from_states=(START,CHASE), to_state=(ACQUIRE))
