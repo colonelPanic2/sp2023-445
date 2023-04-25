@@ -17,6 +17,6 @@ if len(argv[1:])>0 and argv[1]=='!CLEAR':
 else:
     # *** IGNORE THE NUMPY WARNINGS IN THE OUTPUTS ***
     for state in ['WAIT','CHASE','ACQUIRE','FETCH','RETURN']:
-        output = check_output(split(f"python3 main.py time 1 0 0 {state} 200")) # The last argument is the number of samples
+        output = check_output(split(f"python3 main.py time 1 0 0 {state} 20")) # The last argument is the number of samples
         print(f"\n'{state}' : RUNTIME TEST COMPLETE")
     process_data()
