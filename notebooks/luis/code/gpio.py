@@ -1,4 +1,4 @@
-import time
+import time,signal
 from tkinter import *
 from helpers.helpers import writefile,platform,clear,time_data,decode_signal
 import RPi.GPIO as io
@@ -20,6 +20,8 @@ from os import getpid, kill
 class control:
     # Initialize the object with a set of GPIO pin #s for the Pi
     def __init__(self,gettimes,noprint,demo,manual,init_time,logfile,num_samples):
+        signal.signal(signal.SIGUSR1, self.microcontroller_CTRL_ACK_handler)
+        signal.signal(signal.SIGUSR2, self.microcontroller_PROX_handler)
         self.cam=None
         self.gettimes=gettimes
         self.noprint=noprint
@@ -45,6 +47,7 @@ class control:
             else:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
+        # Set up the signal handlers
         self.setpin(7,1)
         time.sleep(0.05)
         self.setpin(7,0)
@@ -57,6 +60,22 @@ class control:
         io.setup(self.pins[12],io.OUT)
         io.setup(self.pins[13],io.IN)
         return
+    def microcontroller_CTRL_ACK_handler(self,signum,frame): # SIGUSR1
+        signal.signal(signal.SIGUSR1,signal.SIG_IGN)
+        if self.gettimes is not None:
+            t1 = time.time()
+            time_data([self.gettimes,self.INT_start_time,t1],'fsm.get_state()',4)
+            self.INT_start_time=0
+        self.DONE = True
+        signal.signal(signal.SIGUSR1,self.microcontroller_CTRL_ACK_handler)
+
+    def microcontroller_PROX_handler(self,signum,frame): # SIGUSR2
+        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+        self.proximity = int(not self.proximity)
+        # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
+        # ctrl.communication_stop() 
+        # print("PROXIMITY: ",self.proximity,'\n') # NOTE: Remove print statements from interrupt handlers
+        signal.signal(signal.SIGUSR2,self.microcontroller_PROX_handler)
     def distance_front(self):
         # self.setpin(10,1)
         # time.sleep(0.00001)

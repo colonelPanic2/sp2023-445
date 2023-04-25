@@ -240,7 +240,8 @@ class StateLogic(object):
                 self.control.pincers_stop()
                 self.control.pi_int()
                 if not self.noprint:
-                    writefile(self.logfile,"\n{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))             
+                    writefile(self.logfile,"\n{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))  
+                signal.signal(signal.SIGUSR2,signal.SIG_IGN)           
                 self.transition_fetch()
                 return 4
             if not self.control.flag_sent:
@@ -464,6 +465,7 @@ class FSM(StateLogic):
     @event(from_states=(START, RETURN), to_state=(WAIT))
     def transition_wait(self,some_variables=None):
         signal.alarm(0)
+        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         if self.img.camera_.index != 0:
             self.img.camera_.camswitch()
         self.control.DONE = False
@@ -473,6 +475,7 @@ class FSM(StateLogic):
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
+        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         self.control.DONE = False
         self.control.proximity=0
         signal.alarm(3) # Change back to 60
@@ -483,7 +486,7 @@ class FSM(StateLogic):
         signal.alarm(0)
         self.control.DONE = False
         signal.signal(signal.SIGALRM,self.signal_handler)
-        # self.control.communication_start()
+        signal.signal(signal.SIGUSR2,self.control.microcontroller_PROX_handler)
         signal.alarm(3) # Change back to 45
         return 0
     @event(from_states=(START,ACQUIRE), to_state=(FETCH))
@@ -497,6 +500,7 @@ class FSM(StateLogic):
     @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         signal.alarm(0)
+        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         if self.img.camera_.index != 1:
             self.img.camera_.camswitch()
         self.control.DONE = False
