@@ -57,8 +57,6 @@ class control:
         io.setup(self.pins[11],io.IN)
         io.setup(self.pins[12],io.OUT)
         io.setup(self.pins[13],io.IN)
-        io.setup(2,io.OUT)
-        io.output(2,1)
         return
     def distance_front(self):
         self.setpin(10,1)
