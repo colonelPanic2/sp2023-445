@@ -8,7 +8,7 @@ platform=sys.platform
 # placeholders for the actual versions that we will be 
 # using from the RPi.GPIO library.
 class remote_gpio:
-    def __init__(self,pins=[7,0,1,5,6,12,13,19, 16,26]):
+    def __init__(self,pins=[17,27,12,13,4,25,5,6,16,26,18,24, 20,21]):
         self.pins=pins
         self.pinout={}
         self.OUT = 'OUT'
@@ -27,13 +27,14 @@ class remote_gpio:
     def setwarnings(self,val):
         self.warnings=val
     def setup(self,pin,direction,pull_up_down=None):
+        self.pinout[pin]=0
         return
     def output(self,pin,val):
         self.pinout[pin]=val
     def input(self,pin):
         return self.pinout[pin]
     # NOTE: UNTESTED MICROCONTROLLER COMMS CODE
-    def add_event_detect(self,pin,condition,callback=None):
+    def add_event_detect(self,pin,condition,callback=None,bouncetime=None):
         # This function should set up an event listener that runs the 'callback' function
         # when the given condition is met on the given pin.
         return

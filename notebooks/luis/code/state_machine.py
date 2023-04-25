@@ -44,6 +44,7 @@ class StateLogic(object):
             return 3
         time_data(args,'CHASE',1)
         while self.get_state()=='CHASE':
+            print("in CHASE")
             if time_data(args,'CHASE',2,self.init_time)==-13:
                 return -13
             timers = self.img.update_goal_position('ball_C',time.time())
@@ -195,8 +196,10 @@ class StateLogic(object):
             self.control.left_stop()
         # if not self.noprint:
         #     writefile(self.logfile,f"{decode_signal(self.control.readall())}  ")
-        print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
+
+        print(f'{self.get_state()}: {decode_signal(self.control.readall())}')
         self.control.pi_int()
+        time.sleep(1)
         return 0
     def acquire_commands(self,positions,timers,dist):
         # Ball wasn't detected in the camera view
@@ -274,6 +277,7 @@ class StateLogic(object):
             self.control.left_stop()
         print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
+        time.sleep(1)
         return 0
     def fetch_commands(self,positions,timers,dist):
         # User wasn't detected in the camera view
@@ -360,6 +364,7 @@ class StateLogic(object):
             self.control.right_move(1)
         print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()             
+        time.sleep(1)
         return 0
     def return_commands(self,positions,timers,dist):
         if positions==[]: 
@@ -435,6 +440,7 @@ class StateLogic(object):
             self.control.right_move(1)
         print(f"{self.get_state()}: {decode_signal(self.control.readall())}")
         self.control.pi_int()
+        time.sleep(1)
         return 0
     def set_manual(self,mode_num):
         self.control.manual=mode_num

@@ -1,12 +1,10 @@
 import time
 from tkinter import *
 from helpers.helpers import writefile,platform,clear,time_data,decode_signal
-try: 
-    import RPi.GPIO as io
-    print("Imported gpio library")
-except:
-    from helpers.helpers import  io
-    print("imported helpers")
+# import RPi.GPIO as io
+# print("Imported gpio library")
+from helpers.helpers import  io
+print("imported helpers")
 from signal import SIGUSR1, SIGUSR2, SIGINT, SIG_IGN, signal
 from os import getpid, kill
 

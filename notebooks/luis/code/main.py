@@ -75,6 +75,7 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
         # If the function index is the index + 1 of one of the 5 state
         # functions, then the previous function did not fail.
         if next_function_index>=1:
+            print(functions[next_function_index-1])
             next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
         # Otherwise, the previous state function failed due to a timeout. This should mean 
         # that the previous state was either CHASE or ACQUIRE, as these are the only 2 states 
