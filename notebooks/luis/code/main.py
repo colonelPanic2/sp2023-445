@@ -24,10 +24,10 @@ def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     ctrl.proximity = int(not ctrl.proximity)
     # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
     # ctrl.communication_stop() 
-    print("PROXIMITY: ",ctrl.proximity,'\n') # NOTe: REmove print statements in interrupt handlers
+    print("PROXIMITY: ",ctrl.proximity,'\n') # NOTE: Remove print statements from interrupt handlers
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
 
-def main(gettimes,noprint,demo,manual,start_state):
+def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global init_time
     global errfile
     init_time,logfile,errfile = logdata()
@@ -37,7 +37,7 @@ def main(gettimes,noprint,demo,manual,start_state):
     global ctrl
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
-    ctrl = control(     gettimes,noprint,demo,manual,0,logfile) 
+    ctrl = control(     gettimes,noprint,demo,manual,0,logfile,num_samples) 
     # Set up the signal handlers
     signal.signal(signal.SIGUSR1, microcontroller_CTRL_ACK_handler)
     signal.signal(signal.SIGUSR2, microcontroller_PROX_handler)
@@ -95,12 +95,15 @@ def main(gettimes,noprint,demo,manual,start_state):
         
 
 def init_fetching(args):
-    global fsm
+    global ctrl
     gettimes,noprint,demo,manual,start_state=args[:5]
+    n_samples=None
+    if len(args)==6:
+        n_samples=args[5]
     # Run main with the processed command line arguments as well as the time
     # of initialization and the log file.
     try:
-        main(gettimes,noprint,demo,manual,start_state)
+        main(gettimes,noprint,demo,manual,start_state,n_samples)
     # If there is a Keyboard interrupt, assume that it was raised 
     # by the program's response to user input and that the program 
     # exited normally
@@ -111,9 +114,10 @@ def init_fetching(args):
         try:
             fsm.control.pincers_move(1)
             fsm.control.pi_int()
+            time.sleep(0.5)
             fsm.control.stop_all()
         except:
-            print("Couldn't stop the motors")
+            print("Couldn't stop the motors (init_fetching)")
         timedata_files(gettimes,init_time)
         print("\nDone.\nTerminated by user input.")
     return 0
@@ -121,6 +125,7 @@ def init_fetching(args):
 def parse_args():
     global init_time
     global errfile
+    global fsm
     init_time = time.time()
     errfile = 'init-err.txt'
     try:        
@@ -129,12 +134,15 @@ def parse_args():
         # demo    - (0 if no demo, 1 if demo)        Choose whether we boot in to demo mode or not 
         # manual  - (0 if auto,    1 if manual)      Choose whether the design boots with auto/manual control 
         # start_state - (the state to be unit tested) Choose the name (all caps) of the initial FSM state (default is WAIT)
+        # n_samples - (runtime sampling only)         Choose the number of iterations to be sampled from the initial state's state function
         argv = sys.argv[1:]
         # DEFAULT: No timedata, allow printing, boot in demo mode, 
         # boot with manual controls, start the FSM in the WAIT state
         if len(argv)==0:
             # argv = []
             args = [None,0,1,1,'WAIT']
+        elif len(argv)==6:
+            args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4])]
         elif len(argv)==5:
             ### Unit test the state specified in the 5th argument ###
             # argv = [time noprint demo manual start_state]
@@ -176,6 +184,13 @@ def parse_args():
         # If an unexpected Exception has occured, then write an error log
         # to the err.txt file generated for the date and time when the 
         # exception occured.
+        try:
+            fsm.control.pincers_move(1)
+            fsm.control.pi_int()
+            time.sleep(0.5)
+            fsm.control.stop_all()
+        except:
+            print("Couldn't stop the motors (parse_args)")
         current_time = time.strftime("%Y-%m-%d_%H.%M.%S", time.localtime())[11:]
         writefile(errfile,f"Time: {current_time}\nERROR: {e}\n")
         backtrace = traceback.format_exc()

@@ -12,7 +12,7 @@ def readfile(fname):
     unit_data[test_idx] = {'WAIT':[0,0], 'CHASE':[0,0], 'ACQUIRE':[0,0], 'FETCH':[0,0], 'RETURN':[0,0]}
     states_mask={'WAIT':1,'CHASE':1,'ACQUIRE':1,'FETCH':1,'RETURN':1}
     for line in filedata:
-        line_text = line.split(",")
+        line_text = line.split(" ")
         if len(line_text)==3:
             overall_data['num_its'][line_text[0]] += int(line_text[1])
             overall_data['runtime'][line_text[0]] += round(float(line_text[2]),2)

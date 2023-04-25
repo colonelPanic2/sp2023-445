@@ -21,7 +21,7 @@ from os import getpid, kill
 # self.pins[7]: 1 to trigger the Pi_INT on the microcontroller, 0 else
 class control:
     # Initialize the object with a set of GPIO pin #s for the Pi
-    def __init__(self,gettimes,noprint,demo,manual,init_time,logfile):
+    def __init__(self,gettimes,noprint,demo,manual,init_time,logfile,num_samples):
         self.cam=None
         self.gettimes=gettimes
         self.noprint=noprint
@@ -37,7 +37,7 @@ class control:
         self.flag_sent = 1
         # If gettimes=='time', then set up for runtime data collection
         # for each of the state function loops
-        time_data(gettimes,'',0,noprint,logfile)
+        time_data(gettimes,'',0,noprint,logfile,num_samples)
         io.setmode(io.BCM)
         io.setwarnings(False) # NOTE: COMMENT THIS OUT WHEN DEBUGGING THE GPIO PINS
         for pin in self.pins[:8]:

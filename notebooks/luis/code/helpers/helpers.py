@@ -103,7 +103,7 @@ def logdata():
     return (init_time,logfile,errfile)
 # Keep track of the runtime data for the fetching subsystem. 
 # (unusable with the current code)
-def time_data(args,state,step,t0=0,noprint=0,logfile=None):
+def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
     global T0_SET
     global T0
     global T1
@@ -111,6 +111,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
     global log_file
     global time_data_dict
     global microcontroller_time_data_list
+    global n_samples
     if args=='time':
         if step==0:
             T0_SET = 0
@@ -120,6 +121,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
             microcontroller_time_data_list=[]
             no_print=noprint
             log_file = logfile
+            n_samples = num_samples
         elif step==1:
             T0_SET = 0
         elif step==2:
@@ -128,12 +130,10 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
                 time_data_dict[state].append(round(1000*(T1-T0),2))
             T0=time.perf_counter()
             T0_SET = 1
-            if time.time()-t0>5*60:
-                # print(time.time()-t0)
+            if n_samples is not None and len(time_data_dict[state])>=n_samples:
                 return -13
         elif step==3:
             for state,runtimes in list(time_data_dict.items()):
-                # print(f"{state}: {runtimes}")
                 # TODO: ENCOUNTERED AN ERROR IN WHICH THE FIRST ENTRY IN THE TIMEDATA
                 # IS OFTEN DISPROPORTIONATELY LARGER THAN THE REST OF THE RUNTIME
                 # DATA. THE MODIFICATIONS BELOW ARE AN ATTEMPT AT A TEMPORARY SOLUTION
@@ -149,8 +149,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None):
     elif step == 4 and args[0] is not None and str(args[0])=='time' and args[1]!=0:
         _, INT_start_time, INT_end_time = args
         microcontroller_time_data_list.append(round((INT_end_time-INT_start_time)*1000,2))
-        if not no_print and microcontroller_time_data_list[-1]>=100:
-            # print(microcontroller_time_data_list[-1])
+        if not no_print and microcontroller_time_data_list[-1]>=200:
             writefile(log_file,f"{microcontroller_time_data_list[-1]}\n")
 
     return 0
