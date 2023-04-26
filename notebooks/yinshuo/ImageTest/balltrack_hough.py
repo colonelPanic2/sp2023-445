@@ -42,7 +42,7 @@ args = vars(ap.parse_args())
 #use blueLower = (40, 45, 80)
 # blueUpper = (121, 255, 255)
 greenLower = (30, 86, 46)
-greenUpper = (80, 255, 200)
+greenUpper = (100, 255, 200)
 #red and blue colorspace as well
 
 pts = deque(maxlen=args["buffer"])
@@ -63,6 +63,9 @@ while True:
 	mask = cv2.erode(mask, None, iterations=2)
 	mask = cv2.dilate(mask, None, iterations=2)
 	
+	#test
+	#cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+	#cnts = imutils.grab_contours(cnts)
 	#was 100, change to 50
 	#was 1.2, change to 2.0
 	circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 4.0, 3)

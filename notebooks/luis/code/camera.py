@@ -2,13 +2,16 @@ import threading,cv2,imutils,traceback,queue
 from sys import platform
 import signal,time
 from os import kill,getpid
+import numpy as np
 from helpers.helpers import writefile,map_to_block_index,teardown_timeout_handler,time_data
 TLL,TLM,TLR = 0,  1, 2 # Top-left region of camera view
 TML,TMM,TMR = 3,  4, 5 # Top-middle region of camera view
-TRL,TRM,TRR = 6,  7, 8 # Top-right region of camera view
-BLL,BLM,BLR = 9, 10,11 # Bottom-left region of camera view
-BML,BMM,BMR = 12,13,14 # Bottom-middle region of camera view
-BRL,BRM,BRR = 15,16,17 # Bottome-right region of camera view
+
+#no longer needed
+#TRL,TRM,TRR = 6,  7, 8 # Top-right region of camera view
+#BLL,BLM,BLR = 9, 10,11 # Bottom-left region of camera view
+#BML,BMM,BMR = 12,13,14 # Bottom-middle region of camera view
+#BRL,BRM,BRR = 15,16,17 # Bottome-right region of camera view
 class images:
     def __init__(self,cam):
         self.camera_ = cam
@@ -60,15 +63,26 @@ class camera(images):
         self.index = 0 # NOTE: Keep track of the camera being used (front=0, back=1)
         self.index_factor = [1,2][int(platform=='linux')]
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
+        
         self.cam = cv2.VideoCapture(self.index*self.index_factor,cam_backends[int(platform=='linux')]) 
+        #auto white balance
+        self.cam.set(cv2.CAP_PROP_AUTO_WB, 1.0)
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
-        self.redLower = (140, 70, 70)
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+        #old values  
+        #self.redLower = (140, 70, 70)
+        #self.redUpper = (179, 255, 255)
+        
+        self.redLower = (120, 60, 60)
         self.redUpper = (179, 255, 255)
         self.greenLower = (30, 86, 46)
-        self.greenUpper = (100, 255, 255)
-        self.blueLower = (40, 50, 80)
-        self.blueUpper = (130, 255, 255)
+        self.greenUpper = (90, 255, 200)
+        #self.greenUpper = (80, 255, 255)
+        
+        #self.blueLower = (40, 50, 80)
+        #self.blueUpper = (130, 255, 255)
+        self.blueLower = (78,158,124)
+        self.blueUpper = (130, 250, 255)
         self.q = queue.Queue()
         super().__init__(self)
         writefile(self.logfile,"Done.\n")
@@ -76,33 +90,12 @@ class camera(images):
         self.index = int(not self.index)
         cam_backends=[cv2.CAP_DSHOW,cv2.CAP_V4L2] #Linux and Windows camera backends
         # NOTE: multiply the self.index by 2 when on the Pi
-        self.cam = cv2.VideoCapture(self.index*self.index_factor,cam_backends[int(platform=='linux')])            
+        self.cam = cv2.VideoCapture(self.index*self.index_factor,cam_backends[int(platform=='linux')])  
+        #auto white balance
+        self.cam.set(cv2.CAP_PROP_AUTO_WB, 1.0)          
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920) # Divides evenly by 3
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
-    # NOTE: This function is still unused because I don't quite know how to use
-    # it. I'll have to ask yinhuo for help with integrating this into the design.
-    def detect_shape(self,c):
-        shape = "empty"
-        peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-        # Triangle
-        if len(approx) == 3:
-            shape = "triangle"
-        # Square or rectangle
-        elif len(approx) == 4:
-            (x, y, w, h) = cv2.boundingRect(approx)
-            ar = w / float(h)
-        # A square will have an aspect ratio that is approximately
-        # equal to one, otherwise, the shape is a rectangle
-            shape = "rectangle"
-        # Pentagon
-        elif len(approx) == 5:
-            shape = "pentagon"
-        # Otherwise assume as circle or oval
-        else:
-            (x, y, w, h) = cv2.boundingRect(approx)
-            shape = "circle"
-        return shape
+    
     # Tell the camera thread to end smoothly, and raise a KeyboardInterupt
     # that will be caught in the 'main_fetching' function in main.py
     def destroy(self):
@@ -130,7 +123,7 @@ class camera(images):
             mask = cv2.inRange(hsv, self.blueLower, self.blueUpper)
         mask = cv2.erode(mask, None, iterations=2)
         mask = cv2.dilate(mask, None, iterations=2)
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,\
+        cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL,\
                                 cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
         if len(cnts) > 0:
@@ -143,6 +136,27 @@ class camera(images):
                         (0, 255, 255), 2)
                 cv2.circle(frame, center, 5, (0,0,255), -1)
         return center
+        #for the new track, the center reading is not that stable, but if the center is in the
+        #sub region for certain amount of time, consider it to be found 
+    def new_ball_track(self, frame, goal):
+    	center = None
+    	blurred = cv2.GaussianBlur(frame, (11,11), 0)
+    	hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    	mask = cv2.erode(mask, None, iterations=2)
+    	mask = cv2.dilate(mask, None, iterations=2)
+    	#goal is ball only
+    	mask = cv2.inRange(hsv, self.greenLower, self.greenUpper)
+    	circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 4.0, 3)
+    	if circles is not None:
+    		circles = np.round(circles[0,:]).astype("int")
+    		for (x, y, r) in circles:
+    			if r < 3:
+    				continue
+    			center = (int(x), int(y))
+    			cv2.circle(frame, (int(x), int(y)), int(r), (0, 255, 255), 2)
+    			cv2.circle(frame, (int(x), int(y)), 5, (0, 0, 255), -1)
+    	
+    	return center		
     def getimage(self,goal):
         center = None
         image=None
