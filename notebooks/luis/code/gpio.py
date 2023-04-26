@@ -419,10 +419,14 @@ class control:
             self.cam.manual=0
         return 0
 
-    def __init__(self,gettimes,noprint,demo,manual,init_time,logfile,num_samples):
+
+
+
+
 
 def gpio_main():
     ctrl = control(None,0,0,0,0,'init-err.txt',None)
+    f_avg,b_avg=0,0
     count=0
     try:
         while True:
