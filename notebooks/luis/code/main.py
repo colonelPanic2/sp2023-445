@@ -28,23 +28,25 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global init_time
     global errfile
     init_time,logfile,errfile = logdata()
+    # If gettimes=='time', then set up for runtime data collection
+    # for each of the state function loops
+    time_data(gettimes,'',0,noprint,logfile,num_samples=num_samples)
     # Declare the global variables that will be used by our 
     # signal handlers for SIGINT, SIGUSR1, and SIGUSR2.
     global fsm
     global ctrl
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
+    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     ctrl = control(     gettimes,noprint,demo,manual,0,logfile,num_samples) 
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
-    signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     # If we were told to start the program in manual mode, then 
     # do it. Note that the FSM object won't be initialized until 
     # manual mode is exited.
     if manual==1:
         ctrl.init_manual_control(cam)
-    fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state,ACK_HANDLER=microcontroller_CTRL_ACK_handler,PROX_handler=microcontroller_PROX_handler)
+    fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state,ACK_HANDLER=microcontroller_CTRL_ACK_handler,PROX_HANDLER=microcontroller_PROX_handler)
     signal.signal(signal.SIGQUIT, control_switch_handler)
-
 
     # Make a list of state functions in their intended order of 
     # execution. The output of each state function will be used 
@@ -118,6 +120,7 @@ def init_fetching(args):
     return 0
 
 def parse_args():
+    signal.alarm(0)
     global init_time
     global errfile
     global fsm

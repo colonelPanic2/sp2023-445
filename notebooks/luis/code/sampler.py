@@ -3,6 +3,7 @@ from timedata.plots import process_data
 from shlex import split
 from sys import argv
 from helpers.helpers import ls
+import signal
 # To delete all files (except for 'runtime-plots.py') from the 'timedata' directory
 # pass "'!CLEAR'" as an argument as follows: "python3 sampler.py '!CLEAR'"
 if len(argv[1:])>0 and argv[1]=='!CLEAR':
@@ -25,5 +26,6 @@ else:
         num_samples = 20
     for state in ['WAIT','CHASE','ACQUIRE','FETCH','RETURN']:
         output = check_output(split(f"python3 main.py time 1 0 0 {state} {num_samples}")) # The last argument is the number of samples
+        signal.alarm(0)
         print(f"\n'{state}' : RUNTIME TEST COMPLETE")
     process_data()

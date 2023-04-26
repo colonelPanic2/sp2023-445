@@ -487,7 +487,6 @@ class FSM(StateLogic):
         # If we stay in the ACQUIRE state for 30 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
         self.control.DONE = False
-        signal.signal(signal.SIGALRM,self.signal_handler)
         signal.signal(signal.SIGUSR2,self.PROX_HANDLER)
         signal.alarm(3) # Change back to 45
         return 0
@@ -496,6 +495,7 @@ class FSM(StateLogic):
         signal.alarm(0)
         if self.img.camera_.index != 1:
             self.img.camera_.camswitch()
+        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         self.control.DONE = False
         self.control.proximity = 0
         return 0
