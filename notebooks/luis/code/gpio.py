@@ -432,3 +432,6 @@ def gpio_main():
     except KeyboardInterrupt:
         if count>0:
             print(f"Average (front): {f_avg/count:.4f}\nAverage (back): {b_avg/count:.4f}")
+
+if __name__=='__main__':
+    gpio_main()
