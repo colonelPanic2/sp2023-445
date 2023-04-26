@@ -428,8 +428,10 @@ class FSM(StateLogic):
     ACQUIRE = State('ACQUIRE')
     FETCH = State('FETCH')
     RETURN = State('RETURN')
-    def __init__(self,control,camera,gettimes,noprint,demo,manual,init_time,logfile,start_state):
+    def __init__(self,control,camera,gettimes,noprint,demo,manual,init_time,logfile,start_state,ACK_HANDLER,PROX_HANDLER):
         signal.signal(signal.SIGALRM,self.signal_handler)
+        self.ACK_HANDLER = ACK_HANDLER
+        self.PROX_HANDLER = PROX_HANDLER
         self.control = control
         self.img = camera
         self.gettimes=gettimes
@@ -486,7 +488,7 @@ class FSM(StateLogic):
         signal.alarm(0)
         self.control.DONE = False
         signal.signal(signal.SIGALRM,self.signal_handler)
-        signal.signal(signal.SIGUSR2,self.control.microcontroller_PROX_handler)
+        signal.signal(signal.SIGUSR2,self.PROX_HANDLER)
         signal.alarm(3) # Change back to 45
         return 0
     @event(from_states=(START,ACQUIRE), to_state=(FETCH))
