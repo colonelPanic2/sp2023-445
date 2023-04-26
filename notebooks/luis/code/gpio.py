@@ -7,7 +7,14 @@ print("Imported gpio library")
 # print("imported helpers")
 from signal import SIGUSR1, SIGUSR2, SIGINT, SIG_IGN, signal
 from os import getpid, kill
-
+def microcontroller_CTRL_ACK_handler(ctrl): # SIGUSR1
+    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
+    if ctrl.gettimes is not None:
+        t1 = time.time()
+        time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
+        ctrl.INT_start_time=0
+    ctrl.DONE = True
+    signal.signal(signal.SIGUSR1,ctrl.microcontroller_CTRL_ACK_handler)
 # Control pin mapping:
 # self.pins[0]: 1 to reverse the left motors, 0 else
 # self.pins[1]: 1 to move the left motors, 0 else
