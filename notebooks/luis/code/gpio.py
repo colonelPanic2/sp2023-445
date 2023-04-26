@@ -2,19 +2,12 @@ import time,signal
 from tkinter import *
 from helpers.helpers import writefile,platform,clear,time_data,decode_signal
 import RPi.GPIO as io
+from numpy import inf
 print("Imported gpio library")
 # from helpers.helpers import  io
 # print("imported helpers")
 from signal import SIGUSR1, SIGUSR2, SIGINT, SIG_IGN, signal
 from os import getpid, kill
-def microcontroller_CTRL_ACK_handler(ctrl): # SIGUSR1
-    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
-    if ctrl.gettimes is not None:
-        t1 = time.time()
-        time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
-        ctrl.INT_start_time=0
-    ctrl.DONE = True
-    signal.signal(signal.SIGUSR1,ctrl.microcontroller_CTRL_ACK_handler)
 # Control pin mapping:
 # self.pins[0]: 1 to reverse the left motors, 0 else
 # self.pins[1]: 1 to move the left motors, 0 else
@@ -40,7 +33,6 @@ class control:
         self.proximity = 0
         self.DONE = False
         self.flag_sent = 1
-
         io.setmode(io.BCM)
         io.setwarnings(False) # NOTE: COMMENT THIS OUT WHEN DEBUGGING THE GPIO PINS
         for pin in self.pins[:8]:
@@ -62,58 +54,50 @@ class control:
         io.setup(self.pins[12],io.OUT)
         io.setup(self.pins[13],io.IN)
         return
-    def distance_front(self):
-        # self.setpin(10,1)
-        # time.sleep(0.00001)
-        # t0 = time.time()
-        # t1 = time.time()
-        # while io.input(self.pins[11])==0:
-        #     t0=time.time()
-        # while io.input(self.pins[11])==1:
-        #     t1=time.time()
-        # dt = t1-t0
-        # dist = (dt*34300)>>1
-        dist=0
-        return dist
-    def distance_back(self):
-        # self.setpin(12,1)
-        # time.sleep(0.00001)
-        # t0=time.time()
-        # t1=time.time()
-        # while io.input(self.pins[13])==0:
-        #     t0=time.time()
-        # while io.input(self.pins[13])==1:
-        #     t1=time.time()
-        # dt = t1-t0
-        # dist = (dt*34300)>>1
-        dist=0
-        return dist
     def send_flag(self):
         self.setpin(4,0)
         self.setpin(5,1)
         self.pi_int()
-    # def communication_stop(self):
-    #     # CS0 = 10
-    #     self.setpin(0,1)
-    #     self.setpin(1,0)
-    #     # CS1 = 10
-    #     self.setpin(2,1)
-    #     self.setpin(3,0)
-    #     # CS2 = 01 (stop sending interrupts to the pi)
-    #     self.setpin(4,0)
-    #     self.setpin(5,1)
-    #     self.pi_int()
-    # def communication_start(self):
-    #     # CS0 = 10
-    #     self.setpin(0,1)
-    #     self.setpin(1,0)
-    #     # CS1 = 10
-    #     self.setpin(2,1)
-    #     self.setpin(3,0)
-    #     # CS2 = 00 (start sending interrupts to the pi)
-    #     self.setpin(4,0) 
-    #     self.setpin(5,0)
-    #     self.pi_int()
+    def distance_front(self):    
+        self.setpin(10,1)
+        time.sleep(0.00001)
+        self.setpin(10,0)
+        t_0 = time.perf_counter()
+        t_start = time.time()
+        t0 = time.time()
+        while io.input(self.pins[11])==0 and time.time()-t_start<0.0004:
+            t0=time.time()
+        t1 = time.time()
+        while io.input(self.pins[11])==1 and time.time()-t_start<0.0004:
+            t1=time.time()
+        runtime = time.perf_counter()-t_0
+        print(f"distance (front): {runtime:.4f}")
+        return runtime
+        # if t1-t_start>0.0004:
+        #         return inf
+        # dt = t1-t0
+        # dist = (dt*34300)/2
+        # return dist
+    def distance_back(self):
+        self.setpin(12,1)
+        time.sleep(0.00001)
+        self.setpin(12,0)
+        t_0=time.perf_counter()
+        t_start = time.time()
+        t0=time.time()
+        while io.input(self.pins[13])==0 and time.time()-t_start<0.0004:
+            t0=time.time()
+        t1=time.time()
+        while io.input(self.pins[13])==1 and time.time()-t_start<0.0004:
+            t1=time.time()
+        runtime = time.perf_counter()-t_0
+        print(f"distance (back): {runtime:.4f}\n")
+        return runtime
+        # if t1-t_start<0.0004:
+        #       return inf
+        # dt = t1-t0
+        # dist = (dt*34300)/2
+        # return dist
     def init_manual_control(self,cam):
         print(f"WARNING: YOU ARE CURRENTLY IN MANUAL CONTROL MODE.\n\
          While in manual control mode, the fetching subsystem is inactive.\n\
@@ -435,3 +419,16 @@ class control:
             self.cam.manual=0
         return 0
 
+    def __init__(self,gettimes,noprint,demo,manual,init_time,logfile,num_samples):
+
+def gpio_main():
+    ctrl = control(None,0,0,0,0,'init-err.txt',None)
+    count=0
+    try:
+        while True:
+            f_avg += ctrl.distance_front()
+            b_avg += ctrl.distance_back()
+            count+=1
+    except KeyboardInterrupt:
+        if count>0:
+            print(f"Average (front): {f_avg/count:.4f}\nAverage (back): {b_avg/count:.4f}")
