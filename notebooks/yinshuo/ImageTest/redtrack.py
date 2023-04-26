@@ -29,7 +29,7 @@ def detect_shape(c):
 
         # A square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle
-        shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
+        shape = "rectangle"
 
     # Pentagon
     elif len(approx) == 5:
@@ -47,6 +47,7 @@ def detect_shape(c):
 cam = cv2.VideoCapture(0)
 #try 1920 1080
 #original as 1280 720
+cam.set(cv2.CAP_PROP_AUTO_WB, 1.0)
 cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
@@ -67,8 +68,12 @@ args = vars(ap.parse_args())
 # redUpper = (179, 255, 255) for red
 #use blueLower = (40, 45, 80)
 # blueUpper = (121, 255, 255)
-redLower = (140, 70, 70)
+#may lower for low light conditions
+#try lower
+#redLower = (140, 70, 70)
+redLower = (120, 60, 60)
 redUpper = (179, 255, 255)
+#redUpper = (255, 190, 190)
 #red and blue colorspace as well
 pts = deque(maxlen=args["buffer"])
 # allow the camera or video file to warm up
@@ -100,19 +105,33 @@ while True:
 		# it to compute the minimum enclosing circle and
 		# centroid
 		for c in cnts:
-			shape = detect_shape(c)
-			if shape == "triangle" :
-				((x, y), radius) = cv2.minEnclosingCircle(c)
-				M = cv2.moments(c)
-				center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+			c = max(cnts, key=cv2.contourArea)
+			((x, y), radius) = cv2.minEnclosingCircle(c)
+			M = cv2.moments(c)
+			center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 		# only proceed if the radius meets a minimum size
-		#original size as 10
-				if radius > 3:
+			if radius > 10:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
-					cv2.circle(frame, (int(x), int(y)), int(radius),
-						(0, 255, 255), 2)
+				cv2.circle(frame, (int(x), int(y)), int(radius),
+					(0, 255, 255), 2)
 				cv2.circle(frame, center, 5, (0, 0, 255), -1)
+				
+				
+			#shape = detect_shape(c)
+			#if shape == "triangle" or shape == "rectangle":
+				#((x, y), radius) = cv2.minEnclosingCircle(c)
+				#if radius > 20:
+					#M = cv2.moments(c)
+					#center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+			# only proceed if the radius meets a minimum size
+		#original size as 10
+				
+			# draw the circle and centroid on the frame,
+			# then update the list of tracked points
+					#cv2.circle(frame, (int(x), int(y)), int(radius),
+						#(0, 255, 255), 2)
+					#cv2.circle(frame, center, 5, (0, 0, 255), -1)
 	# update the points queue
 	pts.appendleft(center)
 	

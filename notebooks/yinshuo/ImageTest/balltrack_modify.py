@@ -12,6 +12,7 @@ import time
 cam = cv2.VideoCapture(0)
 #try 1920 1080
 #original as 1280 720
+cam.set(cv2.CAP_PROP_AUTO_WB, 1.0)
 cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
@@ -23,13 +24,46 @@ ap.add_argument("-v", "--video",
 ap.add_argument("-b", "--buffer", type=int, default=32,
 	help="max buffer size")
 args = vars(ap.parse_args())
+def detect_shape(c):
+    shape = "empty"
+    peri = cv2.arcLength(c, True)
+    approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 
+    # Triangle
+    if len(approx) == 3:
+        shape = "triangle"
+
+    # Square or rectangle
+    elif len(approx) == 4:
+        (x, y, w, h) = cv2.boundingRect(approx)
+        ar = w / float(h)
+
+        # A square will have an aspect ratio that is approximately
+        # equal to one, otherwise, the shape is a rectangle
+        shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
+
+    # Pentagon
+    elif len(approx) == 5:
+        shape = "pentagon"
+        
+	# hexagon
+    elif len(approx) == 6:
+        shape = "hexagon"
+        
+    # Otherwise assume as circle or oval
+    
+    else:
+        (x, y, w, h) = cv2.boundingRect(approx)
+        
+        shape = "circle"
+
+    return shape
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
 #original: (29, 86, 6) and (64, 255, 255)
 greenLower = (30, 86, 46)
-greenUpper = (100, 255, 255)
+greenUpper = (80, 255, 255)
 #red and blue colorspace as well
 pts = deque(maxlen=args["buffer"])
 # allow the camera or video file to warm up
@@ -60,18 +94,19 @@ while True:
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
 		# centroid
-		c = max(cnts, key=cv2.contourArea)
-		((x, y), radius) = cv2.minEnclosingCircle(c)
-		M = cv2.moments(c)
-		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-		# only proceed if the radius meets a minimum size
-		#original size as 10
-		if radius > 3:
-			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
-			cv2.circle(frame, (int(x), int(y)), int(radius),
-				(0, 255, 255), 2)
-			cv2.circle(frame, center, 5, (0, 0, 255), -1)
+		for c in cnts:
+			shape = detect_shape(c)
+			if shape == "circle" or shape == "hexagon":
+				((x, y), radius) = cv2.minEnclosingCircle(c)
+				# only proceed if the radius meets a minimum size
+				#original size as 10
+				if radius > 3:
+					M = cv2.moments(c)
+					center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+	
+					cv2.circle(frame, (int(x), int(y)), int(radius),
+						(0, 255, 255), 2)
+					cv2.circle(frame, center, 5, (0, 0, 255), -1)
 	# update the points queue
 	pts.appendleft(center)
 	

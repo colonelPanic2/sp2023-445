@@ -1,6 +1,10 @@
 #modify this and lower data rate!!!
 
 #working! find ways to distinguish ball and envelop
+
+#correct! do a color space transform and then shape detect!
+
+#merge shape detect success
 from collections import deque
 
 import numpy as np
@@ -8,41 +12,15 @@ import argparse
 import cv2
 import imutils
 import time
-
-def detect_shape(c):
-    shape = "empty"
-    peri = cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-
-    # Triangle
-    if len(approx) == 3:
-        shape = "triangle"
-
-    # Square or rectangle
-    elif len(approx) == 4:
-        (x, y, w, h) = cv2.boundingRect(approx)
-        ar = w / float(h)
-
-        # A square will have an aspect ratio that is approximately
-        # equal to one, otherwise, the shape is a rectangle
-        shape = "rectangle"
-
-    # Pentagon
-    elif len(approx) == 5:
-        shape = "pentagon"
-
-    # Otherwise assume as circle or oval
-    else:
-        (x, y, w, h) = cv2.boundingRect(approx)
-        
-        shape = "circle"
-
-    return shape
     
 cam = cv2.VideoCapture(0)
+#cam = cv2.VideoCapture(2)
 #try 1920 1080
 #original as 1280 720
 cam.set(cv2.CAP_PROP_AUTO_WB, 1.0)
+#cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+#cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
 cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
@@ -58,13 +36,18 @@ args = vars(ap.parse_args())
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
-
-blueLower = (78,158,124)
-blueUpper = (130, 250, 255)
+#original: (29, 86, 6) and (64, 255, 255)
+#use redLower = (160, 100, 100)
+# redUpper = (179, 255, 255) for red
+#use blueLower = (40, 45, 80)
+# blueUpper = (121, 255, 255)
+greenLower = (30, 86, 46)
+greenUpper = (80, 255, 200)
 #red and blue colorspace as well
+
 pts = deque(maxlen=args["buffer"])
 # allow the camera or video file to warm up
-#time.sleep(1.0)
+time.sleep(1.0)
 
 # keep looping
 while True:
@@ -76,36 +59,28 @@ while True:
 	# construct a mask for the color "green", then perform
 	# a series of dilations and erosions to remove any small
 	# blobs left in the mask
-	mask = cv2.inRange(hsv, blueLower, blueUpper)
+	mask = cv2.inRange(hsv, greenLower, greenUpper)
 	mask = cv2.erode(mask, None, iterations=2)
 	mask = cv2.dilate(mask, None, iterations=2)
 	
-	# find contours in the mask and initialize the current
-	# (x, y) center of the ball
-	cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-		cv2.CHAIN_APPROX_SIMPLE)
-	cnts = imutils.grab_contours(cnts)
-	center = None
-	# only proceed if at least one contour was found
-	if len(cnts) > 0:
-		# find the largest contour in the mask, then use
-		# it to compute the minimum enclosing circle and
-		# centroid
-		for c in cnts:
-			shape = detect_shape(c)
-			if shape == "pentagon" or shape == "rectangle":
+	#was 100, change to 50
+	#was 1.2, change to 2.0
+	circles = cv2.HoughCircles(mask, cv2.HOUGH_GRADIENT, 4.0, 3)
+	#if circles is None:
+		#print("there is no ball")
+	if circles is not None:
+		#print("there is ball")
+		circles = np.round(circles[0,:]).astype("int")
+		#x and y is center
+		for (x, y, r) in circles:
+			# was 3
+			if r < 3:
+				continue
 			
-				((x, y), radius) = cv2.minEnclosingCircle(c)
-				if radius > 20:
-					M = cv2.moments(c)
-					center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
-					cv2.circle(frame, (int(x), int(y)), int(radius),
-						(0, 255, 255), 2)
-					cv2.circle(frame, center, 5, (0, 0, 255), -1)
+			cv2.circle(frame, (int(x), int(y)), int(r), (0, 255, 255), 2)
+			cv2.circle(frame, (int(x), int(y)), 5, (0, 0, 255), -1)
 	# update the points queue
-	pts.appendleft(center)
+	
 	
 	#delete this for final project
 	# loop over the set of tracked points
@@ -120,6 +95,7 @@ while True:
 		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
 	# show the frame to our screen
 	cv2.imshow("Frame", frame)
+	
 	key = cv2.waitKey(1) & 0xFF
 	# if the 'q' key is pressed, stop the loop
 	if key == ord("q"):

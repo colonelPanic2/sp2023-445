@@ -3,21 +3,34 @@
 import cv2 as cv
 import numpy as np
 cap = cv.VideoCapture(0)
+cap.set(cv.CAP_PROP_AUTO_WB, 1.0)
+cap.set(cv.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv.CAP_PROP_FRAME_HEIGHT, 1080)
 while(1):
     # Take each frame
     _, frame = cap.read()
     # Convert BGR to HSV
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
     # define range of blue color in HSV
-    greenLower = np.array([29, 86, 6])
-    greenUpper = np.array([64, 255, 255])
+    greenLower = np.array([30, 86, 46])
+    greenUpper = np.array([80, 255, 255])
+    #should work
+    blueLower = (78,158,124)
+    blueUpper = (130, 250, 255)
+    #should work
+    #redLower = (140, 70, 70)
+    #redUpper = (179, 255, 255)
+    #skinLower = (0, 48, 80)
+    #skinUpper = (40, 255, 255)
     # Threshold the HSV image to get only blue colors
-    mask = cv.inRange(hsv, greenLower, greenUpper)
+    #mask = cv.inRange(hsv, greenLower, greenUpper)
+    mask = cv.inRange(hsv, blueLower, blueUpper)
+    #mask = cv.inRange(hsv, redLower, redUpper)
     # Bitwise-AND mask and original image
     res = cv.bitwise_and(frame,frame, mask= mask)
     cv.imshow('frame',frame)
     cv.imshow('mask',mask)
-    cv.imshow('res',res)
+    #cv.imshow('res',res)
     k = cv.waitKey(5) & 0xFF
     if k == 27:
         break
