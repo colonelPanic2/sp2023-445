@@ -17,6 +17,8 @@
 
 We've set up what is expected to be the base of the final version of the PCB. We still need to decide on the power supply that we're going to use, and how we should connect it to the rest of the design. For now, our best idea for the power subsystem is to connect a high-voltage battery to the design with resistors to control the power supplied to each component.
 
+![](images/pcb-initial-design.png)
+
 # 2023-02-26 - Re-evaluating the power subsystem
 
 Due to conflicting research data, we'll have to test our design's motors ourselves. With the data we've acquired beforehand, its hard to know for sure if the car we bought will be powerful enough to move under the weight of the full design. Also, we need to know how much power will be consumed at different weights.
@@ -35,11 +37,14 @@ Our design wasn't making use of the interrupt pins on the microcontroller. We've
 
 The row 1 mapping will communicate the direction of the left motors, row 2 will communicate whether the left motors should be moving or not. Rows 3 and 4 will communicate the direction and movement, repectively, of the right motors. Rows 5 and 6 will communicate the movement and direction, respectively, of the pincer motors. Row 7 will communicate the information about the control state (manual or auto mode). Row 8 will communicate the Pi interrupt to the microcontroller to read the input data from the Pi. Row 9 will communicate the sensor interrupt to the microcontroller through an OR gate. The outputs of both of the sensors will be the inputs to the OR gate.
 
-Also, we'll have to use different H-bridges if we want to free up enough pins on the microcontroller to be able to include the Pi inputs and the sensor inputs.
+Also, we'll have to use different H-bridges if we want to free up enough pins on the microcontroller to be able to include the Pi inputs and the sensor inputs. We've decided to test the power consumption of the motors and make sure that the buck converters will be able to supply enough power. All of the new components are shown in the PCB design sheet below:
 
-[new-Hbridges]()
+![](images/pcb-redesign-1.png)
 
-# 2023-03-05/06 - Buck converters for power subsystem
+[new_H-bridges](https://www.ti.com/lit/ds/symlink/drv8848.pdf?ts=1682705623106&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FDRV8848)
+[buck-converters](https://www.tracopower.com/sites/default/files/products/datasheets/tdn5wism_datasheet.pdf)
+
+# 2023-03-05/06 - Testing power consumption for buck converters
 
 We're testing the power consumption of the motors under weights of up to 1.3kg. We need to know if our new approach with the Pi battery and the PCB/motors battery combined with buck converters will be able to provide a sufficient power supply to move the design and power the PCB components at maximum power consumption for up to 45 minutes. 
 
@@ -51,7 +56,7 @@ We need to get started on the code base for the fetching subsystem. Since the im
 
 The structure for the fetching subsystem has been implemented using a state machine library found online called 'pystatemachine'. The state machine is initialized by defining an object from the 'FSM' class, which then initializes a parent class called 'StateLogic'. The 'FSM' class defines all of state objects and functions called when the conditions for a state transition are satisfied. The 'StateLogic' class defines the functions which dictate the design's behavior in each state. Both of these classes are implemented in state_machine.py, and the 'FSM' class uses the pystatemachine library. All functions directly involved in the handling of the fetching subsystem's output to the control subsystem are implemented in a class called 'control' in gpio.py. In order to run/debug the fetching subsystem, we've implemented functions in img_proc.py that generate a random output in the format of the expected output from the image processing code. Once the image processing code is ready, calls to these functions will be replaced with calls to their counterparts in the image processing code. The FSM has a total of 6 states, and the state machine diagram is shown below:
 
-![](images/fsm-diagram-1.png)
+![](images/original-FSM.png)
 
 [pystatemachine](https://pypi.org/project/pystatemachine/#:~:text=pystatemachine%20is%20a%20versatile%2C%20yet%20easy-to-use%20finite-state%20machine,another%20when%20initiated%20by%20a%20triggering%20event.%20Usage)
 
@@ -107,26 +112,30 @@ We've found that increasing the granularity from 6 regions to 18 regions increas
 
 We're struggling to fix the motors. We know that signals from the Pi are being sent correctly, and we've determined that the output behavior of the H-bridges is not as expected. Also, we've found that powering the design with 2 separate batteries introduces unexpected complexity. Since we don't have the time or resources to resolve this issue, we've decided to power the entire design with the PiSugar 5V, 3A, 5Ah battery. If the PCB draws about 2A total when the design software is running, and the Pi draws the expected current of about 3A, then the design should still be able to operate at maximum power consumption for almost exactly 1 hour, which is still more than the goal of 45 minutes. However, it is important to note that this new setup puts enough strain on the battery for the voltage to drop by about 0.5V when moving the motors. 
 
-We've talked with a TA, and it was recommended that we use PWM signals to drive the motors instead of the digital signals we've been using so far. The motors seem to be fully operational now, so we should be able to start debugging the sensor subsystem tomorrow.
+We've talked with a TA, and it was recommended that we use PWM signals to drive the motors instead of the digital signals we've been using so far. The motors seem to be fully operational now, so we should be able to start debugging the sensor subsystem tomorrow. 
+
+While we were trying to solve the issues with the motors, we remapped the GPIO pins used on the Pi out of concern that some of the GPIO pins may have been broken. We also decided to an ultrasonic sensor (HC-SR04) to the front and back of the car in order to detect obstacles and avoid collisions. The new pin mappings are shown in the chart below.
+
+![](images/pinmap-2.png)
 
 # 2023-04-25 - Demo version of the design
 
 The data from the ultrasonic sensors is remarkably less reliable than we initially expected. Our goals for today are to find out why the data seems so inconsistent and to find a way to read from the sensors in a way that is reliable enough for the output data to be used as a final decision-maker by the fetching subsystem about whether or not to close the pincers and start to travel towards the user. 
 
-We've discovered that the ultrasonic sensors can't locate the tennis ball accurately because it absorbs sound, making it seem as though any waves that came in contact with it travelled several meters, as opposed to the actual few centimeters. To make matters worse, it seems common for some waves to miss the ball and return within a fairly short timeframe, making it appear as though the ball isn't there. Since these conflicting behaviors produce a lot of noise in the data, we weren't able to figure out a reliable way to determine whether or not a ball was within range of the ultrasonic sensors. We've decided to remove the microcontroller code that integrates the ultrasonic sensor on the Pi so that we can demonstrate some of the predicted behaviors tomorrow morning. We've determined that the fetching, control, and power subsystems, as well as the image processing part of the sensor subsystem otherwise do a good job of working together to track/chase the 3 objectives (ball, user, waitpoint).
+We've discovered that the ultrasonic sensors can't locate the tennis ball accurately because it absorbs sound, making it seem as though any waves that came in contact with it travelled several meters, as opposed to the actual few centimeters. To make matters worse, it seems common for some waves to miss the ball and return within a fairly short timeframe, making it appear as though the ball isn't there. Since these conflicting behaviors produce a lot of noise in the data, we weren't able to figure out a reliable way to determine whether or not a ball was within range of the ultrasonic sensors. We've decided to remove the microcontroller code that integrates the ultrasonic sensor on the Pi so that we can demonstrate some of the predicted behaviors tomorrow morning. We've determined that the fetching, control, and power subsystems, as well as the image processing part of the sensor subsystem otherwise do a good job of working together to track/chase the 3 objectives (ball:green, user:red, waitpoint:blue). 
 
 Final FSM diagram:
-![](images/<fsm-diagram-here>.png)
-
+![](images/state-machine.png)
 
 Final Pi software flowchart:
-![](images/<software-flowchart-here>.png)
+![](images/Software-diagram.png)
 
+The bar plot below shows the average runtime per loop of each state function over 100 samples each.
 
-Also, the software for both the software and raspberry Pi commonents meets the specified runtime requirements. The bar plot below shows the average runtime per loop of each state function over 100 samples each. The maximum average runtime after analyzing all states doesn't exceed 350ms, so the requirements for the pi software have been satisfied. 
-
-![](images/<bar-plot-here>.png)
+![](images/runtimes.png)
 
 The numbers below represent the response times in milliseconds of the microcontroller to each interrupt from the Pi in each state 
 
-# NOTE: RE-DESIGN THE TIMEDATA SAMPLER TO ALLOW LABELLING OF MICROCONTROLLER RESPONSES BY THE STATE IN WHICH THE CORRESPONDING PI INTERRUPT WAS GENERATED
+### NOTE: RE-DESIGN THE TIMEDATA SAMPLER TO ALLOW LABELLING OF MICROCONTROLLER RESPONSES BY THE STATE IN WHICH THE CORRESPONDING PI INTERRUPT WAS GENERATED
+
+The software for both the microcontroller and Raspberry Pi components meets the specified runtime requirements. The bar plot below shows the average runtime per loop of each state function over 100 samples each. The maximum average runtime after analyzing all states doesn't exceed 350ms, so the requirements for the pi software have been satisfied. 
