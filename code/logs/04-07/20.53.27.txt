@@ -1,0 +1,19 @@
+Let the simulation run for a bit, and then press CTRL+C to get the
+average runtimes (in milliseconds) of each of the state functions.
+Initializing camera...  Done.
+Exiting manual controls.
+Final output: 00000000
+
+Manual control mode exited successfully!
+
+WAIT WAIT - Final region data: [0, 51, 0, 0, 0, 0]
+CHASE CHASE timed out. Return to waiting point
+CHASE ERROR: Failed in CHASE. Returning to waiting point
+RETURN - Final region data: [0, 0, 0, 0, 1, 0]
+WAIT ERROR: Failed in WAIT. Returning to waiting point
+
+
+Ran for 16.20 seconds.
+
+
+Halting program...  

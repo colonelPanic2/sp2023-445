@@ -1,0 +1,15 @@
+Time: 10.30.01
+ERROR: module 'signal' has no attribute 'SIGALRM'
+Traceback (most recent call last):
+  File "C:\Files\Spring2023\ECE445\project\notebooks\luis\code\main.py", line 118, in <module>
+    main_fetching(args,init_time,logfile)
+  File "C:\Files\Spring2023\ECE445\project\notebooks\luis\code\main.py", line 60, in main_fetching
+    main(gettimes,noprint,demo,manual,init_time,logfile)
+  File "C:\Files\Spring2023\ECE445\project\notebooks\luis\code\main.py", line 14, in main
+    fsm = FSM(ctrl,cam,gettimes,noprint,demo,manual,init_time,logfile)
+  File "C:\Files\Spring2023\ECE445\project\notebooks\luis\code\state_machine.py", line 344, in __init__
+    signal.signal(signal.SIGALRM,self.signal_handler)
+AttributeError: module 'signal' has no attribute 'SIGALRM'
+
+Ran for 16.46 seconds.
+

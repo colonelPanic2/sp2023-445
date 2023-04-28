@@ -1,0 +1,4 @@
+Initializing camera...  
+
+------ DESIGN TERMINATED ------
+

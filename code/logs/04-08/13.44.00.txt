@@ -1,0 +1,8 @@
+
+Running the simulation with a 20-second time limit 20 times. If 0 full loops of any state function are recorded, main will be executed more than 20 times until there is valid data to write to 'runtimes.csv'.
+**NOTE: This can be avoided by choosing a larger time limit.
+Initializing camera...  Done.
+Exiting manual controls.
+Final output: 0000000000
+Manual control mode exited successfully!
+

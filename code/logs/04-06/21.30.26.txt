@@ -1,0 +1,9 @@
+Let the simulation run for a bit, and then press CTRL+C to get the
+average runtimes (in milliseconds) of each of the state functions.
+Initializing camera...  Done.
+WAIT 
+
+Ran for 1.43 seconds.
+
+
+Halting program...  

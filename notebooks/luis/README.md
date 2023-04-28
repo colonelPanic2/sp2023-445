@@ -22,8 +22,8 @@ We've set up what is expected to be the base of the final version of the PCB. We
 Due to conflicting research data, we'll have to test our design's motors ourselves. With the data we've acquired beforehand, its hard to know for sure if the car we bought will be powerful enough to move under the weight of the full design. Also, we need to know how much power will be consumed at different weights.
 
 It looks like the motors can be relied upon to handle about 0.8kg with a power supply of 6V-9V, but we need to rethink how we're actually going to connect the power supply to the rest of the design. The motors in particular would cause way too many fluctuations in the current, and a slowly decreasing voltage would make the behavior of the power subsystem even less predictable. Additionally, the design would slow down over time as the battery loses power, making the design inconvenient for long-term use. We have changed the power subsystem to use one power supply for the Pi (5V, 3A, 5Ah), and another for the PCB/motors. The second battery (11.1V, 9A, 5.2Ah) and we're going to use 2 buck converters to keep the voltage at the motors and PCB at about 5V with a maximum total current of about 2A. 
-####GET INFORMATION ABOUT FETCHING SUBSYSTEM POWER CONSUMPTION?####
-####MAKE SURE TO INCLUDE CALCULATIONS                          ####
+
+With this setup, we expect the Pi battery to last for roughly 5x5/(3x5) = 1.66 hours with its expected power consumption of about 5x3 = 15W. We expect the PCB battery to last for roughly 5.2x11.1/(2x(11.1-5)) = 4.7 hours with its expected maximum power consumption of 2x(11.1-5) = 12.2W
 
 # 2023-03-02 - PCB redesign 1
 
@@ -43,7 +43,7 @@ Also, we'll have to use different H-bridges if we want to free up enough pins on
 
 We're testing the power consumption of the motors under weights of up to 1.3kg. We need to know if our new approach with the Pi battery and the PCB/motors battery combined with buck converters will be able to provide a sufficient power supply to move the design and power the PCB components at maximum power consumption for up to 45 minutes. 
 
-It looks like we've underestimated our motors. The car motors can move at a moderate speed while carrying 1.3kg and with a supply voltage of 5V at 0.7A. We expect the pincer motors and the rest of the PCB to consume no more than 1A at any given point in time. So if we convert the supply voltage down to 5V and use 2 buck converters with a current capacity of about 1A each, we whould be able to run the design with maximum power consumption for about (11.1-5)(5.2)/(5)(1.7) = 3.7 hours, where 5 is subtracted from the battery voltage because 5V is the minimum cutoff voltage that can be supplied to the converters.
+The car motors can move at a moderate speed while carrying 1.3kg and with a supply voltage of 5V at 0.7A. We expect the pincer motors and the rest of the PCB to consume no more than 1A at any given point in time. So if we convert the supply voltage down to 5V and use 2 buck converters with a current capacity of about 1A each, we whould be able to run the design with maximum power consumption for about (11.1-5)(5.2)/(5)(1.7) = 3.7 hours, where 5 is subtracted from the battery voltage because 5V is the minimum cutoff voltage that can be supplied to the converters.
 ####DOUBLE-CHECK THE CUTOFF VOLTAGE FOR THE CONVERTERS
 
 # 2023-03-13 - Fetching subsystem rough draft

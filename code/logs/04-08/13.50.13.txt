@@ -1,0 +1,14 @@
+Let the simulation run for a bit, and then press CTRL+C to get the
+average runtimes (in milliseconds) of each of the state functions.
+Initializing camera...  Done.
+Exiting manual controls.
+Final output: 0000000000
+Manual control mode exited successfully!
+
+WAIT WAIT - Final region data: [0, 0, 50, 0, 0, 0]
+CHASE CHASE - Final region data: [0, 0, 0, 0, 1, 0]
+ACQUIRE ACQUIRE - Final region data: [0, 0, 0, 0, 2, 0]
+FETCH FETCH - Final region data: [0, 0, 0, 0, 1, 0]
+RETURN RETURN - Final region data: [0, 0, 0, 0, 2, 0]
+WAIT 
+Halting program...  Done.

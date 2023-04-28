@@ -1,0 +1,17 @@
+Initializing camera...  Done.
+Exiting manual controls.
+Final output: 00000000
+Manual control mode exited successfully!
+
+WAIT WAIT - Final region data: [0, 0, 0, 0, 50, 0]
+CHASE CHASE - Final region data: [0, 0, 0, 0, 51, 0]
+ACQUIRE ACQUIRE - Final region data: [0, 0, 0, 0, 52, 0]
+FETCH FETCH - Final region data: [0, 0, 0, 0, 53, 0]
+RETURN RETURN - Final region data: [0, 0, 0, 0, 1, 0]
+WAIT WAIT - Final region data: [0, 51, 0, 0, 0, 0]
+CHASE CHASE timed out. Return to waiting point
+CHASE ERROR: Failed in CHASE. Returning to waiting point
+Attempting to transition to RETURN from CHASE...
+RETURN RETURN - Final region data: [0, 0, 0, 0, 1, 0]
+WAIT 
+Halting program...  Done.

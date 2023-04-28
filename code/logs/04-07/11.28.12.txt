@@ -1,0 +1,14 @@
+Let the simulation run for a bit, and then press CTRL+C to get the
+average runtimes (in milliseconds) of each of the state functions.
+Initializing camera...  Done.
+0000101 1 0
+0000001 1 0
+0000101 1 0
+0000001 1 0
+0000101 1 0
+0000001 1 0
+0000101 1 0
+0000001 1 0
+0000111 1 0
+0000001 1 0000101 1 0
+0000001 1 0

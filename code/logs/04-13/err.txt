@@ -1,0 +1,433 @@
+Time: 09.55.38
+ERROR: 'NoneType' object has no attribute 'shape'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 109, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 56, in main_fetching
+    main(gettimes,noprint,demo,manual,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 48, in main
+    next_function_index = fsm.ret()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 81, in ret
+    self.img.update_goal_position('waitpoint')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 32, in update_goal_position
+    self.camera_.show_tracking(image,position_xy)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 232, in show_tracking
+    height, width = image.shape[:2]
+AttributeError: 'NoneType' object has no attribute 'shape'
+
+Ran for 17.44 seconds.
+
+Time: 16.22.57
+ERROR: name 'args' is not defined
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 117, in <module>
+    main_fetching(args,init_time,logfile)
+NameError: name 'args' is not defined
+
+Ran for 0.00 seconds.
+
+Time: 16.29.25
+ERROR: timedata_files() missing 1 required positional argument: 'init_time'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 60, in main_fetching
+    main(gettimes,noprint,demo,manual,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 32, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 25, in wait
+    timers = self.img.update_goal_position('ball',time.time())
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 25, in update_goal_position
+    position_xy,image = self.camera_.getimage()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 223, in getimage
+    if not self.q.empty():
+  File "/home/ldavila2/miniconda3/lib/python3.10/queue.py", line 108, in empty
+    with self.mutex:
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 77, in signal_handler
+    fsm.img.destroy()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 147, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 126, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 67, in main_fetching
+    timedata_files(init_time)
+TypeError: timedata_files() missing 1 required positional argument: 'init_time'
+
+Ran for 17.48 seconds.
+
+Time: 16.31.02
+ERROR: timedata_files() missing 1 required positional argument: 'init_time'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 60, in main_fetching
+    main(gettimes,noprint,demo,manual,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 32, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 25, in wait
+    timers = self.img.update_goal_position('ball',time.time())
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 32, in update_goal_position
+    self.camera_.show_tracking(image,position_xy)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 253, in show_tracking
+    self.destroy()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 147, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 126, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 67, in main_fetching
+    timedata_files(init_time)
+TypeError: timedata_files() missing 1 required positional argument: 'init_time'
+
+Ran for 12.01 seconds.
+
+Time: 16.57.23
+ERROR: list index out of range
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 128, in <module>
+    main_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 61, in main_fetching
+    main(gettimes,noprint,demo,manual,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 32, in main
+    next_function_index = fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 21, in wait
+    time_data(self.gettimes,'WAIT',2)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers/helpers.py", line 112, in time_data
+    print(time_data_dict[state][-1])
+IndexError: list index out of range
+
+Ran for 2.41 seconds.
+
+Time: 18.48.46
+ERROR: invalid literal for int() with base 10: 'time'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 114, in <module>
+    args = [None,int(argv[0]),1,int(argv[1]),'WAIT']
+ValueError: invalid literal for int() with base 10: 'time'
+
+Ran for 0.00 seconds.
+
+Time: 18.50.01
+ERROR: name 'signal_handler' is not defined
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 123, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 64, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 19, in main
+    signal.signal(signal.SIGINT, signal_handler)
+NameError: name 'signal_handler' is not defined
+
+Ran for 0.72 seconds.
+
+Time: 18.50.51
+ERROR: 'FSM' object has no attribute 'start_state'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 142, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 83, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 51, in main
+    transitions[states.index(fsm.start_state)]() # fsm.transition_wait()
+AttributeError: 'FSM' object has no attribute 'start_state'
+
+Ran for 0.71 seconds.
+
+Time: 18.51.41
+ERROR: 
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 142, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 83, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 54, in main
+    next_function_index = functions[states.index(fsm.start_state)]() # fsm.wait()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 39, in chase
+    self.img.update_goal_position('ball')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 25, in update_goal_position
+    position_xy,image = self.camera_.getimage()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 225, in getimage
+    center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 365, in signal_handler
+    raise TimeoutError
+TimeoutError
+
+Ran for 5.71 seconds.
+
+Time: 19.17.26
+ERROR: invalid literal for int() with base 10: 'CHASE'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 141, in <module>
+    args = [None,0,int(argv[0]),0,'WAIT']
+ValueError: invalid literal for int() with base 10: 'CHASE'
+
+Ran for 0.00 seconds.
+
+Time: 19.18.49
+ERROR: 
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 83, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 63, in main
+    next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 11, in function_call
+    return function(args)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 53, in acquire
+    self.img.update_goal_position('ball')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 25, in update_goal_position
+    position_xy,image = self.camera_.getimage()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 225, in getimage
+    center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 159, in old_balltrack
+    blurred = cv2.GaussianBlur(frame, (11,11), 0)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 11, in signal_handler
+    fsm.img.destroy()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 147, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 142, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 91, in init_fetching
+    timedata_files(gettimes,init_time)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers/helpers.py", line 146, in timedata_files
+    subprocess.run(shlex.split("python3 timedata/runtime-plots.py"))
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 505, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1146, in communicate
+    self.wait()
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1209, in wait
+    return self._wait(timeout=timeout)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1943, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1901, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 369, in signal_handler
+    raise TimeoutError
+TimeoutError
+
+Ran for 64.25 seconds.
+
+Time: 19.27.37
+ERROR: 
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 83, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 63, in main
+    next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 11, in function_call
+    return function(args)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 45, in chase
+    self.img.update_goal_position('ball')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 32, in update_goal_position
+    self.camera_.show_tracking(image,position_xy)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 253, in show_tracking
+    self.destroy()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 147, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 142, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 91, in init_fetching
+    timedata_files(gettimes,init_time)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers/helpers.py", line 145, in timedata_files
+    subprocess.run(shlex.split("python3 timedata/runtime-plots.py"))
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 505, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1146, in communicate
+    self.wait()
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1209, in wait
+    return self._wait(timeout=timeout)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1943, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1901, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 384, in signal_handler
+    raise TimeoutError
+TimeoutError
+
+Ran for 11.63 seconds.
+
+Time: 19.28.46
+ERROR: 'NoneType' object has no attribute 'shape'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 141, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 82, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 62, in main
+    next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 11, in function_call
+    return function(args)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 45, in chase
+    self.img.update_goal_position('ball')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 32, in update_goal_position
+    self.camera_.show_tracking(image,position_xy)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 233, in show_tracking
+    height, width = image.shape[:2]
+AttributeError: 'NoneType' object has no attribute 'shape'
+
+Ran for 42.66 seconds.
+
+Time: 19.31.19
+ERROR: not enough values to unpack (expected 5, got 4)
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 141, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 78, in init_fetching
+    gettimes,noprint,demo,manual,start_state=args[:5]
+ValueError: not enough values to unpack (expected 5, got 4)
+
+Ran for 0.00 seconds.
+
+Time: 19.32.38
+ERROR: 
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 82, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 62, in main
+    next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 11, in function_call
+    return function(args)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 45, in chase
+    self.img.update_goal_position('ball')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 25, in update_goal_position
+    position_xy,image = self.camera_.getimage()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 225, in getimage
+    center = self.old_balltrack(image) # NOTE: switch between 'old_balltrack' and 'new_balltrack' to see differences in results
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 159, in old_balltrack
+    blurred = cv2.GaussianBlur(frame, (11,11), 0)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 11, in signal_handler
+    fsm.img.destroy()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 147, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 141, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 90, in init_fetching
+    timedata_files(gettimes,init_time)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers/helpers.py", line 145, in timedata_files
+    subprocess.run(shlex.split("python3 timedata/runtime-plots.py"))
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 505, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1146, in communicate
+    self.wait()
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1209, in wait
+    return self._wait(timeout=timeout)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1943, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/ldavila2/miniconda3/lib/python3.10/subprocess.py", line 1901, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 384, in signal_handler
+    raise TimeoutError
+TimeoutError
+
+Ran for 17.24 seconds.
+
+NoneType: None
+
+
+
+20.42.24
+ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE
+THE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.
+
+Attempting processicide...
+
+NoneType: None
+
+
+
+20.43.31
+ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE
+THE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.
+
+Attempting processicide...
+
+NoneType: None
+
+
+
+20.54.19
+ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE
+THE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.
+
+Attempting processicide...
+
+20.54.32
+ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE
+THE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.
+
+Attempting processicide...
+
+20.56.03
+ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE
+THE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.
+
+Attempting processicide...
+
+20.56.19
+ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE
+THE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.
+
+Attempting processicide...Time: 20.56.36
+ERROR: '>' not supported between instances of 'list' and 'int'
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 83, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 63, in main
+    next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 11, in function_call
+    return function(args)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/state_machine.py", line 45, in chase
+    self.img.update_goal_position('ball')
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 27, in update_goal_position
+    position_xy,image = self.camera_.getimage()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 236, in getimage
+    if not self.q.empty():
+  File "/home/ldavila2/miniconda3/lib/python3.10/queue.py", line 97, in empty
+    def empty(self):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 12, in signal_handler
+    fsm.img.destroy()
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/camera.py", line 160, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 142, in <module>
+    init_fetching(args,init_time,logfile)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/main.py", line 91, in init_fetching
+    timedata_files(gettimes,init_time)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers/helpers.py", line 154, in timedata_files
+    time_data_dict = time_data(gettimes,'',3)
+  File "/home/ldavila2/445/sp2023-445/notebooks/luis/code/helpers/helpers.py", line 134, in time_data
+    time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state])-int(len(time_data_dict[state]>1)))
+TypeError: '>' not supported between instances of 'list' and 'int'
+
+Ran for 13.39 seconds.
+
+
+
+21.01.51
+ERROR: TIMEOUT IN 'camera.destroy()' WHILE TRYING TO RELEASE
+THE CAMERA OR JOIN THE CAMERA THREAD WITH THE MAIN THREAD.
+
+Attempting processicide...

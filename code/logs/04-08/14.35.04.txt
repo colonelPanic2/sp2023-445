@@ -1,0 +1,154 @@
+
+Running the simulation with a 20-second time limit 20 times. If 0 full loops of any state function are recorded, main will be executed more than 20 times until there is valid data to write to 'runtimes.csv'.
+**NOTE: This can be avoided by choosing a larger time limit.
+Initializing camera...  Done.
+
+0: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+1: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+2: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+3: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+4: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+5: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+6: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  
+Halting program...  
+7: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+8: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  
+Halting program...  
+9: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+10: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+11: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+12: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+13: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+14: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+15: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
+
+Halting program...  
+16: -------- RUNTIME DATA ACQUIRED --------
+WAIT:  Averaged nan ms over 0 loops
+CHASE:  Averaged nan ms over 0 loops
+ACQUIRE:  Averaged nan ms over 0 loops
+FETCH:  Averaged nan ms over 0 loops
+RETURN:  Averaged nan ms over 0 loops
+Initializing camera...  Done.
