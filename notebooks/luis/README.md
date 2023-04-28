@@ -59,13 +59,15 @@ The structure for the fetching subsystem has been implemented using a state mach
 
 In preparation for the hardware integration, we should have a code base that sets up and implements the interrupt handlers for the Pi and sensor interrupts, and uses this input data to define the necessary outputs to the motors.
 
-A rough draft of the microcontroller code has been implemented. The input and output pins are all defined as specified on the PCB design document and the mapping shown in [2023-03-02](#2023-03-02---pcb-redesign-1), and logic has been implemented to interpret inputs from the sensors/Pi into commands for the motors. Unfortunately, we won't be able to test this code until the hardware is ready. Also, some research suggests that the delay on the response of the ultrasonic sensors is shorter than we anticipated when we reserved an interrupt pin for the ultrasonic sensors on the microcontroller. It looks like we might not need the sensor interrupt.
+A rough draft of the microcontroller code has been implemented. The input and output pins are all defined as specified on the PCB design document and the mapping shown in [2023-03-02](#2023-03-02---pcb-redesign-1), and logic has been implemented to interpret inputs from the sensors/Pi into commands for the motors. Unfortunately, we won't be able to test this code until the hardware is ready. Also, some research suggests that the delay on the response of the ultrasonic sensors is shorter than we anticipated when we reserved an interrupt pin for the ultrasonic sensors on the microcontroller. It looks like we might not need the sensor interrupt. According to the datasheet, the HC-SR04 provides accuracy acceptable for our project up to about 400cm away, meaning the maximum delay we could expect to experience for our purposes is about (400x2/34300)x1000 = 23ms. Although this is long in terms of the rest of the operations handled by the microcontroller, it is short enough to allow he sensors to be sampled at least 4 times before a single loop of the fetching subsystem completes (recall the minimum expected runtime of 100ms for the fetching subsystem).
+
+[HC-SR04_datasheet](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
 
 # 2023-03-29 - Image processing update
 
 Now that we have the image processing code, we need to update the fetching subsystem to use the new functions instead of the randomized ones. Since we have a program built in to measure the runtimes of the state functions using the randomized functions, it should be easy to measure the average runtimes of each of the state functions using the image processing code once they've replaced the randomized functions.
 
-The image processing code has been implemented into the rough draft, but it looks like we'll have to get rid of the runtime sampling program and re-implement it with the image processing code. Since the tests are being run by us rather than the computer, it takes much longer to get enough samples for each state function in the state machine. Now that the image processing is integrated, we should start focusing on how our code will handle state changes that require the state machine to wait for an unknown amount of time.
+The image processing code has been integrated into the rough draft, but it looks like we'll have to get rid of the runtime sampling program and re-implement it with the image processing code. If the tests were to be run manually by us rather than the computer, it would take much longer to get enough samples for each state function in the state machine. Now that the image processing is integrated, we should start focusing on how our code will handle state changes that require the state machine to wait for an unknown amount of time. This will mainly be a concern in the transition cases of the ACQUIRE and FETCH states, both of which demand that the software gives the pincers enough time to close or open.
 
 # 2023-04-01 - Parallelization
 
@@ -78,6 +80,8 @@ We've implemented multithreading so that the main thread can continue to execute
 While setting up the code base for the microcontroller, we found that the interrupt for the ultrasonic sensors had no practical value. Also, we found that we could free a pin on the microcontroller if we eliminated a redundant second trigger for the ultrasonic sensors and had one trigger that activated both sensors at once. Our goal is to find out how we should repurpose these two pins on the microcontroller.
 
 We've decided to repurpose both pins as outputs from the microcontroller to the Pi. The first will be used to tell the Pi when the microcontroller is ready to accept a new input from the Pi, and it will also be used to record the approximate runtime of the code in the microcontroller's main loop. The second will be used to tell the Pi when an object is within a certain distance from the sensors. The output will be 1 if something is within range, and 0 else.
+
+![](images/pcb-redesign-2.png)
 
 # 2023-04-16 - Working software demo
 
@@ -110,3 +114,19 @@ We've talked with a TA, and it was recommended that we use PWM signals to drive 
 The data from the ultrasonic sensors is remarkably less reliable than we initially expected. Our goals for today are to find out why the data seems so inconsistent and to find a way to read from the sensors in a way that is reliable enough for the output data to be used as a final decision-maker by the fetching subsystem about whether or not to close the pincers and start to travel towards the user. 
 
 We've discovered that the ultrasonic sensors can't locate the tennis ball accurately because it absorbs sound, making it seem as though any waves that came in contact with it travelled several meters, as opposed to the actual few centimeters. To make matters worse, it seems common for some waves to miss the ball and return within a fairly short timeframe, making it appear as though the ball isn't there. Since these conflicting behaviors produce a lot of noise in the data, we weren't able to figure out a reliable way to determine whether or not a ball was within range of the ultrasonic sensors. We've decided to remove the microcontroller code that integrates the ultrasonic sensor on the Pi so that we can demonstrate some of the predicted behaviors tomorrow morning. We've determined that the fetching, control, and power subsystems, as well as the image processing part of the sensor subsystem otherwise do a good job of working together to track/chase the 3 objectives (ball, user, waitpoint).
+
+Final FSM diagram:
+![](images/<fsm-diagram-here>.png)
+
+
+Final Pi software flowchart:
+![](images/<software-flowchart-here>.png)
+
+
+Also, the software for both the software and raspberry Pi commonents meets the specified runtime requirements. The bar plot below shows the average runtime per loop of each state function over 100 samples each. The maximum average runtime after analyzing all states doesn't exceed 350ms, so the requirements for the pi software have been satisfied. 
+
+![](images/<bar-plot-here>.png)
+
+The numbers below represent the response times in milliseconds of the microcontroller to each interrupt from the Pi in each state 
+
+# NOTE: RE-DESIGN THE TIMEDATA SAMPLER TO ALLOW LABELLING OF MICROCONTROLLER RESPONSES BY THE STATE IN WHICH THE CORRESPONDING PI INTERRUPT WAS GENERATED
