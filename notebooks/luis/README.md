@@ -23,7 +23,7 @@ Due to conflicting research data, we'll have to test our design's motors ourselv
 
 It looks like the motors can be relied upon to handle about 0.8kg with a power supply of 6V-9V, but we need to rethink how we're actually going to connect the power supply to the rest of the design. The motors in particular would cause way too many fluctuations in the current, and a slowly decreasing voltage would make the behavior of the power subsystem even less predictable. Additionally, the design would slow down over time as the battery loses power, making the design inconvenient for long-term use. We have changed the power subsystem to use one power supply for the Pi (5V, 3A, 5Ah), and another for the PCB/motors. The second battery (11.1V, 9A, 5.2Ah) and we're going to use 2 buck converters to keep the voltage at the motors and PCB at about 5V with a maximum total current of about 2A. 
 
-With this setup, we expect the Pi battery to last for roughly 5x5/(3x5) = 1.66 hours with its expected power consumption of about 5x3 = 15W. We expect the PCB battery to last for roughly 5.2x11.1/(2x(11.1-5)) = 4.7 hours with its expected maximum power consumption of 2x(11.1-5) = 12.2W
+With this setup, we expect the Pi battery to last for roughly 5x5/(3x5) = 1.66 hours with its expected power consumption of about 5x3 = 15W. We expect the PCB battery to last for roughly 5.2x11.1/(2x5) = 5.77 hours with its expected maximum power consumption of 2x5 = 10W.
 
 # 2023-03-02 - PCB redesign 1
 
@@ -43,8 +43,7 @@ Also, we'll have to use different H-bridges if we want to free up enough pins on
 
 We're testing the power consumption of the motors under weights of up to 1.3kg. We need to know if our new approach with the Pi battery and the PCB/motors battery combined with buck converters will be able to provide a sufficient power supply to move the design and power the PCB components at maximum power consumption for up to 45 minutes. 
 
-The car motors can move at a moderate speed while carrying 1.3kg and with a supply voltage of 5V at 0.7A. We expect the pincer motors and the rest of the PCB to consume no more than 1A at any given point in time. So if we convert the supply voltage down to 5V and use 2 buck converters with a current capacity of about 1A each, we whould be able to run the design with maximum power consumption for about (11.1-5)(5.2)/(5)(1.7) = 3.7 hours, where 5 is subtracted from the battery voltage because 5V is the minimum cutoff voltage that can be supplied to the converters.
-####DOUBLE-CHECK THE CUTOFF VOLTAGE FOR THE CONVERTERS
+The car motors can move at a moderate speed while carrying 1.3kg and with a supply voltage of 5V at 0.7A. We expect the pincer motors and the rest of the PCB to consume no more than 1A at any given point in time. So if we convert the supply voltage down to 5V and use 2 buck converters with a current capacity of about 1A each, we whould be able to run the design with maximum power consumption for about 11.1x5.2/(5x1.7) = 6.8 hours.
 
 # 2023-03-13 - Fetching subsystem rough draft
 
@@ -72,8 +71,7 @@ The image processing code has been implemented into the rough draft, but it look
 
 The frame rate of the image processing code is somewhat low. Our goal is to parallelize this part of the code somehow so in order to get a more acceptable framerate without sacrificing too much of the runtime for the fetching subsystem. 
 
-After trying both thread and process-wise parallelization, we have decided that creating the simplest and most effective way to parallelize the image processing code, given our experience and time constraints, would be to simply spawn a second thread that constantly reads the input from the camera and saves it in a queue to be read by the main thread in the state machine. The queue was maintained as a means to ensure that the 2 threads never attempted to access the same data during normal operation. 
-####CHECK THE DIFFERENCES IN PERFORMANCE FOR THE PARALLEL APPROACH AND THE REGULAR, SEQUENTIAL APPROACH OF READING FROM THE CAMERA
+We've implemented multithreading so that the main thread can continue to execute the rest of the software flowchart while the camera thread reads data from the camera. It looks like this doesn't change the performance much on our home computers, but we'll have to see if it improves the runtime at all on the Raspberry Pi. We've made an attempt to execute the image processing as a parallel process, but the program's heavy reliance upon interrupt logic in a sequential context adds the challenge of process synchronization to the software design. Since there are more immediate concerns for the software at the moment, such as synchronizing with the microcontroller, we should put further work regarding parallelization on hold until we've successfully integrated everyone's parts of the project. At the moment, the sequential code runs at a consistent 5 FPS, which is already above the proposed minimum 2 FPS.
 
 # 2023-04-04 - PCB redesign 2
 
@@ -87,4 +85,28 @@ We need to have a user interface that makes it easier for us to test and debug o
 
 We've implemented all of the features described above, along with a means of manually generating the SIGUSR1 and SIGUSR2 signals to partially simulate an input to the Pi from the microcontroller. With this, we should be able to demonstrate full functionality of the fetching subsystem and collect data for validation, even if we are unable to successfully integrate the components of the design.
 
-NOTE: Regarding the partial SIGUSR1 and SIGUSR2 simulation. In the final design, the microcontroller can generate interrupts completely asynchronously. The simulation of these signals via manual input fails to account for this by only raising the signals when certain condition is met within the predefined context of the fetching subsystem's code. Therefore, extra measures may have to be taken to properly handle these signals in the finalized design.
+NOTE: Regarding the partial SIGUSR1 and SIGUSR2 simulation. In the final design, the microcontroller can generate interrupts completely asynchronously. The simulation of these signals via manual input fails to account for this by only raising the signals when certain condition is met within the predefined context of the fetching subsystem's code. Therefore, extra measures may have to be taken to properly handle these signals in the final design.
+
+# 2023-04-21 - Power subsystem failure
+
+The group member in charge of the power subsystem encountered unexpected issues with the buck converters that we planned to use to connect the power supply to the PCB. Since we can't find an explanation as to why these issues were encountered, we'll have to find another way to power the PCB.
+
+For now, we've decided to connect a 5V, 5000mAh battery (not the PiSugar battery) to the PCB for power. We're still experiencing issues with the motors, and we've discovered that this is mainly due to the fact that the input from the Pi to the microcontroller is always 1 at the pin that decides whether or not the right motors move. We've decided to get rid of one of the ultrasonic sensors on the PCB in order to secure the extra pin needed to control the motors.
+
+# 2023-04-23 - Increasing horizontal granularity of the image processing output
+
+We've decided to split the team's work into fixing the malfunctioning power/control subsystems and improving the fetching subsystem so that less debugging will be necessary once the power/control subsytems are operational. The current code tracks the goal by maintaining temporal data about a goal's position in one of 6 equal-size regions of the screen, where there are three regions in the horizontal direction and 2 in the vertical direction. We believe that increasing the granularity to 9 regions in the horizontal direction and 2 in the vertical direction will help us define the exact cases in which certain actions should be taken more thoroughly, allowing the design to move more precisely as it maneuvers towards its current goal.
+
+We've found that increasing the granularity from 6 regions to 18 regions increases the runtime-per-loop of each state function to be >800ms. This produces a frame rate of less than 2 FPS, which is the proposed minimum frame rate. So we will not be able to use this increased granularity in the final version of the design.
+
+# 2023-04-24 - Motor and Battery Issues
+
+We're struggling to fix the motors. We know that signals from the Pi are being sent correctly, and we've determined that the output behavior of the H-bridges is not as expected. Also, we've found that powering the design with 2 separate batteries introduces unexpected complexity. Since we don't have the time or resources to resolve this issue, we've decided to power the entire design with the PiSugar 5V, 3A, 5Ah battery. If the PCB draws about 2A total when the design software is running, and the Pi draws the expected current of about 3A, then the design should still be able to operate at maximum power consumption for almost exactly 1 hour, which is still more than the goal of 45 minutes. However, it is important to note that this new setup puts enough strain on the battery for the voltage to drop by about 0.5V when moving the motors. 
+
+We've talked with a TA, and it was recommended that we use PWM signals to drive the motors instead of the digital signals we've been using so far. The motors seem to be fully operational now, so we should be able to start debugging the sensor subsystem tomorrow.
+
+# 2023-04-25 - Demo version of the design
+
+The data from the ultrasonic sensors is remarkably less reliable than we initially expected. Our goals for today are to find out why the data seems so inconsistent and to find a way to read from the sensors in a way that is reliable enough for the output data to be used as a final decision-maker by the fetching subsystem about whether or not to close the pincers and start to travel towards the user. 
+
+We've discovered that the ultrasonic sensors can't locate the tennis ball accurately because it absorbs sound, making it seem as though any waves that came in contact with it travelled several meters, as opposed to the actual few centimeters. To make matters worse, it seems common for some waves to miss the ball and return within a fairly short timeframe, making it appear as though the ball isn't there. Since these conflicting behaviors produce a lot of noise in the data, we weren't able to figure out a reliable way to determine whether or not a ball was within range of the ultrasonic sensors. We've decided to remove the microcontroller code that integrates the ultrasonic sensor on the Pi so that we can demonstrate some of the predicted behaviors tomorrow morning. We've determined that the fetching, control, and power subsystems, as well as the image processing part of the sensor subsystem otherwise do a good job of working together to track/chase the 3 objectives (ball, user, waitpoint).
