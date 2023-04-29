@@ -125,10 +125,12 @@ The data from the ultrasonic sensors is remarkably less reliable than we initial
 We've discovered that the ultrasonic sensors can't locate the tennis ball accurately because it absorbs sound, making it seem as though any waves that came in contact with it travelled several meters, as opposed to the actual few centimeters. To make matters worse, it seems common for some waves to miss the ball and return within a fairly short timeframe, making it appear as though the ball isn't there. Since these conflicting behaviors produce a lot of noise in the data, we weren't able to figure out a reliable way to determine whether or not a ball was within range of the ultrasonic sensors. We've decided to remove the microcontroller code that integrates the ultrasonic sensor on the Pi so that we can demonstrate some of the predicted behaviors tomorrow morning. We've determined that the fetching, control, and power subsystems, as well as the image processing part of the sensor subsystem otherwise do a good job of working together to track/chase the 3 objectives (ball:green, user:red, waitpoint:blue). 
 
 Final FSM diagram:
+
 ![](images/state-machine.png)
 
 Final Pi software flowchart:
-![](images/Software-diagram.png)
+
+![](images/software-diagram.png)
 
 The bar plot below shows the average runtime per loop of each state function over 100 samples each.
 
