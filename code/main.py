@@ -49,9 +49,10 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global ctrl
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
-    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     ctrl = control(     gettimes,noprint,demo,manual,0,logfile,num_samples) 
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+    signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     # If we were told to start the program in manual mode, then 
     # do it. Note that the FSM object won't be initialized until 
     # manual mode is exited.
