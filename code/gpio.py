@@ -52,9 +52,6 @@ class control:
             else:
                 io.setup(pin, io.OUT)
                 io.output(pin,0)
-        self.setpin(7,1)
-        time.sleep(0.05)
-        self.setpin(7,0)
 
         io.setup(self.pins[10],io.OUT)
         io.setup(self.pins[11],io.IN)
