@@ -30,7 +30,7 @@ def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     print("START",end=' ')
     time_data('time','loop_init',6)
-    signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1,signal.SIGUSR2})
+    signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1})
     # self.proximity = int(not self.proximity)
     # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
     # ctrl.communication_stop() 
