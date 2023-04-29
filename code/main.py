@@ -9,7 +9,7 @@ def control_switch_handler(signum,frame):
     fsm.control_switch()
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
     # signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1, signal.SIGUSR2})
-    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     print("END\n")
     time_data('time','',7)
     global fsm
@@ -25,14 +25,14 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
         time_data([control_.gettimes,control_.INT_start_time,t1],state,4)
         control_.INT_start_time=0
     time_data('time','loop_end',6)
-    signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+    # signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
     # signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1, signal.SIGUSR2})
 def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     # signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1,signal.SIGUSR2})
-    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     print("START",end=' ')
     time_data('time','loop_init',6)
-    signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
+    # signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     # signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1})
 def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global init_time
