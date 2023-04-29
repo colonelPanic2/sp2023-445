@@ -320,6 +320,7 @@ void loop() {
     //   digitalWrite(PINCER_OUT1, LOW);
     // }
   }
+  delay(100);
   digitalWrite(CTRL_ACK, HIGH);
   delayMicroseconds(5);
   digitalWrite(CTRL_ACK, 0);
