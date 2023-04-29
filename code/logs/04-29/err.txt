@@ -26,3 +26,83 @@ TypeError: expected str, bytes or os.PathLike object, not NoneType
 
 Ran for 5.08 seconds.
 
+Time: 15.06.37
+ERROR: reentrant call inside <_io.BufferedWriter name='<stdout>'>
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 195, in parse_args
+    init_fetching(args)
+  File "/home/ballfetch/project/code/main.py", line 118, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,n_samples)
+  File "/home/ballfetch/project/code/main.py", line 82, in main
+    next_function_index = fsm.function_call(functions[states.index(fsm.start_state)],gettimes) # fsm.wait()
+  File "/home/ballfetch/project/code/state_machine.py", line 12, in function_call
+    return function(args)
+  File "/home/ballfetch/project/code/state_machine.py", line 30, in wait
+    timers = self.img.update_goal_position('ball_W',time.time())
+  File "/home/ballfetch/project/code/camera.py", line 23, in update_goal_position
+    position_xy,image = self.camera_.getimage(goal)
+  File "/home/ballfetch/project/code/camera.py", line 150, in getimage
+    ret,image=self.cam.read()
+  File "/home/ballfetch/project/code/main.py", line 12, in microcontroller_CTRL_ACK_handler
+    print("END\n")
+  File "/home/ballfetch/project/code/main.py", line 12, in microcontroller_CTRL_ACK_handler
+    print("END\n")
+RuntimeError: reentrant call inside <_io.BufferedWriter name='<stdout>'>
+
+Ran for 62.64 seconds.
+
+Time: 18.05.33
+ERROR: reentrant call inside <_io.BufferedWriter name='<stdout>'>
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 117, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,n_samples)
+  File "/home/ballfetch/project/code/main.py", line 89, in main
+    next_function_index = fsm.function_call(functions[next_function_index-1],gettimes)
+  File "/home/ballfetch/project/code/state_machine.py", line 12, in function_call
+    return function(args)
+  File "/home/ballfetch/project/code/state_machine.py", line 48, in chase
+    timers = self.img.update_goal_position('ball_C',time.time())
+  File "/home/ballfetch/project/code/camera.py", line 23, in update_goal_position
+    position_xy,image = self.camera_.getimage(goal)
+  File "/home/ballfetch/project/code/camera.py", line 152, in getimage
+    center = self.track(image,goal)
+  File "/home/ballfetch/project/code/camera.py", line 123, in track
+    blurred = cv2.GaussianBlur(frame, (11,11), 0)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 194, in parse_args
+    init_fetching(args)
+  File "/home/ballfetch/project/code/main.py", line 133, in init_fetching
+    print("\nDone.\nTerminated by user input.")
+  File "/home/ballfetch/project/code/main.py", line 13, in microcontroller_CTRL_ACK_handler
+    print("END\n")
+RuntimeError: reentrant call inside <_io.BufferedWriter name='<stdout>'>
+
+Ran for 4.20 seconds.
+
+Time: 18.09.30
+ERROR: 'int' object is not callable
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 194, in parse_args
+    init_fetching(args)
+  File "/home/ballfetch/project/code/main.py", line 117, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,n_samples)
+  File "/home/ballfetch/project/code/main.py", line 100, in main
+    next_function_index = fsm.ret()
+  File "/home/ballfetch/project/code/state_machine.py", line 120, in ret
+    if self.return_commands(positions,timers,dist)==1:
+  File "/home/ballfetch/project/code/state_machine.py", line 400, in return_commands
+    self.control.pi_int()
+  File "/home/ballfetch/project/code/gpio.py", line 332, in pi_int
+    time.sleep(0.05)
+  File "/home/ballfetch/project/code/main.py", line 13, in microcontroller_CTRL_ACK_handler
+    print("END\n")
+  File "/home/ballfetch/project/code/main.py", line 33, in microcontroller_PROX_handler
+    print("START",end=' ')
+TypeError: 'int' object is not callable
+
+Ran for 17.69 seconds.
+
