@@ -1,5 +1,0 @@
-Initializing camera...  Done.
-
-
-Ran for 0.75 seconds.
-

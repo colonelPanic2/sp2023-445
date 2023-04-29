@@ -1,4 +1,0 @@
-TIME (seconds): 0.0290
-
-Halting program...  
-Terminated by user input.
