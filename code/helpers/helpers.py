@@ -141,7 +141,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
             if n_samples is not None and len(time_data_dict[state])>n_samples:
                 return -13
         elif step==3:
-            writefile(logfile,"ANALYSIS OF RUNTIME DATA:\N")
+            writefile(logfile,"ANALYSIS OF RUNTIME DATA:\n")
             for state,runtimes in list(time_data_dict.items()):
                 # TODO: ENCOUNTERED AN ERROR IN WHICH THE FIRST ENTRY IN THE TIMEDATA
                 # IS OFTEN DISPROPORTIONATELY LARGER THAN THE REST OF THE RUNTIME
