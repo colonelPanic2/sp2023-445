@@ -27,7 +27,7 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
 def microcontroller_PROX_handler(signum,frame): # SIGUSR2
-    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     print("START",end=' ')
     time_data('time','loop_init',6)
     # self.proximity = int(not self.proximity)
