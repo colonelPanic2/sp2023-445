@@ -10,7 +10,7 @@ def control_switch_handler(signum,frame):
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
     # signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1, signal.SIGUSR2})
     signal.signal(signal.SIGUSR1,signal.SIG_IGN)
-    print("END\n")
+    # print("END\n")
     time_data('time','',7)
     global fsm
     global ctrl
@@ -30,7 +30,7 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
 def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     # signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1,signal.SIGUSR2})
     signal.signal(signal.SIGUSR2,signal.SIG_IGN)
-    print("START",end=' ')
+    # print("START",end=' ')
     time_data('time','loop_init',6)
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     # signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1})
