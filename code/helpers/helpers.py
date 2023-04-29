@@ -145,7 +145,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
             if n_samples is not None and len(time_data_dict[state])>n_samples:
                 return -13
         elif step==3:
-            writefile(logfile,"ANALYSIS OF RUNTIME DATA:\n")
+            writefile(log_file,"ANALYSIS OF RUNTIME DATA:\n")
             for state,runtimes in list(time_data_dict.items()):
                 # TODO: ENCOUNTERED AN ERROR IN WHICH THE FIRST ENTRY IN THE TIMEDATA
                 # IS OFTEN DISPROPORTIONATELY LARGER THAN THE REST OF THE RUNTIME
@@ -156,7 +156,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
                     elif len(runtimes)>1:
                         runtimes=runtimes[1:]
                     time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state])-int(len(time_data_dict[state])>1))
-                    writefile(logfile,f"{state}\nMIN: {min(runtimes)}\nMAX: {max(runtimes)}\nAVG: {time_data_dict[state]}\nSTD: {np.std(np.array(runtimes))}\n")
+                    writefile(log_file,f"{state}\nMIN: {min(runtimes)}\nMAX: {max(runtimes)}\nAVG: {time_data_dict[state]}\nSTD: {np.std(np.array(runtimes))}\n")
                     print(f"{state}\nMIN: {min(runtimes)}\nMAX: {max(runtimes)}\nAVG: {time_data_dict[state]}\nSTD: {np.std(np.array(runtimes))}")
             return time_data_dict
         elif step==5:
