@@ -128,7 +128,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
             T0 = 0
             T1 = 0
             time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
-            microcontroller_time_data={'NO_FSM':0,'WAIT':0,'CHASE':0,'ACQUIRE':0,'FETCH':0,'RETURN':0}
+            microcontroller_time_data={'START':0,'WAIT':0,'CHASE':0,'ACQUIRE':0,'FETCH':0,'RETURN':0}
             no_print=noprint
             log_file = logfile
             n_samples = num_samples
