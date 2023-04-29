@@ -130,7 +130,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
             time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
             T2 = 0
             T3 = 0
-            microcontroller_time_data={'NO_FSM':[],'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
+            microcontroller_time_data={'NO_FSM':0,'WAIT':0,'CHASE':0,'ACQUIRE':0,'FETCH':0,'RETURN':0}
             no_print=noprint
             log_file = logfile
             n_samples = num_samples
@@ -164,9 +164,9 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
         elif step==5:
             return microcontroller_time_data
     elif step == 4 and str(args[0])=='time':# and args[1]!=0:
-        if T2!=0:
-            microcontroller_time_data[state].append(round(1000*(T3-T2),2))
-            print(microcontroller_time_data[state][-1])
+        # if T2!=0:
+        microcontroller_time_data[state]+=1
+            # print(microcontroller_time_data[state][-1])
         # _, INT_start_time, INT_end_time = args
         # microcontroller_time_data[state].append(round((INT_end_time-INT_start_time)*1000,2))
     elif step==6 and str(args)=='time':
