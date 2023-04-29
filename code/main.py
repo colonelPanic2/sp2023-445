@@ -49,6 +49,7 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
     fsm  = FSM(ctrl,cam,gettimes,noprint,demo,manual,0,logfile,start_state,ACK_HANDLER=microcontroller_CTRL_ACK_handler,PROX_HANDLER=microcontroller_PROX_handler)
     signal.signal(signal.SIGQUIT, control_switch_handler)
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+    print("Handler set")
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     fsm.control.pincers_move(0)
     fsm.control.pi_int()

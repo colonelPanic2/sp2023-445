@@ -4,7 +4,6 @@ from helpers.helpers import writefile,time_data,decode_signal
 
 class StateLogic(object):
     def __init__(self):
-
         super().__init__()
         return
     def function_call(self,function,args=None):
