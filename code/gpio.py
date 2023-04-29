@@ -8,10 +8,10 @@ print("Imported gpio library")
 # print("imported helpers")
 from signal import SIGUSR1, SIGUSR2, SIGINT, SIG_IGN, signal
 from os import getpid, kill
-def callback_SIGUSR1(self,channel): 
+def callback_SIGUSR1(channel): 
     print(1)
     kill(getpid(),SIGUSR1)
-def callback_SIGUSR2(self,channel):
+def callback_SIGUSR2(channel):
     print(2)
     kill(getpid(),SIGUSR2)
 # Control pin mapping:
