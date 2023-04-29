@@ -32,7 +32,7 @@ def microcontroller_PROX_handler(signum,frame): # SIGUSR2
     signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     print("START",end=' ')
     time_data('time','loop_init',6)
-    signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
+    # signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
     # signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1})
 def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global init_time
