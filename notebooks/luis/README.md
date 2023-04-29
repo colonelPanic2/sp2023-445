@@ -139,7 +139,9 @@ The bar plot below shows the average runtime per loop of each state function ove
 The numbers below represent the response times in milliseconds of the microcontroller to each interrupt from the Pi in 3 states:
 
 19.23, 17.42, 52.68, 46.19, 43.0, 60.38
+
 87.93, 37.62, 56.98, 17.97, 52.88, 41.62, 39.44, 89.9, 21.34, 64.25
+
 69.04, 47.72, 88.7, 67.58, 67.87
 
 The software for both the microcontroller and Raspberry Pi components meets the specified runtime requirements. The bar plot below shows the average runtime per loop of each state function over 100 samples each. The maximum average runtime after analyzing all states doesn't exceed 350ms, so the requirements for the pi software have been satisfied. 
