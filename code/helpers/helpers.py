@@ -158,6 +158,8 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
                     time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state])-int(len(time_data_dict[state])>1))
                     writefile(log_file,f"{state}\nMIN: {min(runtimes)}\nMAX: {max(runtimes)}\nAVG: {time_data_dict[state]}\nSTD: {np.std(np.array(runtimes))}\n")
                     print(f"N:   {len(runtimes)}\n{state}\nMIN: {min(runtimes)}\nMAX: {max(runtimes)}\nAVG: {time_data_dict[state]}\nSTD: {np.std(np.array(runtimes))}")
+                else:
+                    time_data_dict[state] = [0,0]
             return time_data_dict
         elif step==5:
             return microcontroller_time_data
