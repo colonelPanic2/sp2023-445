@@ -38,7 +38,8 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
     init_time,logfile,errfile = logdata()
     # If gettimes=='time', then set up for runtime data collection
     # for each of the state function loops
-    time_data(gettimes,'',0,noprint,logfile,num_samples=num_samples)
+    print(logfile)
+    time_data(gettimes,'',0,noprint=noprint,logfile=logfile,num_samples=num_samples)
     # Declare the global variables that will be used by our 
     # signal handlers for SIGINT, SIGUSR1, and SIGUSR2.
     global fsm
