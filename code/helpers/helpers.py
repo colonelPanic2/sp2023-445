@@ -187,6 +187,7 @@ def timedata_files(gettimes,init_time):
         time_data_dict                 = time_data(gettimes,'',3)
         print("\n -------- RUNTIME DATA ACQUIRED --------")
         for state,runtime_loopnum in list(time_data_dict.items()):
+            print(state,runtime_loopnum)
             if runtime_loopnum[1]==0:
                 data_content_csv=f"{state},{0},{0}\n"
             else:
