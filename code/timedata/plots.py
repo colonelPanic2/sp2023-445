@@ -78,7 +78,7 @@ def create_subplots(data,numtests_or_testidx,num_its_total,num_its_test=None,ali
         fig.suptitle(f"Test {numtests_or_testidx}",fontsize=14)
         plt.savefig(f'{pwd}fetching-tests/test{numtests_or_testidx}.png')
         return num_its,runtimes
-def process_data(microcontroller_time_data={'NO_FSM':[],'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}):
+def process_data(microcontroller_time_data={'START':[],'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}):
     pwd = ""
     dirs = str(subprocess.check_output(shlex.split("ls")))[2:-1].split("\\n")[:-1]
     if 'timedata' in dirs:
@@ -107,7 +107,7 @@ def process_data(microcontroller_time_data={'NO_FSM':[],'WAIT':[],'CHASE':[],'AC
     dirs = str(subprocess.check_output(shlex.split("ls")))[2:-1].split("\\n")[:-1]
     if 'microcontroller-runtimes.csv' not in dirs:
         subprocess.run(shlex.split(f"touch {pwd}microcontroller-runtimes.csv"))
-    for state in ['NO_FSM','WAIT','CHASE','ACQUIRE','FETCH','RETURN']:
+    for state in ['START','WAIT','CHASE','ACQUIRE','FETCH','RETURN']:
         if microcontroller_time_data[state]!=[]:
             print(f"{state}: {microcontroller_time_data[state]}")
         else:
