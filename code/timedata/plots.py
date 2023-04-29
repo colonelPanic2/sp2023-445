@@ -72,14 +72,13 @@ def create_subplots(data,numtests_or_testidx,num_its_total,num_its_test=None,ali
             num_its.append(unit_data[numtests_or_testidx][state][0]) # num_its at index 0
             runtimes.append(unit_data[numtests_or_testidx][state][1])
         runtimes = list(np.round(np.array(runtimes)/num_its_test,2))
-        # num_its = num_its
         ax[0].bar(states, height=runtimes,align='center',color=['red','black','red','black','red'])
         ax[1].bar(states, height=num_its,align='center',color=['red','black','red','black','red'])
         fig.subplots_adjust(hspace=0.5)
         fig.suptitle(f"Test {numtests_or_testidx}",fontsize=14)
         plt.savefig(f'{pwd}fetching-tests/test{numtests_or_testidx}.png')
         return num_its,runtimes
-def process_data(microcontroller_time_data_list=[]):
+def process_data(microcontroller_time_data={'NO_FSM':[],'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}):
     pwd = ""
     dirs = str(subprocess.check_output(shlex.split("ls")))[2:-1].split("\\n")[:-1]
     if 'timedata' in dirs:
@@ -95,6 +94,7 @@ def process_data(microcontroller_time_data_list=[]):
         num_its,runtime = create_subplots(unit_data,test_idx,metadata[-1],num_its)
         print("Test {}:\nruntimes (ms): {}\n      num_its: {}\n".format(test_idx,runtime,num_its))
         test_idx+=1
+    # Overall data and bar plots
     overall_num_its,overall_runtime = create_subplots(data['overall'],len(metadata[:-1]),metadata[-1])
     print("\n\nOverall:\nruntimes (ms): {}\n      num_its: {}\n".format(overall_runtime,overall_num_its))
     dirs = str(subprocess.check_output(shlex.split(f"ls {pwd}fetching-tests")))[2:-1].split("\\n")[:-1]
@@ -102,19 +102,19 @@ def process_data(microcontroller_time_data_list=[]):
         if f"test{i}.png" in dirs:
             subprocess.run(shlex.split('rm '+pwd+f'fetching-tests/test{i}.png'))
     print("Created bar graphs for {} tests.".format(test_idx))
-    # If there is time data for the microcontroller, then do something with it.
-    if microcontroller_time_data_list!=[]:
-        if len(microcontroller_time_data_list)>0:
-            print(f"\nMICROCONTOLLER RESPONSE TIMES: {microcontroller_time_data_list}")
-            dirs = str(subprocess.check_output(shlex.split("ls")))[2:-1].split("\\n")[:-1]
-            if 'microcontroller-runtimes.csv' not in dirs:
-                subprocess.run(shlex.split(f"touch {pwd}microcontroller-runtimes.csv"))
-            with open(f'{pwd}microcontroller-runtimes.csv','a') as f:
-                f.write(str(microcontroller_time_data_list)[1:-1].strip()+'\n')
+    # If there is runtime data for the microcontroller, then do something with it.
+    print("\nMICROCONTROLLER RUNTIMES:")
+    dirs = str(subprocess.check_output(shlex.split("ls")))[2:-1].split("\\n")[:-1]
+    if 'microcontroller-runtimes.csv' not in dirs:
+        subprocess.run(shlex.split(f"touch {pwd}microcontroller-runtimes.csv"))
+    for state in ['NO_FSM','WAIT','CHASE','ACQUIRE','FETCH','RETURN']:
+        if microcontroller_time_data[state]!=[]:
+            print(f"{state}: {microcontroller_time_data[state]}")
         else:
-            print("No microcontroller response time data collected")
-        # TODO: to be continued...
-
+            print(f"{state}: No microcontroller runtime data collected")
+        # Write to the file (if there is no data in this state, then the line will just contain a state name with no data)
+        with open(f'{pwd}microcontroller-runtimes.csv','a') as f:
+            f.write(f'{state},{str(microcontroller_time_data[state])[1:-1]}\n')
     return 0
 
 if __name__=='__main__':

@@ -75,9 +75,9 @@ void read_pi() {
     check_right();
   }
   
-  digitalWrite(CTRL_ACK, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(CTRL_ACK, 0);
+  // digitalWrite(CTRL_ACK, HIGH);
+  // delayMicroseconds(5);
+  // digitalWrite(CTRL_ACK, 0);
 }
 
 //function used to see how left wheel should move
@@ -318,4 +318,7 @@ void loop() {
     //   digitalWrite(PINCER_OUT1, LOW);
     // }
   }
+  digitalWrite(CTRL_ACK, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(CTRL_ACK, 0);
 }

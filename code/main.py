@@ -8,13 +8,20 @@ def control_switch_handler(signum,frame):
     global fsm
     fsm.control_switch()
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
-    global ctrl
     signal.signal(signal.SIGUSR1,signal.SIG_IGN)
-    if ctrl.gettimes is not None:
+    global fsm
+    global ctrl
+    if fsm is not None:
+        control_ = fsm.control
+        state = fsm.get_state()
+    else:
+        control_ = ctrl
+        state = 'NO_FSM'
+    if control_.gettimes is not None:
         t1 = time.time()
-        time_data([ctrl.gettimes,ctrl.INT_start_time,t1],'fsm.get_state()',4)
-        ctrl.INT_start_time=0
-    ctrl.DONE = True
+        time_data([control_.gettimes,control_.INT_start_time,t1],state,4)
+        control_.INT_start_time=0
+    # control_.DONE = True
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
 
 def microcontroller_PROX_handler(self,signum,frame): # SIGUSR2
@@ -34,6 +41,7 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
     # Declare the global variables that will be used by our 
     # signal handlers for SIGINT, SIGUSR1, and SIGUSR2.
     global fsm
+    fsm = None
     global ctrl
     # Initialize the camera, control, and fsm objects.
     cam  = camera(               noprint,demo,manual,0,logfile)
@@ -109,10 +117,10 @@ def init_fetching(args):
         # it to the .csv file in the 'timedata' directory.
         signal.alarm(0)
         try:
-            fsm.control.pincers_move(1)
-            fsm.control.pi_int()
+            ctrl.pincers_move(1)
+            ctrl.pi_int()
             time.sleep(0.5)
-            fsm.control.stop_all()
+            ctrl.stop_all()
         except:
             print("Couldn't stop the motors (init_fetching)")
         timedata_files(gettimes,init_time)
@@ -123,7 +131,7 @@ def parse_args():
     signal.alarm(0)
     global init_time
     global errfile
-    global fsm
+    global ctrl
     init_time = time.time()
     errfile = 'init-err.txt'
     try:        
@@ -183,10 +191,10 @@ def parse_args():
         # to the err.txt file generated for the date and time when the 
         # exception occured.
         try:
-            fsm.control.pincers_move(1)
-            fsm.control.pi_int()
+            ctrl.pincers_move(1)
+            ctrl.pi_int()
             time.sleep(0.5)
-            fsm.control.stop_all()
+            ctrl.stop_all()
         except:
             print("Couldn't stop the motors (parse_args)")
         current_time = time.strftime("%Y-%m-%d_%H.%M.%S", time.localtime())[11:]

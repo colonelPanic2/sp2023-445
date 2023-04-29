@@ -126,7 +126,7 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
             T0 = 0
             T1 = 0
             time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
-            microcontroller_time_data_list=[]
+            microcontroller_time_data={'NO_FSM':[],'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
             no_print=noprint
             log_file = logfile
             n_samples = num_samples
@@ -152,11 +152,10 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
                 time_data_dict[state] = (round(np.mean(np.array(runtimes)),2),len(time_data_dict[state])-int(len(time_data_dict[state])>1))
             return time_data_dict
         elif step==5:
-            return microcontroller_time_data_list
-    elif step == 4 and args[0] is not None and str(args[0])=='time' and args[1]!=0:
+            return microcontroller_time_data
+    elif step == 4 and str(args[0])=='time' and args[1]!=0:
         _, INT_start_time, INT_end_time = args
-        microcontroller_time_data_list.append(round((INT_end_time-INT_start_time)*1000,2))
-
+        microcontroller_time_data[state].append(round((INT_end_time-INT_start_time)*1000,2))
     return 0
 # If we were collecting time data for a complete run of the program
 # then write the data to the .csv file in the 'timedata' directory.
@@ -178,8 +177,8 @@ def timedata_files(gettimes,init_time):
             writefile('timedata/timedata.csv',data_content_csv)
         # number of times "main" was called, runtime of call to main
         writefile('timedata/timedata.csv',f"{1},{round(time.time()-init_time,2)}\n")
-        microcontroller_time_data_list = time_data(gettimes,'',5)
-        process_data(microcontroller_time_data_list)
+        microcontroller_time_data = time_data(gettimes,'',5)
+        process_data(microcontroller_time_data)
 # NOTE: All of the following code is outdated, but it still implements some features that 
 # might be useful later. So I've decided to keep it even though it isn't in use right now.
 # from queue import Queue
