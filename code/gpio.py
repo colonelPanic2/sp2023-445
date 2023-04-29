@@ -8,6 +8,12 @@ print("Imported gpio library")
 # print("imported helpers")
 from signal import SIGUSR1, SIGUSR2, SIGINT, SIG_IGN, signal
 from os import getpid, kill
+def callback_SIGUSR1(self,channel): 
+    print(1)
+    kill(getpid(),SIGUSR1)
+def callback_SIGUSR2(self,channel):
+    print(2)
+    kill(getpid(),SIGUSR2)
 # Control pin mapping:
 # self.pins[0]: 1 to reverse the left motors, 0 else
 # self.pins[1]: 1 to move the left motors, 0 else
@@ -46,9 +52,9 @@ class control:
         time.sleep(0.05)
         self.setpin(7,0)
         io.setup(self.pins[8],io.IN)
-        io.add_event_detect(self.pins[8],io.RISING,callback=self.callback_SIGUSR1)
+        io.add_event_detect(self.pins[8],io.RISING,callback=callback_SIGUSR1)
         io.setup(self.pins[9],io.IN)
-        io.add_event_detect(self.pins[9],io.RISING,callback=self.callback_SIGUSR2)
+        io.add_event_detect(self.pins[9],io.RISING,callback=callback_SIGUSR2)
         io.setup(self.pins[10],io.OUT)
         io.setup(self.pins[11],io.IN)
         io.setup(self.pins[12],io.OUT)
@@ -121,12 +127,6 @@ class control:
          terminal or 'q' in the 'Camera' window.\n\n")
         self.cam = cam
         self.manual_setup()
-    def callback_SIGUSR1(self,channel): 
-        print(1)
-        kill(getpid(),SIGUSR1)
-    def callback_SIGUSR2(self,channel):
-        print(2)
-        kill(getpid(),SIGUSR2)
     # Show the camera view in a window while in manual control mode.
     def video_update(self):
         try:
@@ -193,7 +193,7 @@ class control:
             return
         self.instruction=0
         self.clear_terminal()
-        self.callback_SIGUSR1(channel)
+        callback_SIGUSR1(channel)
         self.DONE=False
         return
     # Change the proximity attribute (something is within range of the ultrasonic sensors)
@@ -202,7 +202,7 @@ class control:
             return
         self.instruction=0
         self.clear_terminal()
-        self.callback_SIGUSR2(channel)
+        callback_SIGUSR2(channel)
     def camswitch(self,event=None):
         if self.instruction==1:
             return
