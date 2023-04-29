@@ -125,17 +125,25 @@ The data from the ultrasonic sensors is remarkably less reliable than we initial
 We've discovered that the ultrasonic sensors can't locate the tennis ball accurately because it absorbs sound, making it seem as though any waves that came in contact with it travelled several meters, as opposed to the actual few centimeters. To make matters worse, it seems common for some waves to miss the ball and return within a fairly short timeframe, making it appear as though the ball isn't there. Since these conflicting behaviors produce a lot of noise in the data, we weren't able to figure out a reliable way to determine whether or not a ball was within range of the ultrasonic sensors. We've decided to remove the microcontroller code that integrates the ultrasonic sensor on the Pi so that we can demonstrate some of the predicted behaviors tomorrow morning. We've determined that the fetching, control, and power subsystems, as well as the image processing part of the sensor subsystem otherwise do a good job of working together to track/chase the 3 objectives (ball:green, user:red, waitpoint:blue). 
 
 Final FSM diagram:
+
 ![](images/state-machine.png)
 
 Final Pi software flowchart:
-![](images/Software-diagram.png)
+
+![](images/software-diagram.png)
 
 The bar plot below shows the average runtime per loop of each state function over 100 samples each.
 
 ![](images/runtimes.png)
 
-The numbers below represent the response times in milliseconds of the microcontroller to each interrupt from the Pi in each state 
+The numbers below represent the response times in milliseconds of the microcontroller to each interrupt from the Pi in 3 states:
 
-### NOTE: RE-DESIGN THE TIMEDATA SAMPLER TO ALLOW LABELLING OF MICROCONTROLLER RESPONSES BY THE STATE IN WHICH THE CORRESPONDING PI INTERRUPT WAS GENERATED
+19.23, 17.42, 52.68, 46.19, 43.0, 60.38
+
+87.93, 37.62, 56.98, 17.97, 52.88, 41.62, 39.44, 89.9, 21.34, 64.25
+
+69.04, 47.72, 88.7, 67.58, 67.87
 
 The software for both the microcontroller and Raspberry Pi components meets the specified runtime requirements. The bar plot below shows the average runtime per loop of each state function over 100 samples each. The maximum average runtime after analyzing all states doesn't exceed 350ms, so the requirements for the pi software have been satisfied. 
+
+###### NOTE: MODIFY THE TIMEDATA SAMPLER TO ALLOW LABELLING OF MICROCONTROLLER RESPONSES BY THE STATE IN WHICH THEY WERE RECEIVED BY THE PI
