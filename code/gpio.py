@@ -122,8 +122,10 @@ class control:
         self.cam = cam
         self.manual_setup()
     def callback_SIGUSR1(self,channel): 
+        print(1)
         kill(getpid(),SIGUSR1)
     def callback_SIGUSR2(self,channel):
+        print(2)
         kill(getpid(),SIGUSR2)
     # Show the camera view in a window while in manual control mode.
     def video_update(self):
@@ -189,7 +191,7 @@ class control:
     def callback_SIGUSR1_helper(self,channel):
         if self.instruction==1:
             return
-        self.instruction=1
+        self.instruction=0
         self.clear_terminal()
         self.callback_SIGUSR1(channel)
         self.DONE=False
@@ -198,7 +200,7 @@ class control:
     def callback_SIGUSR2_helper(self,channel):
         if self.instruction==1:
             return
-        self.instruction=1
+        self.instruction=0
         self.clear_terminal()
         self.callback_SIGUSR2(channel)
     def camswitch(self,event=None):
