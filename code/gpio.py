@@ -40,6 +40,10 @@ class control:
         self.DONE = False
         self.flag_sent = 1
         io.setmode(io.BCM)
+        io.setup(self.pins[8],io.IN,pull_up_down=io.PUD_DOWN)
+        io.add_event_detect(self.pins[8],io.RISING,callback=callback_SIGUSR1)
+        io.setup(self.pins[9],io.IN,pull_up_down=io.PUD_DOWN)
+        io.add_event_detect(self.pins[9],io.RISING,callback=callback_SIGUSR2)
         io.setwarnings(False) # NOTE: COMMENT THIS OUT WHEN DEBUGGING THE GPIO PINS
         for pin in self.pins[:8]:
             if pin == self.pins[6]:
@@ -51,10 +55,7 @@ class control:
         self.setpin(7,1)
         time.sleep(0.05)
         self.setpin(7,0)
-        io.setup(self.pins[8],io.IN,pull_up_down=io.PUD_DOWN)
-        io.add_event_detect(self.pins[8],io.RISING,callback=callback_SIGUSR1)
-        io.setup(self.pins[9],io.IN,pull_up_down=io.PUD_DOWN)
-        io.add_event_detect(self.pins[9],io.RISING,callback=callback_SIGUSR2)
+
         io.setup(self.pins[10],io.OUT)
         io.setup(self.pins[11],io.IN)
         io.setup(self.pins[12],io.OUT)
