@@ -1,0 +1,27 @@
+Time: 11.52.58
+ERROR: invalid literal for int() with base 10: 'CHASE'
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 155, in parse_args
+    args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4])]
+ValueError: invalid literal for int() with base 10: 'CHASE'
+
+Ran for 0.03 seconds.
+
+Time: 11.55.53
+ERROR: invalid literal for int() with base 10: 'CHASE'
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 155, in parse_args
+    args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4])]
+ValueError: invalid literal for int() with base 10: 'CHASE'
+
+Ran for 0.03 seconds.
+
+Time: 11.59.37
+ERROR: invalid literal for int() with base 10: 'CHASE'
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 155, in parse_args
+    args = [str(argv[0]),int(argv[1]),int(argv[2]),int(argv[3]),str(argv[4])]
+ValueError: invalid literal for int() with base 10: 'CHASE'
+
+Ran for 0.03 seconds.
+
