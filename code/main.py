@@ -50,8 +50,9 @@ def main(gettimes,noprint,demo,manual,start_state,num_samples):
     signal.signal(signal.SIGQUIT, control_switch_handler)
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
-    ctrl.pi_int()
-
+    fsm.control.pincers_move(0)
+    fsm.control.pi_int()
+    fsm.control.stop_all()
     # Make a list of state functions in their intended order of 
     # execution. The output of each state function will be used 
     # as an index into this list.

@@ -446,9 +446,6 @@ class FSM(StateLogic):
         self.control.proximity = 0
         self.dist_threshold = 50
         self.control.DONE = False
-        self.control.pincers_move(0)
-        self.control.pi_int()
-        self.control.stop_all()
         super().__init__()
     def set_manual(self,mode_num):
         self.control.manual=mode_num
