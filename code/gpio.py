@@ -71,7 +71,7 @@ class control:
         while io.input(self.pins[11])==1 and time.time()-t_start<0.0004:
             t1=time.time()
         runtime = time.perf_counter()-t_0
-        print(f"distance (front): {runtime:.4f}")
+        # print(f"distance (front): {runtime:.4f}")
         return runtime
         # if t1-t_start>0.0004:
         #         return inf
@@ -91,7 +91,7 @@ class control:
         while io.input(self.pins[13])==1 and time.time()-t_start<0.0004:
             t1=time.time()
         runtime = time.perf_counter()-t_0
-        print(f"distance (back): {runtime:.4f}\n")
+        # print(f"distance (back): {runtime:.4f}\n")
         return runtime
         # if t1-t_start<0.0004:
         #       return inf
