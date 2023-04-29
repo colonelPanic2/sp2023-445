@@ -241,7 +241,7 @@ class StateLogic(object):
                 self.control.pi_int()
                 if not self.noprint:
                     writefile(self.logfile,"\n{} - Final region data: {}\n".format(self.get_state(),list(self.img.regions.values())))  
-                signal.signal(signal.SIGUSR2,signal.SIG_IGN)           
+                # signal.signal(signal.SIGUSR2,signal.SIG_IGN)           
                 self.transition_fetch()
                 return 4
             if not self.control.flag_sent:
@@ -467,7 +467,7 @@ class FSM(StateLogic):
     @event(from_states=(START, RETURN), to_state=(WAIT))
     def transition_wait(self,some_variables=None):
         signal.alarm(0)
-        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+        # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         if self.img.camera_.index != 0:
             self.img.camera_.camswitch()
         self.control.DONE = False
@@ -477,7 +477,7 @@ class FSM(StateLogic):
     def transition_chase(self,some_variables=None):
         # If we stay in the CHASE state for 60 secs, enter RETURN state. (only works on Linux)
         signal.alarm(0)
-        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+        # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         self.control.DONE = False
         self.control.proximity=0
         signal.alarm(3) # Change back to 60
@@ -495,14 +495,14 @@ class FSM(StateLogic):
         signal.alarm(0)
         if self.img.camera_.index != 1:
             self.img.camera_.camswitch()
-        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+        # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         self.control.DONE = False
         self.control.proximity = 0
         return 0
     @event(from_states=(START,CHASE, ACQUIRE, FETCH), to_state=(RETURN))
     def transition_return(self,some_variables=None):
         signal.alarm(0)
-        signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+        # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
         if self.img.camera_.index != 1:
             self.img.camera_.camswitch()
         self.control.DONE = False
