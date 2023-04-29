@@ -8,7 +8,8 @@ def control_switch_handler(signum,frame):
     global fsm
     fsm.control_switch()
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
-    signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1, signal.SIGUSR2})
+    # signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1, signal.SIGUSR2})
+    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     print("END\n")
     time_data('time','',7)
     global fsm
@@ -24,18 +25,15 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
         time_data([control_.gettimes,control_.INT_start_time,t1],state,4)
         control_.INT_start_time=0
     time_data('time','loop_end',6)
-    signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1, signal.SIGUSR2})
+    signal.signal(signal.SIGUSR1,microcontroller_PROX_handler)
+    # signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1, signal.SIGUSR2})
 def microcontroller_PROX_handler(signum,frame): # SIGUSR2
-    signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1,signal.SIGUSR2})
-    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    # signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGUSR1,signal.SIGUSR2})
+    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     print("START",end=' ')
     time_data('time','loop_init',6)
-    signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1})
-    # self.proximity = int(not self.proximity)
-    # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
-    # ctrl.communication_stop() 
-    # print("PROXIMITY: ",self.proximity,'\n') # NOTE: Remove print statements from interrupt handlers
-    # signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+    signal.signal(signal.SIGUSR1,microcontroller_PROX_handler)
+    # signal.pthread_sigmask(signal.SIG_UNBLOCK,{signal.SIGUSR1})
 def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global init_time
     global errfile
