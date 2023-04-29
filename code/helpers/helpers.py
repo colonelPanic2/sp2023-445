@@ -115,10 +115,12 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
     global T0_SET
     global T0
     global T1
+    global T2
+    global T3
     global no_print
     global log_file
     global time_data_dict
-    global microcontroller_time_data_list
+    global microcontroller_time_data
     global n_samples
     if args=='time':
         if step==0:
@@ -126,6 +128,8 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
             T0 = 0
             T1 = 0
             time_data_dict={'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
+            T2 = 0
+            T3 = 0
             microcontroller_time_data={'NO_FSM':[],'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}
             no_print=noprint
             log_file = logfile
@@ -157,9 +161,15 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
             return time_data_dict
         elif step==5:
             return microcontroller_time_data
-    elif step == 4 and str(args[0])=='time' and args[1]!=0:
-        _, INT_start_time, INT_end_time = args
-        microcontroller_time_data[state].append(round((INT_end_time-INT_start_time)*1000,2))
+    elif step == 4 and str(args[0])=='time':# and args[1]!=0:
+        if T2!=0:
+            microcontroller_time_data[state].append(round(1000*(T3-T2),2))
+        # _, INT_start_time, INT_end_time = args
+        # microcontroller_time_data[state].append(round((INT_end_time-INT_start_time)*1000,2))
+    elif step==6 and str(args)=='time':
+        T2 = time.perf_counter()
+    elif step==7 and str(args)=='time':
+        T3 = time.perf_counter()
     return 0
 # If we were collecting time data for a complete run of the program
 # then write the data to the .csv file in the 'timedata' directory.

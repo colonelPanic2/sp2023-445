@@ -8,6 +8,7 @@ def control_switch_handler(signum,frame):
     global fsm
     fsm.control_switch()
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
+    time_data('time','',7)
     signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     global fsm
     global ctrl
@@ -21,9 +22,8 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
         t1 = time.time()
         time_data([control_.gettimes,control_.INT_start_time,t1],state,4)
         control_.INT_start_time=0
-    # control_.DONE = True
+    time_data('time','',6)
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
-
 def microcontroller_PROX_handler(self,signum,frame): # SIGUSR2
     signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     self.proximity = int(not self.proximity)
