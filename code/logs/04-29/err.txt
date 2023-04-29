@@ -1,0 +1,28 @@
+Time: 12.07.37
+ERROR: expected str, bytes or os.PathLike object, not NoneType
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 111, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,n_samples)
+  File "/home/ballfetch/project/code/main.py", line 98, in main
+    fsm.img.camera_.destroy()
+  File "/home/ballfetch/project/code/camera.py", line 120, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 188, in parse_args
+    init_fetching(args)
+  File "/home/ballfetch/project/code/main.py", line 126, in init_fetching
+    timedata_files(gettimes,init_time)
+  File "/home/ballfetch/project/code/helpers/helpers.py", line 184, in timedata_files
+    time_data_dict                 = time_data(gettimes,'',3)
+  File "/home/ballfetch/project/code/helpers/helpers.py", line 148, in time_data
+    writefile(log_file,"ANALYSIS OF RUNTIME DATA:\n")
+  File "/home/ballfetch/project/code/helpers/helpers.py", line 61, in writefile
+    with open(fname,'a') as f:
+TypeError: expected str, bytes or os.PathLike object, not NoneType
+
+Ran for 5.08 seconds.
+
