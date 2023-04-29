@@ -8,9 +8,9 @@ def control_switch_handler(signum,frame):
     global fsm
     fsm.control_switch()
 def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
+    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
     print("END\n")
     time_data('time','',7)
-    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     global fsm
     global ctrl
     if fsm is not None:
@@ -25,15 +25,16 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
         control_.INT_start_time=0
     time_data('time','loop_end',6)
     signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
+    signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
 def microcontroller_PROX_handler(self,signum,frame): # SIGUSR2
-    signal.signal(signal.SIGUSR1,signal.SIG_IGN)
+    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
     print("START",end=' ')
     time_data('time','loop_init',6)
     # self.proximity = int(not self.proximity)
     # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
     # ctrl.communication_stop() 
     # print("PROXIMITY: ",self.proximity,'\n') # NOTE: Remove print statements from interrupt handlers
-    signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
+    # signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
 def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global init_time
     global errfile
