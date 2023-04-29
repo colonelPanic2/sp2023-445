@@ -167,7 +167,10 @@ def time_data(args,state,step,t0=0,noprint=0,logfile=None,num_samples=None):
         # _, INT_start_time, INT_end_time = args
         # microcontroller_time_data[state].append(round((INT_end_time-INT_start_time)*1000,2))
     elif step==6 and str(args)=='time':
-        T2 = time.perf_counter()
+        if state=='loop_end':
+            T2=0
+        else:
+            T2 = time.perf_counter()
     elif step==7 and str(args)=='time':
         T3 = time.perf_counter()
     return 0

@@ -176,7 +176,9 @@ void loop() {
   // else{
   //   digitalWrite(Prox_Data, 0);
   // }
-
+  digitalWrite(Prox_Data, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(Prox_Data, 0);
   /* Auto control mode. The inputs from the pi and the sensors are data (not instructions)
      used by the microcontroller to decide how to control the motors. */
   if (pi_input[6] == 0){

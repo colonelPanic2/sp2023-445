@@ -22,15 +22,16 @@ def microcontroller_CTRL_ACK_handler(signum,frame): # SIGUSR1
         t1 = time.time()
         time_data([control_.gettimes,control_.INT_start_time,t1],state,4)
         control_.INT_start_time=0
-    time_data('time','',6)
+    time_data('time','loop_end',6)
     signal.signal(signal.SIGUSR1,microcontroller_CTRL_ACK_handler)
 def microcontroller_PROX_handler(self,signum,frame): # SIGUSR2
-    signal.signal(signal.SIGUSR2,signal.SIG_IGN)
-    self.proximity = int(not self.proximity)
+    time_data('time','loop_init',6)
+    # signal.signal(signal.SIGUSR2,signal.SIG_IGN)
+    # self.proximity = int(not self.proximity)
     # Tell the microcontroller not to send any more proximity data until the design re-enters the ACQUIRE state
     # ctrl.communication_stop() 
     # print("PROXIMITY: ",self.proximity,'\n') # NOTE: Remove print statements from interrupt handlers
-    signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
+    # signal.signal(signal.SIGUSR2,microcontroller_PROX_handler)
 def main(gettimes,noprint,demo,manual,start_state,num_samples):
     global init_time
     global errfile
