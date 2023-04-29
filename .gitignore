@@ -13,3 +13,7 @@ notebooks/luis/code/timedata/fetching-tests/
 notebooks/luis/code/timedata/microcontroller-runtimes.csv
 notebooks/luis/code/timedata/__pycache__/plots.cpython-310.pyc
 notebooks/luis/code/helpers/sensors.py
+code/helpers/__pycache__
+code/timedata/__pycache__
+code/logs
+code/__pycache__
