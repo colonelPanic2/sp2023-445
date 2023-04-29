@@ -9,10 +9,10 @@ print("Imported gpio library")
 from signal import SIGUSR1, SIGUSR2, SIGINT, SIG_IGN, signal
 from os import getpid, kill
 def callback_SIGUSR1(channel): 
-    print(1)
+    # print(1)
     kill(getpid(),SIGUSR1)
 def callback_SIGUSR2(channel):
-    print(2)
+    # print(2)
     kill(getpid(),SIGUSR2)
 # Control pin mapping:
 # self.pins[0]: 1 to reverse the left motors, 0 else
