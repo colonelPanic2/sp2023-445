@@ -114,7 +114,7 @@ def process_data(microcontroller_time_data={'START':[],'WAIT':[],'CHASE':[],'ACQ
             print(f"{state}: No microcontroller runtime data collected")
         # Write to the file (if there is no data in this state, then the line will just contain a state name with no data)
         with open(f'{pwd}microcontroller-runtimes.csv','a') as f:
-            f.write(f'{state},{str(microcontroller_time_data[state])[1:-1]}\n')
+            f.write(f'{state},{str(microcontroller_time_data[state])}\n')
     return 0
 
 if __name__=='__main__':
