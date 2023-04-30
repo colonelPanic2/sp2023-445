@@ -106,3 +106,48 @@ TypeError: 'int' object is not callable
 
 Ran for 17.69 seconds.
 
+Time: 18.57.30
+ERROR: 'START'
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 186, in parse_args
+    init_fetching(args)
+  File "/home/ballfetch/project/code/main.py", line 109, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,n_samples)
+  File "/home/ballfetch/project/code/main.py", line 55, in main
+    fsm.control.pi_int()
+  File "/home/ballfetch/project/code/gpio.py", line 332, in pi_int
+    time.sleep(0.05)
+  File "/home/ballfetch/project/code/main.py", line 16, in microcontroller_CTRL_ACK_handler
+    time_data(['time',0,0,0],fsm.get_state(),4)
+  File "/home/ballfetch/project/code/helpers/helpers.py", line 166, in time_data
+    microcontroller_time_data[state]+=1
+KeyError: 'START'
+
+Ran for 0.97 seconds.
+
+Time: 18.59.02
+ERROR: 'NO_FSM'
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 109, in init_fetching
+    main(gettimes,noprint,demo,manual,start_state,n_samples)
+  File "/home/ballfetch/project/code/main.py", line 96, in main
+    fsm.img.camera_.destroy()
+  File "/home/ballfetch/project/code/camera.py", line 120, in destroy
+    raise KeyboardInterrupt
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ballfetch/project/code/main.py", line 186, in parse_args
+    init_fetching(args)
+  File "/home/ballfetch/project/code/main.py", line 124, in init_fetching
+    timedata_files(gettimes,init_time)
+  File "/home/ballfetch/project/code/helpers/helpers.py", line 200, in timedata_files
+    process_data(microcontroller_time_data)
+  File "/home/ballfetch/project/code/timedata/plots.py", line 111, in process_data
+    if microcontroller_time_data[state]!=[]:
+KeyError: 'NO_FSM'
+
+Ran for 12.16 seconds.
+
