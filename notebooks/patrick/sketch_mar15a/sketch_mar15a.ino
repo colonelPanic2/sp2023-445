@@ -10,7 +10,7 @@ Servo servo2;
 #define ECHO0 PIN_PB0
 #define TRIG  PIN_PB1
 // #define ECHO1 PIN_PB2
-#define ECHO1 PIN_PD3
+#define ECHO1 PIN_PD1
 // PB3-PB5 are for MOSI, MISO, and SCK
 
 #define LMOTORS_IN0  PIN_PB6 // XTAL1/PB6
@@ -27,8 +27,8 @@ Servo servo2;
 #define RMOTORS_IN1  PIN_PD7
 
 #define PI_INT       PIN_PD2 // PD2
-// #define CTRL_ACK     PIN_PD3 // PD3
-#define CTRL_ACK     PIN_PD1
+#define CTRL_ACK     PIN_PD3 // PD3
+// #define CTRL_ACK     PIN_PD1
 
 #define CTRL         PIN_PD4 // PD4
 #define PINCER_ON    PIN_PD5 // PD5
@@ -55,6 +55,9 @@ int left0 = 0;
 int left1 = 0;
 int right0 = 0;
 int right1 = 0;
+
+int wait_INT = 0;
+int startUP = 0;
 
 /* The input from the pi formatted as follows:
        0           1            2            3            4           5         6
@@ -118,6 +121,11 @@ void read_pi() {
       right1 = 0;
     }
   }
+
+  if(wait_INT == 0){
+    wait_INT = 2;
+  }
+  startUP = 1;
   // digitalWrite(CTRL_ACK, 0);
   // delayMicroseconds(2);
   // digitalWrite(CTRL_ACK, HIGH);
@@ -151,74 +159,24 @@ void setup() {
   pinMode(PINCER_ON,INPUT); // pin 5  
   pinMode(PINCER_DIR,INPUT); // pin 6 
   pinMode(Prox_Data,OUTPUT); // pin 7
+  digitalWrite(Prox_Data, 0);
+  digitalWrite(CTRL_ACK, 0);
 
   Serial.begin(9600); // Starts the serial communication
 }
-// void loop(){
-//   analogWrite(RMOTORS_OUT0, 0);
-//   analogWrite(RMOTORS_OUT1, 170);
-//   analogWrite(LMOTORS_OUT0, 0);
-//   analogWrite(LMOTORS_OUT1, 170);
-//   delay(3000);
-//   analogWrite(RMOTORS_OUT0, 0);
-//   analogWrite(RMOTORS_OUT1, 0);
-//   analogWrite(LMOTORS_OUT0, 0);
-//   analogWrite(LMOTORS_OUT1, 0);
-//   delay(3000);
-//   analogWrite(RMOTORS_OUT0, 170);
-//   analogWrite(RMOTORS_OUT1, 0);
-//   analogWrite(LMOTORS_OUT0, 170);
-//   analogWrite(LMOTORS_OUT1, 0);
-//   delay(3000);
-//   analogWrite(RMOTORS_OUT0, 0);
-//   analogWrite(RMOTORS_OUT1, 0);
-//   analogWrite(LMOTORS_OUT0, 0);
-//   analogWrite(LMOTORS_OUT1, 0);
-//   exit(0);
-// }
+
 //MICROCONTROLLER LOOP
 void loop() {
   //possible code for detection with ultra sensors
-  sensor_data();
-  digitalWrite(Prox_Data, 0);
-  // if(vec_index == 10){
-  //   mini = 10;
-  //   maxi = 2000;
-  //   lCount = 0;
-  //   hCount = 0;
-  //   for(int i = 0; i<10; i++){
-  //     if(dist_vector[i] < mini){
-  //       // mini = dist_vector[i];
-  //       lCount++;
-  //     }
-  //     if(dist_vector[i] > maxi){
-  //       // maxi = dist_vector[i];
-  //       hCount++;
-  //     }
-  //   }
-  //   vec_index = 0;
-  // }
-  // if((mini<10)&&(maxi>200)){
-  //   // digitalWrite(Prox_Data, HIGH);
-  //   proxCounter++;
-  // }
-  // else{
-  //   digitalWrite(Prox_Data, 0);
-  // }
-  // if(proxCounter>5){
+  // sensor_data();
+
+  // if(startUP==1){
+  // if(wait_INT > 0){
+  //   wait_INT = 2;
   //   digitalWrite(Prox_Data, HIGH);
-  // }
-  // else{
+  //   delayMicroseconds(5);
   //   digitalWrite(Prox_Data, 0);
   // }
-  // if((secCode == 1) && ((lCount>=8) || (hCount>=8))){
-  //   digitalWrite(Prox_Data, HIGH);
-  // }
-  // else{
-  //   digitalWrite(Prox_Data, 0);
-  // }
-  // dist_vector[vec_index] = sensor_distances[0];
-  // vec_index++;
 
   /* Auto control mode. The inputs from the pi and the sensors are data (not instructions)
      used by the microcontroller to decide how to control the motors. */
@@ -236,17 +194,14 @@ void loop() {
         if(curA != 35){
           servo1.write(145);
           servo2.write(35);
-          delay(100);
-          // proxCounter = 0;
-          secCode = 0;
-          // digitalWrite(Prox_Data, 0);
+          // delay(100);
         }
       }
       //acquiring ball so close pincers
       else if (pi_input[5]==1){      
         servo1.writeMicroseconds(2500);
         servo2.write(10);
-        delay(100);
+        // delay(100);
         //make all the wheels brake
         analogWrite(LMOTORS_OUT0, 170);
         analogWrite(LMOTORS_OUT1, 170);
@@ -256,7 +211,6 @@ void loop() {
         servo2.detach();
         pi_input[4] = 0;
         pi_input[5] = 0;
-        // proxCounter = 0;
       }
     } 
     else {
@@ -300,17 +254,14 @@ void loop() {
         if(curA != 35){
           servo1.write(145);
           servo2.write(35);
-          delay(100);
-          // proxCounter = 0;
-          secCode = 0;
-          // digitalWrite(Prox_Data, 0);
+          // delay(100);
         }
       }
       //caught ball so close pincers
       else if (pi_input[5]==1){      
         servo1.writeMicroseconds(2500);
         servo2.write(10);
-        delay(100);
+        // delay(100);
         //make all the wheels brake
         analogWrite(LMOTORS_OUT0, 170);
         analogWrite(LMOTORS_OUT1, 170);
@@ -320,7 +271,6 @@ void loop() {
         servo2.detach();
         pi_input[4] = 0;
         pi_input[5] = 0;
-        // proxCounter = 0;
       }
     }
     //right motor control
@@ -341,4 +291,12 @@ void loop() {
     }
 
   }
+  if(wait_INT == 2){
+    // delay(1000);
+    digitalWrite(CTRL_ACK, HIGH);
+    delayMicroseconds(5);
+    digitalWrite(CTRL_ACK, 0);
+    delay(50);
+  }
+
 }
