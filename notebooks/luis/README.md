@@ -4,7 +4,7 @@
 - [2023-02-14](#2023-02-14---initial-pcb-design)
 - [2023-02-26](#2023-02-26---re-evaluating-the-power-subsystem)
 - [2023-03-02](#2023-03-02---pcb-redesign-1)
-- [2023-03-05/06](#2023-03-05/06---Testing-power-consumption-for-buck-converters)
+- [2023-03-05/06](#2023-03-05---Testing-power-consumption-for-buck-converters)
 - [2023-03-13](#2023-03-13---fetching-subsystem-rough-draft)
 - [2023-03-15](#2023-03-15---microcontroller-code-rough-draft)
 - [2023-03-29](#2023-03-29---image-processing-update)
@@ -44,7 +44,7 @@ Also, we'll have to use different H-bridges if we want to free up enough pins on
 [new_H-bridges](https://www.ti.com/lit/ds/symlink/drv8848.pdf?ts=1682705623106&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FDRV8848)
 [buck-converters](https://www.tracopower.com/sites/default/files/products/datasheets/tdn5wism_datasheet.pdf)
 
-# 2023-03-05/06 - Testing power consumption for buck converters
+# 2023-03-05 - Testing power consumption for buck converters
 
 We're testing the power consumption of the motors under weights of up to 1.3kg. We need to know if our new approach with the Pi battery and the PCB/motors battery combined with buck converters will be able to provide a sufficient power supply to move the design and power the PCB components at maximum power consumption for up to 45 minutes. 
 
