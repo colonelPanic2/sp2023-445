@@ -13,7 +13,7 @@
 - [2023-04-04](#2023-04-04---pcb-redesign-2)
 - [2023-04-16](#2023-04-16---working-software-demo)
 - [2023-04-25](#2023-04-25---Demo-version-of-the-design)
-- [2023-04-29](#2023-04-29---Microcontroller-runtime-data,-lower-bound-on-state-function-runtimes)
+- [2023-04-29](#2023-04-29---Microcontroller-runtime-data-and-lower-bound-on-state-function-runtimes)
 # 2023-02-14 - Initial PCB design
 
 We've set up what is expected to be the base of the final version of the PCB. We still need to decide on the power supply that we're going to use, and how we should connect it to the rest of the design. For now, our best idea for the power subsystem is to connect a high-voltage battery to the design with resistors to control the power supplied to each component.
@@ -138,7 +138,7 @@ The bar plot below shows the average runtime per loop of each state function ove
 ![](images/runtimes.png)
 
 
-# 2023-04-29 - Microcontroller runtime data, lower bound on state function runtimes
+# 2023-04-29 - Microcontroller runtime data and lower bound on state function runtimes
 
 The bar plot below shows the average runtime per loop of each state function over 100 samples when the motors are consuming little to no power. This gives us the lower bound on the expected runtime per loop for each state, which is about 200ms. This gives us an upper bound of 5 FPS on the image processing code.
 
