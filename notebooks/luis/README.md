@@ -4,7 +4,7 @@
 - [2023-02-14](#2023-02-14---initial-pcb-design)
 - [2023-02-26](#2023-02-26---re-evaluating-the-power-subsystem)
 - [2023-03-02](#2023-03-02---pcb-redesign-1)
-- [2023-03-05/06](#2023-03-05---Testing-power-consumption-for-buck-converters)
+- [2023-03-05](#2023-03-05---Testing-power-consumption-for-buck-converters)
 - [2023-03-13](#2023-03-13---fetching-subsystem-rough-draft)
 - [2023-03-15](#2023-03-15---microcontroller-code-rough-draft)
 - [2023-03-29](#2023-03-29---image-processing-update)
