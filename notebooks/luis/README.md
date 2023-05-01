@@ -12,7 +12,8 @@
 - [2023-04-01](#2023-04-01---parallelization)
 - [2023-04-04](#2023-04-04---pcb-redesign-2)
 - [2023-04-16](#2023-04-16---working-software-demo)
-
+- [2023-04-25](#2023-04-25---Demo-version-of-the-design)
+- [2023-04-29](#2023-04-29---Microcontroller-runtime-data,-lower-bound-on-state-function-runtimes)
 # 2023-02-14 - Initial PCB design
 
 We've set up what is expected to be the base of the final version of the PCB. We still need to decide on the power supply that we're going to use, and how we should connect it to the rest of the design. For now, our best idea for the power subsystem is to connect a high-voltage battery to the design with resistors to control the power supplied to each component.
@@ -132,18 +133,21 @@ Final Pi software flowchart:
 
 ![](images/software-diagram.png)
 
-The bar plot below shows the average runtime per loop of each state function over 100 samples each.
+The bar plot below shows the average runtime per loop of each state function over 100 samples each when the design is consuming the maximum expected amount of power. Under such conditions, the upper bound on the runtime per loop of the non-WAIT state functions appears to be about 300ms. Since the image processing is sampled once per loop, this gives us a lower bound of 3 FPS on the image processing code.
 
 ![](images/runtimes.png)
 
-The numbers below represent the response times in milliseconds of the microcontroller to each interrupt from the Pi in 3 states:
 
-19.23, 17.42, 52.68, 46.19, 43.0, 60.38
+# 2023-04-29 - Microcontroller runtime data, lower bound on state function runtimes
 
-87.93, 37.62, 56.98, 17.97, 52.88, 41.62, 39.44, 89.9, 21.34, 64.25
+The bar plot below shows the average runtime per loop of each state function over 100 samples when the motors are consuming little to no power. This gives us the lower bound on the expected runtime per loop for each state, which is about 200ms. This gives us an upper bound of 5 FPS on the image processing code.
 
-69.04, 47.72, 88.7, 67.58, 67.87
+![](images/runtimes2.png)
 
-The software for both the microcontroller and Raspberry Pi components meets the specified runtime requirements. The bar plot below shows the average runtime per loop of each state function over 100 samples each. The maximum average runtime after analyzing all states doesn't exceed 350ms, so the requirements for the pi software have been satisfied. 
+The speed of the microcontroller code prevented us from sampling its runtimes directly, as interrupts would be triggered before a previous interrupt could finish. So, instead, we kept a counter for the number of times that an end-of-loop interrupt from the microcontroller was received in each state of the state machine. We then divided the average runtimes of each state by the number of times that an interrupt was recorded in that state to estimate the average per-loop runtime of the microcontroller code. The results for sampling in each state are shown in the bar plot below:
 
-###### NOTE: MODIFY THE TIMEDATA SAMPLER TO ALLOW LABELLING OF MICROCONTROLLER RESPONSES BY THE STATE IN WHICH THEY WERE RECEIVED BY THE PI
+![](images/MCU-runtimes.png)
+
+Taking the sum of these average runtimes and dividing by 5, we estimate our overall average runtime to be about 404.67 microseconds, far less than anticipated runtime of no less than 50ms.
+
+Overall, we can see from the data gathered today and in [2023-04-25](#2023-04-25---Demo-version-of-the-design) that the performance requirements regarding runtime for both the Pi code and the microcontroller code have been satisfied. This can be said for 2 reasons: First, the sum of the runtimes doesn't reach or exceed 500ms, and second, the Pi and MCU are running in parallel, meaning that the average runtime of an overall cycle for the design can be measured by the runtime of the Pi code alone.

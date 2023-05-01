@@ -78,7 +78,7 @@ def create_subplots(data,numtests_or_testidx,num_its_total,num_its_test=None,ali
         fig.suptitle(f"Test {numtests_or_testidx}",fontsize=14)
         plt.savefig(f'{pwd}fetching-tests/test{numtests_or_testidx}.png')
         return num_its,runtimes
-def process_data(microcontroller_time_data={'START':[],'WAIT':[],'CHASE':[],'ACQUIRE':[],'FETCH':[],'RETURN':[]}):
+def process_data(microcontroller_time_data={'START':0,'WAIT':0,'CHASE':0,'ACQUIRE':0,'FETCH':0,'RETURN':0}):
     pwd = ""
     dirs = str(subprocess.check_output(shlex.split("ls")))[2:-1].split("\\n")[:-1]
     if 'timedata' in dirs:
@@ -86,7 +86,6 @@ def process_data(microcontroller_time_data={'START':[],'WAIT':[],'CHASE':[],'ACQ
     dirs = str(subprocess.check_output(shlex.split(f"ls {pwd}")))[2:-1].split("\\n")[:-1]
     if 'fetching-tests' not in dirs:
         subprocess.run(shlex.split(f"mkdir {pwd}fetching-tests"))
-        print('hi')
     data = readfile(pwd+'timedata.csv')
     metadata,overall_data,unit_data = data['md'],data['overall'],data['unit']
     test_idx = 0
@@ -108,14 +107,37 @@ def process_data(microcontroller_time_data={'START':[],'WAIT':[],'CHASE':[],'ACQ
     if 'microcontroller-runtimes.csv' not in dirs:
         subprocess.run(shlex.split(f"touch {pwd}microcontroller-runtimes.csv"))
     for state in ['START','WAIT','CHASE','ACQUIRE','FETCH','RETURN']:
-        if microcontroller_time_data[state]!=[]:
+        if microcontroller_time_data[state]==max(list(microcontroller_time_data.values())) and\
+            microcontroller_time_data[state]>0 and state!='START':
             print(f"{state}: {microcontroller_time_data[state]}")
+            # Write to the file (if there is no data in this state, then the line will just contain a state name with no data)
+            with open(f'{pwd}microcontroller-runtimes.csv','a') as f:
+                f.write(f'{state},{str(overall_runtime[["WAIT","CHASE","ACQUIRE","FETCH","RETURN"].index(state)]/microcontroller_time_data[state])}\n')
         else:
             print(f"{state}: No microcontroller runtime data collected")
-        # Write to the file (if there is no data in this state, then the line will just contain a state name with no data)
-        with open(f'{pwd}microcontroller-runtimes.csv','a') as f:
-            f.write(f'{state},{str(microcontroller_time_data[state])}\n')
+        
     return 0
 
+def microcontroller_data(align='center',color=['green','black','green','black','green']):
+    dirs = str(subprocess.check_output(shlex.split("ls")))[2:-1].split("\\n")[:-1]
+    pwd=''
+    if 'timedata' in dirs:
+        pwd+='timedata/'
+    dirs = str(subprocess.check_output(shlex.split(f"ls {pwd}")))[2:-1].split("\\n")[:-1]
+    if 'MCU-data.png' not in dirs:
+        subprocess.run(shlex.split(f"touch {pwd}MCU-data.png"))
+    avg_runtimes = {'WAIT':432.88,'CHASE':368.21,'ACQUIRE':423.21,'FETCH':402.27,'RETURN':396.78}
+    num_its = [539,683,539,490,503]
+    fig,ax = plt.subplots(2)
+    ax[0].set_ylabel('runtime (microseconds)')
+    ax[0].set_title('Average runtimes (microseconds) for each state function')
+    ax[1].set_ylabel('num_its')
+    ax[1].set_title('# of iterations for each state function')
+    fig.subplots_adjust(hspace=0.5)
+    ax[1].bar(list(avg_runtimes.keys()),height=num_its,align=align,color=color)
+    ax[0].bar(list(avg_runtimes.keys()),height=list(avg_runtimes.values()),align=align,color=color)
+    fig.suptitle(f"Microcontroller runtime data",fontsize=14)
+    plt.savefig(f'{pwd}MCU-data.png')
 if __name__=='__main__':
     process_data()
+    microcontroller_data()
