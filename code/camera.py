@@ -79,30 +79,6 @@ class camera(images):
         self.cam = cv2.VideoCapture(self.index*self.index_factor,cam_backends[int(platform=='linux')])            
         self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1920) # Divides evenly by 3
         self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)  
-    # NOTE: This function is still unused because I don't quite know how to use
-    # it. I'll have to ask yinhuo for help with integrating this into the design.
-    def detect_shape(self,c):
-        shape = "empty"
-        peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-        # Triangle
-        if len(approx) == 3:
-            shape = "triangle"
-        # Square or rectangle
-        elif len(approx) == 4:
-            (x, y, w, h) = cv2.boundingRect(approx)
-            ar = w / float(h)
-        # A square will have an aspect ratio that is approximately
-        # equal to one, otherwise, the shape is a rectangle
-            shape = "rectangle"
-        # Pentagon
-        elif len(approx) == 5:
-            shape = "pentagon"
-        # Otherwise assume as circle or oval
-        else:
-            (x, y, w, h) = cv2.boundingRect(approx)
-            shape = "circle"
-        return shape
     # Tell the camera thread to end smoothly, and raise a KeyboardInterupt
     # that will be caught in the 'main_fetching' function in main.py
     def destroy(self):
