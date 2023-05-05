@@ -73,7 +73,7 @@ The color pattern is that the red is about half of green/blue values, and green 
 
 Another optimazation I can think of is to scan the image from below rather than above. The idea is that the ball is usually on the ground instead of in the sky. This method delivers better runtime, with a minmum of 0.15 second, maximum of 2.5 second, and average of 1.6 second. Still, it failed to meet the high level requirement.
 
-(flowchart)
+![](Images/pixel.png)
 
 # 2023-03-21 - attempt to use online code for ball detection
 
@@ -86,8 +86,6 @@ After I read through the code and considered the design requirements, I figured 
 To continue with the design, I borrowed the Logitech C925e USB Webcam which has same 1080P resolution and 78 degree FoV, but with better lenses and higher overall quality. 
 
 ![](Images/IMG_2444.jpg)
-
-(flowchart)
 
 # 2023-04-05 - attempt to merge other methods
 
