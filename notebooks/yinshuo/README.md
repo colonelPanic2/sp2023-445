@@ -115,6 +115,8 @@ I decided to use a blue square for waypoint and use a red triangle for users. Di
 
 We decided to do the final system integration work at my place because my TV is the only working monitor. Patrick mentioned that the pincers are acting weird when the ball gets close, so he has to comment out all code related to ultrasonic sensors. We decided to use my spare Arduino to read the readings from the sensors by rewiring and connect in parallel. Only at this time we discovered that the reading is very inconsistent when the ball gets close. We thought this is because the ball is not flat, but trying other round object such as light bulb denied the guess. We tried other cutton objects and get simliar reading pattern as well. It seems like the cutton is absorbing sound and the echo time is thus inaccurate. We decided to use the inconsistency, when there are huge reading change in a short time then the ball is within the range. Such a method does work for 10 centimeters but not work for 5 centimeters because the pincers can only catch something within 6 centimeters.
 
+![](Images/IMG_2548.jpg)
+
 To make the controls more subtle, we decided to further split the region from 6 to 18, so there will be 3 sublines for middle part. However, this caused the image processing to drop below 2 fps minmum requirement, so we have to roll back. 
 
 I helped rewiring to a smaller breadboard and mount everything ready to go. I also come up with the idea to the small cooling fan in ECE 110 kit to help the processor cools down and avoid restart. 
